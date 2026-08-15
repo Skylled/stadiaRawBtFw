@@ -1,0 +1,6 @@
+# Ghidra project database — regenerable from scripts + firmware (see bruce-ghidra.md).
+# Large binary DB, do not version.
+ghidra/*.gpr
+ghidra/*.rep/
+ghidra/*.lock
+ghidra/*.log

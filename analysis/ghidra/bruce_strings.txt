@@ -1,0 +1,3110 @@
+600d9da9	GpGpG
+6010277c	StreamLogBuffer
+6010278c	dumpable
+601027b4	DumpDeviceInformation
+601027cc	ResetDeviceIds
+601027ec	GetCurrentTime
+6010310b	KSynCaptureBypassState
+60103124	SynCaptureBypassOff
+6010313a	SynCaptureBypassOn
+6010314f	SynLoopbackMixState
+60103165	SynLoopbackMixOff
+60103179	SynLoopbackMixOn
+6010318c	SynLoopbackState
+6010319f	SynLoopbackOff
+601031b0	SynLoopbackOn
+601031c0	SynAgcState
+601031ce	SynAgcOff
+601031da	SynAgcOn
+601031e5	SynNsState
+601031f2	SynNsOff
+601031fd	SynNsOn
+60103207	SynAecState
+60103215	SynAecOff
+60103221	SynAecOn
+60103238	BTA 4 Google V0.0.2 ARMGCC Newlib 
+60103260	Jul 17 2019
+6010326c	11:20:31
+60103278	build at %s %s
+601032e0	%02x 
+601032e8	HCI EVT %s\n
+601032f8	%s can't alloc buf!\n
+60103310	HCI LE RSSI Error State!\n
+60103334	HCI LE RSSI Value: %s%d \n
+60103350	HCI LE RSSI Error Status!\n
+6010337c	HCI LE TX PACKET COUNT %s\n
+60103398	HCI LE RX PACKET COUNT %s\n
+601033b4	%02x %02x %02x 
+601033c4	btu_task up
+601033d0	btu_process_quick_timer_evt
+601033ec	btu_ Stop timer2
+60103400	%02x:%02x:%02x:%02x:%02x:%02x
+6010356c	GATT_RSP_READ_BY_GRP_TYPE
+60103588	ATT_REQ_WRITE
+60103598	ATT_RSP_WRITE
+601035a8	ATT_CMD_WRITE
+601035b8	ATT_SIGN_CMD_WRITE
+601035cc	ATT_REQ_PREPARE_WRITE
+601035e4	ATT_RSP_PREPARE_WRITE
+601035fc	ATT_REQ_EXEC_WRITE
+60103610	ATT_RSP_EXEC_WRITE
+60103624	Reserved
+60103630	ATT_HANDLE_VALUE_NOTIF
+60103648	ATT_HANDLE_VALUE_IND
+60103660	ATT_HANDLE_VALUE_CONF
+60103678	ATT_OP_CODE_MAX
+60103688	Exceeds Max Op Code
+6010369c	0x%04x
+601036a4	0x%08x
+601036ac	0x%02x%02x%02x%02x%02x%02x%02x%02x
+601036d0	%02x%02x%02x%02x%02x%02x%02x%02x
+601036f4	Unknown UUID 0
+60103704	Service Discovery
+60103718	K1 before shift
+60103743	lcalculated peer commitment
+60103760	received peer commitment
+6010378e	StackTrace
+60103799	dumpable
+601037a3	GetTaskStatistics
+601037b5	dumpable
+601037bf	CarawayBuildInfo
+601037d0	dumpable
+601037da	DumpCalibration
+601037ea	dumpable
+601037f4	StartBleHidOnOverride
+6010380c	TraceBufferInitialize
+60103824	RebootWithReason
+60103837	TriggerUserGeneratedBugReport
+60103857	HapticTriggers
+60103868	GothamStreamState
+6010387a	dumpable
+60103884	GothamPrintState
+60103897	AllowUartLogging
+601038b4	FlashPartitionCrc
+601038c8	PatternPlayerIsFrozen
+601038e0	PatternPlayerUnfreeze
+601038f8	PatternPlayerFreeze
+6010390e	PlayPattern
+6010391c	FactoryReset
+6010392b	GothamBuildType
+6010393b	dumpable
+60103945	GetGothamBuildVersion
+6010395b	dumpable
+60103965	KvsEraseProp
+60103974	KvsSetProp
+60103981	KvsGetProp
+6010398e	KvsPropertiesToLog
+601039a3	BootloaderKvsMetadata
+601039b9	dumpable
+601039c3	KvsProperties
+601039d1	dumpable
+601039db	PersistKvsGet
+601039eb	GetTime
+601039f5	SetTime
+601039ff	EnterFullRun
+60103a0e	EnterOverdrive
+60103a1f	ForceBatteryLevel
+60103a33	KeepAwake
+60103a3f	WakelockState
+60103a4d	dumpable
+60103a57	HardfaultBuffer
+60103a69	SaveBugReport
+60103a79	ClearSavedBugReport
+60103a8f	GetSavedBugReport_
+60103aa4	GetSavedBugReport
+60103ab8	BugReport
+60103ac4	GetRunningBootloaderPartition
+60103ae2	dumpable
+60103aec	GetKeyApplicationSignedWith
+60103b08	dumpable
+60103b12	GetRunningBootloaderVersion
+60103b2e	dumpable
+60103b38	GetExecutingPartitionId
+60103b50	dumpable
+60103b5a	GetBaselineData
+60103b6c	CrashRegister
+60103b7a	dumpable
+60103b87	UxPatternLog
+60103b94	dumpable
+60115c54	BTA_DmBleScatternetEnable
+60115c78	bta_lower_level_prm_cback
+60115c94	bta_prm_hdl_event
+60115ca8	BTA_PatchRam
+60115cc7	`BTA_EnableBluetooth
+60115cdc	BTA_DisableBluetooth
+60115cf4	BTA_DmSetDeviceName
+60115d08	BTA_DmSetVisibility
+60115d1c	BTA_DmConfirm
+60115d2c	BTA_DmAddDevice
+60115d3c	BTA_DmAuthorizeReply
+60115d54	BTA_DmAddBleKey
+60115d64	BTA_DmAddBleDevice
+60115d78	BTA_DmBleSecurityGrant
+60115d90	BTA_DmBleSetAdvConfig
+60115da8	BTA_DmBleSetScanRspConfig
+60115dc4	BTA_DmBleConfigLocalPrivacy
+60115de0	BTA_DmSetEncryption
+60115fa4	bta_dm_pm_btm_cback
+60115fb8	bta_dm_pm_timer_cback
+60115fd7	`BTA_GATTC_AppRegister
+60115ff0	BTA_GATTC_Open
+60116000	BTA_GATTC_CancelOpen
+60116018	BTA_GATTC_Close
+60116028	BTA_GATTC_ServiceSearchRequest
+60116048	BTA_GATTC_Refresh
+6011605c	bta_gattc_alloc_cache_buf
+60116078	bta_gattc_init_cache
+60116090	bta_gattc_sdp_callback
+601160a8	bta_gattc_sdp_service_disc
+601160c4	bta_gattc_rebuild_cache
+60116224	bta_gattc_srcb_alloc
+60116243	`BTA_GATTS_AppRegister
+6011625c	BTA_GATTS_AppDeregister
+60116274	BTA_GATTS_CreateService
+6011628c	BTA_GATTS_AddCharacteristic
+601162a8	BTA_GATTS_AddCharDescriptor
+601162c4	BTA_GATTS_DeleteService
+601162dc	BTA_GATTS_StartService
+601162f4	BTA_GATTS_HandleValueIndication
+60116314	BTA_GATTS_SendRsp
+60116328	BTA_GATTS_Close
+601163e8	bta_sys_hw_btm_cback
+60116400	bta_sys_event
+60116410	bta_sys_sendmsg
+60116420	ptim_timer_update
+60116454	hcisu_h4_receive_msg
+6011646c	hcisu_h4_send_msg_now
+60116590	btm_acl_reset_paging
+601165a8	BTM_BleDataSignature
+601165c0	btm_ble_enqueue_direct_conn_req
+601165e0	btm_send_pending_direct_conn
+60116600	btm_ble_resolving_list_init
+6011661c	BTM_VendorSpecificCommand
+60116640	btm_clr_inq_result_flt
+60116658	btm_initiate_inquiry
+60116670	btm_sort_inq_result
+601166bc	btm_sec_check_pending_reqs
+601166d8	btm_sec_queue_mx_request
+601166f4	btm_sec_queue_encrypt_request
+60116714	btu_hcif_store_cmd
+60116728	btu_hci_forward_all_event
+60116744	btu_hcif_command_complete_evt_1
+60116764	btu_hcif_command_complete_evt
+60116784	btu_hcif_command_status_evt_1
+601167a4	btu_hcif_command_status_evt
+601167c0	btu_hcif_cmd_timeout
+601167d8	btu_hcif_flush_cmd_queue
+601167fc	btu_task
+60116808	btu_start_timer
+60116818	btu_stop_timer
+60116828	btu_start_quick_timer
+60116840	utl_freebuf
+6011684c	gap_ble_dealloc_clcb
+60116864	gap_ble_enqueue_request
+6011687c	gap_ble_dequeue_request
+60116894	GATTS_CreateService
+601168a8	GATTS_DeleteService
+601168bc	GATTS_StartService
+601168d0	GATTC_Read
+601168dc	GATTC_Write
+601168e8	gatt_sign_data
+601168f8	gatt_enc_cmpl_cback
+6011690c	gatt_notify_enc_cmpl
+60116924	gatt_process_read_by_type_rsp
+60116944	gatt_process_read_rsp
+6011695c	allocate_svc_db_buf
+6011699c	gatt_congest_handler
+601169b4	gatt_channel_congestion
+601169cc	gatt_le_data_ind
+601169e0	gatt_l2cif_data_ind_cback
+601169fc	gatt_data_process
+60116a10	gatt_dequeue_sr_cmd
+60116a24	process_read_multi_rsp
+60116a3c	gatt_process_read_multi_req
+60116a58	gatts_process_primary_service_req
+60116a7c	gatts_process_find_info
+60116a94	gatts_process_read_by_type_req
+60116ab4	gatts_process_read_req
+60116acc	gatts_chk_pending_ind
+60116af4	gatt_free_pending_ind
+60116b0c	gatt_free_pending_enc_queue
+60116b28	gatt_add_pending_ind
+60116b40	gatt_add_pending_new_srv_start
+60116b60	gatt_add_srv_chg_clt
+60116b78	gatt_free_hdl_buffer
+60116b90	gatt_free_srvc_db_buffer_app_id
+60116bb0	gatt_end_operation
+60116bc4	gatt_cleanup_upon_disc
+60116bdc	gatt_add_pending_enc_channel_clcb
+60116c00	btsnd_hcic_ble_set_evt_mask
+60116c1c	btsnd_hcic_ble_read_buffer_size
+60116c3c	btsnd_hcic_ble_read_local_spt_feat
+60116c60	btsnd_hcic_ble_set_random_addr
+60116c80	btsnd_hcic_ble_write_adv_params
+60116ca0	btsnd_hcic_ble_set_adv_data
+60116cbc	btsnd_hcic_ble_set_scan_rsp_data
+60116ce0	btsnd_hcic_ble_set_adv_enable
+60116d00	btsnd_hcic_ble_set_scan_params
+60116d20	btsnd_hcic_ble_set_scan_enable
+60116d40	btsnd_hcic_ble_create_ll_conn
+60116d60	btsnd_hcic_ble_create_conn_cancel
+60116d84	btsnd_hcic_ble_read_white_list_size
+60116da8	btsnd_hcic_ble_remove_from_white_list
+60116dd0	btsnd_hcic_ble_upd_ll_conn_params
+60116df4	btsnd_hcic_ble_set_host_chnl_class
+60116e18	btsnd_hcic_ble_read_remote_feat
+60116e38	btsnd_hcic_ble_rand
+60116e4c	btsnd_hcic_ble_start_enc
+60116e68	btsnd_hcic_ble_ltk_req_reply
+60116e88	btsnd_hcic_ble_ltk_req_neg_reply
+60116eac	btsnd_hcic_ble_read_supported_states
+60116ed4	btsnd_hcic_ble_write_host_supported
+60116ef8	btsnd_hcic_ble_rc_param_req_reply
+60116f1c	btsnd_hcic_ble_rc_param_req_neg_reply
+60116f44	btsnd_hcic_ble_set_data_length
+60116f64	btsnd_hcic_ble_read_dflt_data_length
+60116f8c	btsnd_hcic_ble_add_device_resolving_list
+60116fb8	btsnd_hcic_ble_rm_device_resolving_list
+60116fe0	btsnd_hcic_ble_clear_resolving_list
+60117004	btsnd_hcic_ble_read_resolving_list_size
+6011702c	btsnd_hcic_ble_read_resolvable_addr_peer
+60117058	btsnd_hcic_ble_set_addr_resolution_enable
+60117084	btsnd_hcic_ble_set_rand_priv_addr_timeout
+601170b0	btsnd_hcic_ble_set_default_phy
+601170d0	btsnd_hcic_any
+601170e0	btsnd_hcic_inquiry
+601170f4	btsnd_hcic_inq_cancel
+6011710c	btsnd_hcic_per_inq_mode
+60117124	btsnd_hcic_exit_per_inq
+6011713c	btsnd_hcic_create_conn
+60117154	btsnd_hcic_disconnect
+6011716c	btsnd_hcic_create_conn_cancel
+6011718c	btsnd_hcic_accept_conn
+601171a4	btsnd_hcic_reject_conn
+601171bc	btsnd_hcic_link_key_req_reply
+601171dc	btsnd_hcic_link_key_neg_reply
+601171fc	btsnd_hcic_pin_code_req_reply
+6011721c	btsnd_hcic_pin_code_neg_reply
+6011723c	btsnd_hcic_auth_request
+60117254	btsnd_hcic_set_conn_encrypt
+60117270	btsnd_hcic_change_link_key
+6011728c	btsnd_hcic_rmt_name_req
+601172a4	btsnd_hcic_rmt_name_req_cancel
+601172c4	btsnd_hcic_rmt_features_req
+601172e0	btsnd_hcic_rmt_ext_features
+601172fc	btsnd_hcic_rmt_ver_req
+60117314	btsnd_hcic_read_rmt_clk_offset
+60117334	btsnd_hcic_hold_mode
+6011734c	btsnd_hcic_sniff_mode
+60117364	btsnd_hcic_exit_sniff_mode
+60117380	btsnd_hcic_park_mode
+60117398	btsnd_hcic_exit_park_mode
+601173b4	btsnd_hcic_switch_role
+601173cc	btsnd_hcic_write_policy_set
+601173e8	btsnd_hcic_write_def_policy_set
+60117408	btsnd_hcic_set_event_mask
+60117424	btsnd_hcic_set_event_mask_page_2
+60117448	btsnd_hcic_reset
+6011745c	btsnd_hcic_set_event_filter
+60117478	btsnd_hcic_write_pin_type
+60117494	btsnd_hcic_delete_stored_key
+601174b4	btsnd_hcic_change_name
+601174cc	btsnd_hcic_write_page_tout
+601174e8	btsnd_hcic_write_scan_enable
+60117508	btsnd_hcic_write_pagescan_cfg
+60117528	btsnd_hcic_write_inqscan_cfg
+60117548	btsnd_hcic_write_auth_enable
+60117568	btsnd_hcic_write_encr_mode
+60117584	btsnd_hcic_write_dev_class
+601175a0	btsnd_hcic_write_auto_flush_tout
+601175c4	btsnd_hcic_set_host_buf_size
+601175e4	btsnd_hcic_write_link_super_tout
+60117608	btsnd_hcic_write_cur_iac_lap
+60117628	btsnd_hcic_write_simple_pairing_mode
+60117650	btsnd_hcic_io_cap_req_reply
+6011766c	btsnd_hcic_io_cap_req_neg_reply
+6011768c	btsnd_hcic_set_mws_chann_param
+601176ac	btsnd_hcic_set_ext_frame_config
+601176cc	btsnd_hcic_set_mws_signaling
+601176ec	btsnd_hcic_set_mws_trans_layer
+6011770c	btsnd_hcic_set_mws_scan_freq_table
+60117730	btsnd_hcic_set_mws_pattern_config
+60117754	btsnd_hcic_get_mws_trans_layer_config
+6011777c	btsnd_hcic_user_conf_reply
+60117798	btsnd_hcic_user_passkey_reply
+601177b8	btsnd_hcic_user_passkey_neg_reply
+601177dc	btsnd_hcic_write_inq_tx_power
+601177fc	btsnd_hcic_read_local_ver
+60117818	btsnd_hcic_read_local_supported_cmds
+60117840	btsnd_hcic_read_local_features
+60117860	btsnd_hcic_read_local_ext_features
+60117884	btsnd_hcic_read_buffer_size
+601178a0	btsnd_hcic_read_bd_addr
+601178b8	btsnd_hcic_get_link_quality
+601178d4	btsnd_hcic_read_rssi
+601178ec	btsnd_hcic_enable_test_mode
+60117908	btsnd_hcic_set_afh_host_channel_class
+60117930	btsnd_hcic_write_inqscan_type
+60117950	btsnd_hcic_write_inquiry_mode
+60117970	btsnd_hcic_write_pagescan_type
+60117990	btsnd_hcic_write_secure_conns_support
+601179b8	btsnd_hcic_read_authenticated_payload_tout
+601179e4	L2CA_SendFixedChnlData
+601179fc	l2c_csm_closed
+60117a0c	l2c_csm_orig_w4_sec_comp
+60117a28	l2c_csm_term_w4_sec_comp
+60117a44	l2c_csm_w4_l2cap_connect_rsp
+60117a64	l2c_csm_w4_l2ca_connect_rsp
+60117a80	l2c_csm_config
+60117a90	l2c_csm_w4_l2cap_disconnect_rsp
+60117ab0	l2c_csm_w4_l2ca_disconnect_rsp
+60117cce	@@l2c_fcr_cleanup
+60117ce0	l2c_fcr_clone_buf
+60117cf4	l2c_fcr_send_S_frame
+60117d0c	l2c_fcr_proc_pdu
+60117d20	process_reqseq
+60117d30	process_s_frame
+60117d40	process_i_frame
+60117d50	process_stream_frame
+60117d68	do_sar_reassembly
+60117d7c	retransmit_i_frames
+60117d90	l2c_link_hci_disc_comp
+60117da8	l2cap_link_chk_pkt_start
+60117dc4	l2c_link_segments_xmitted
+60117de0	l2c_rcv_acl_data
+60117df4	l2c_data_write
+60117e04	l2cu_release_lcb
+60117e18	l2cu_build_header
+60117e2c	l2cu_send_peer_config_rej
+60117e48	l2cu_release_ccb
+60117e5c	SDP_AddUuidSequence
+60117e70	SDP_AddProtocolList
+60117e84	SDP_AddServiceClassIdList
+60117ea0	sdp_data_ind
+60117eb0	process_service_search
+60117ec8	process_service_attr_req
+60117ee4	process_service_search_attr_req
+60117f14	sdpu_release_ccb
+60117f28	sdpu_build_n_send_error
+60117f40	sdpu_build_partial_attrib_entry
+60117f6c	cmac_aes_cleanup
+60117f80	AES_CMAC
+60117f8c	smp_encrypt_data
+60117fa0	smp_data_ind
+60118758	.//=
+60118958	smp_build_pairing_cmd
+60118970	smp_build_confirm_cmd
+60118988	smp_build_rand_cmd
+6011899c	smp_build_encrypt_info_cmd
+601189b8	smp_build_master_id_cmd
+601189d0	smp_build_identity_info_cmd
+601189ec	smp_build_id_addr_cmd
+60118a04	smp_build_signing_info_cmd
+60118a20	smp_build_pairing_fail
+60118a38	smp_build_security_request
+60118a54	smp_build_pair_public_key_cmd
+60118a74	smp_build_pair_commitm_cmd
+60118a90	smp_build_pair_dhkey_check_cmd
+60118ab0	smp_build_pair_keypr_notif_cmd
+60118ad0	smp_reject_unexp_pair_cmd
+60118bd0	bta_dm_enable
+60118be0	bta_dm_search_start
+60118bf4	bta_dm_search_cancel
+60118c0c	bta_dm_discover
+60118c1c	bta_dm_di_disc_callback
+60118c34	bta_dm_di_disc
+60118c44	bta_dm_inq_cmpl
+60118c54	bta_dm_sdp_result
+60118c68	bta_dm_disc_result
+60118c7c	bta_dm_free_sdp_db
+60118c90	bta_dm_queue_search
+60118ca4	bta_dm_queue_disc
+60118cb8	bta_dm_search_clear_queue
+60118cd4	bta_dm_search_cancel_transac_cmpl
+60118cf8	bta_dm_find_services
+60118d10	bta_dm_discover_next_device
+60118d2c	bta_dm_discover_device
+60118d44	bta_dm_sdp_callback
+60118d58	bta_dm_inq_cmpl_cb
+60118d6c	bta_dm_remname_cback
+60118d84	bta_dm_acl_change_cback
+60118d9c	bta_dm_acl_change
+60118db0	bta_dm_disable_conn_down_timer_cback
+60118dd8	bta_dm_encrypt_cback
+60118df0	bta_dm_set_encryption
+60118e08	bta_dm_gatt_disc_complete
+6011937c	bta_gattc_register
+60119390	bta_gattc_disc_cmpl
+601193a4	bta_gattc_conn_cback
+601193bc	bta_gattc_process_api_refresh
+601193dc	bta_gattc_cmpl_cback
+601193f4	bta_gatts_register
+60119410	attp_build_mtu_cmd
+60119424	attp_build_exec_write_cmd
+60119440	attp_build_err_cmd
+60119454	attp_build_browse_cmd
+6011946c	attp_build_read_by_type_value_cmd
+60119490	attp_build_read_multi_cmd
+601194ac	attp_build_handle_cmd
+601194c4	attp_build_opcode_cmd
+601194dc	attp_build_value_cmd
+60119850	sqrtf
+6011aeb6	timer.h
+6011aebe	main.cc
+6011aec6	pattern_player.h
+6011aed7	max_runtime_timer
+6011aee9	WAKE_REASON: Low Battery, shutting down.
+6011af12	WAKE_REASON: Crash
+6011af25	Started for button; not held for ~1s.
+6011af4b	Y button held; enter setup mode.
+6011af6c	WAKE_REASON: Button press
+6011af86	WAKE_REASON: USB
+6011af97	Rebooted to charge but no USB connected! Shutting down.
+6011afcf	WAKE_REASON: Rebooted to charge
+6011afef	WAKE_REASON: OTA during shutdown
+6011b010	WAKE_REASON: OTA 
+6011b022	WAKE_REASON: Crash handled with dev reboot enabled
+6011b055	WAKE_REASON: Unknown!
+6011b06b	Failed to apply LED calibration
+6011b08b	Pattern player is now frozen
+6011b0a8	Failed to start thermal monitoring!
+6011b0cc	Discarding magic button combo: too many pressed!
+6011b0fd	Could not initialize device identity information!
+6011b12f	GothamTask
+6011b13a	InputTask
+6011b144	Max runtime expired, rebooting
+6011b163	gotham_dvt
+6011b16e	gotham_pvt
+6011b179	Ended up in _exit() with status %d
+6011b19c	exit.c
+6011b1a3	stats.cc
+6011b1ac	Invalid
+6011b1b4	task_name
+6011b1be	, 0x%08lX
+6011b1ce	Too many tasks: 
+6011b1df	, max allowed:
+6011b1ee	total_cycles
+6011b1fb	since_last
+6011b206	stack_hwm
+6011b215	cycles_perc
+6011b221	cycles_total_perc
+6011b233	total_stack_size
+6011b244	total_stack_used
+6011b255	heap_total_size
+6011b265	heap_current_free
+6011b277	heap_peak_usage
+6011b287	largest_heap_block_size
+6011b29f	Running
+6011b2a7	Ready
+6011b2ad	Blocked
+6011b2b5	Suspended
+6011b2bf	Deleted
+6011b2c7	Malloc failed. Requested size: %lu, Largest free block: %lu, Total free heap: %lu
+6011b319	heap_support.c
+6011b328	mutex destroy error!
+6011b33d	kUSB_DeviceClassEventSetConfiguration, fail
+6011b369	usb_device_cdc_acm.c
+6011b37e	kUSB_DeviceClassEventSetInterface, fail
+6011b3a6	mutex create error!
+6011b3ba	NAK OUT endpoint %lu\n
+6011b403	hub attached:level=%d 
+6011b41a	address=%d\n
+6011b427	hub detached:level=%d 
+6011b43e	no response from device\n
+6011b458	Device No Response\n
+6011b46e	}}}}}2
+6011b475	FSL_CONSOLE
+6011b481	c08b2dc60d39f9b83177c614c93146f6a4fd30dd
+6011b4aa	commit_hash
+6011b4b6	337784
+6011b4bd	2023-01-12T22:41:20Z
+6011b4d2	build_date
+6011b4dd	local_modifications
+6011b4f1	false
+6011b4f7	GothamYeti_a_img
+6011b50c	stack_overflow_hook.cc
+6011b523	Stack overflow: TASK=%s
+6011b53b	system_tasks.cc
+6011b54f	!!LOG BUFFER CORRUPTED!!
+6011b568	buffer.h
+6011b571	[ Dumping log entries ]
+6011b589	[ Log dump completed ]
+6011b5a0	hid_input_target.cc
+6011b5b4	hid_report.h
+6011b5ca	HidRumbleTimer
+6011b5d9	Invalid data length: 
+6011b5f3	Unknown host USB request: 
+6011b60e	input_calibration.cc
+6011b627	RawInterpolated
+6011b637	calibration_in
+6011b646	calibration_out
+6011b656	deadzone_in
+6011b662	deadzone_out
+6011b679	ValueX
+6011b68c	 when expecting 
+6011b69d	 entries for trigger calibration data.
+6011b6c4	Trigger calibration skips too many values
+6011b6ee	Failed to parse calibration proto.
+6011b711	minimum
+6011b719	maximum
+6011b721	inaccurate_minimum_middle
+6011b73b	inaccurate_maximum_middle
+6011b755	minimum_middle_stddev
+6011b76b	maximum_middle_stddev
+6011b781	deprecated_middle
+6011b793	No minimum value
+6011b7a4	No maximum value
+6011b7b5	No maximum middle value
+6011b7cd	No inaccurate minimum middle value
+6011b7f0	No deprecated middle value
+6011b80b	Joystick Left
+6011b819	Joystick Right
+6011b828	CALIBRATION: No joystick calibration found.
+6011b854	Failed to fix left trigger calibration
+6011b87b	Failed to fix right trigger calibration
+6011b8a3	Deadzone Trigger Left
+6011b8b9	Deadzone Trigger Right
+6011b8d0	CALIBRATION: No trigger calibration found.
+6011b8fb	c_left_joystick_x
+6011b90d	c_left_joystick_y
+6011b91f	c_right_joystick_x
+6011b932	c_right_joystick_y
+6011b945	c_left_trigger
+6011b954	c_right_trigger
+6011b964	left_joystick
+6011b972	right_joystick
+6011b981	sleep_driver.cc
+6011b991	SRTC isn't enabled, so the sleep timeout isn't used.
+6011b9c6	Skipping sleep as no wakeup source set and SRTC isn't enabled.
+6011ba05	Unable to sleep due to the pattern player.
+6011ba30	Unable to stop SRTC alarm.
+6011ba4b	SwitchToLowPowerMode failed: 
+6011ba69	Unable to get time after sleep: 
+6011ba8a	sleep_lock.cc
+6011ba98	Sleep disabled; skipping sleep attempt.
+6011bac0	Unable to sleep: 
+6011bad2	Slept for %lu ms
+6011bae3	Did not attempt to sleep until after the sleep end time.
+6011bb1c	reboot_reason.cc
+6011bb2d	snvs.h
+6011bb34	Unable to erase the reboot reason flag.
+6011bb5c	device_info.cc
+6011bb6b	dynamic_buffer.h
+6011bb7c	String write failure
+6011bb91	Only written 
+6011bb9f	 out of 
+6011bba8	Read wifi mac
+6011bbb6	Read ble mac
+6011bbc3	%02x-%02x-%02x-%02x-%02x-%02x
+6011bbe1	Load device certificate
+6011bbf9	SSDP UDN not found. Re-generating...
+6011bc1e	Generate SSDP UDN (Controller UUID)
+6011bc42	Store SSDP UDN
+6011bc51	Failed to read SSDP UDN: 
+6011bc6b	Failed to get client id
+6011bc83	Gotham
+6011bc90	BIO Flush failed
+6011bca1	Unexpected size of MD5 output: 
+6011bcc1	Read device serial
+6011bcd4	Re-generating Client-ID
+6011bcec	Failed to store client ID
+6011bd06	<PII>
+6011bd0c	Failed to read from KVS
+6011bd24	Failed to parse x509 certificate
+6011bd45	Certificate has no subject name
+6011bd65	Failed to get CN from X509 subject
+6011bd88	CN '%s' is not of expected format
+6011bdaa	Device ID too big
+6011bdbc	Hotspot BSSID length incorrect!
+6011bddc	%02X:%02X:%02X:%02X:%02X:%02X
+6011bdfa	Invalid hotspot BSSID format: 
+6011be19	Unable to generate get random data!
+6011be3d	basic_string::_M_replace
+6011be56	basic_string::_M_create
+6011be6e	application_state.cc
+6011c2a7	USB_MIC_PLUGGED_IN
+6011c2ba	usb_plugged_in_
+6011c2ca	usb_host_connected_
+6011c2de	usb_headphones_plugged_in_
+6011c2f9	usb_mic_plugged_in_
+6011c30d	BLE Connect only timeout - setting pairing mode
+6011c33d	Long HID timer expired.
+6011c355	gotham_task.cc
+6011c364	MiscTaskTimer
+6011c372	Poll state changes
+6011c385	Hardfault buffer was valid without a crash! Erasing then off
+6011c3c2	Saving crash details: %s
+6011c3db	Saving hardfault buffer to tombstone.
+6011c401	KVS override set, rebooting after crash.
+6011c42a	Shutting down after handling crash.
+6011c4b4	Gotham task is configuring notifications
+6011c4dd	Failed to enable headphone plug/unplug interrupts
+6011c50f	Unable to start the wakelock.
+6011c52d	Gotham task
+6011c539	Unhandled USB notification %d
+6011c557	Failed to detect headphone interrupt status
+6011c583	Enabling headphone key detection
+6011c5a4	Shutting down from wakelock firing.
+6011c5c8	User requested power off.
+6011c5e2	Ignored user factory reset as controller is only charging.
+6011c61d	User requested factory reset.
+6011c63b	Handling force shutdown
+6011c653	NOTREACHED
+6011c65e	USER_GENERATED_REPORT
+6011c674	Saving a bug report to flash, global_ts_utc=%u.%03u.
+6011c6a9	Couldn't save header
+6011c6be	Failed to generate bug report.
+6011c6dd	Saving a silent bug report to flash, global_ts_utc=%u.%03u.
+6011c719	Low battery: powering down.
+6011c735	Device connected for setup
+6011c750	Device disconnected from setup
+6011c76f	gotham wdog
+6011c77b	Received uninitialized GothamEvent
+6011c79e	Power down sequence initiated
+6011c7bc	Failed to power off sound codec. 
+6011c7de	About to shutdown, skipping remaining KVS cleanup.
+6011c811	USB connected before off, changing to a reset
+6011c83f	Lowering charge voltage, pending force shutdown.
+6011c870	Power down sequence complete
+6011c88d	CwyCrashSign
+6011c89a	Invalid crash signature
+6011c8b2	Gotham task queue full when sending CRITICAL_LOW_CHARGE
+6011c8ea	GOTHAM_WATCHDOG
+6011c8fa	misc_task.cc
+6011c907	Failed to read runtime stats dump interval: %s!
+6011c937	Misc task trying to enable fuel gauge
+6011c95d	Gauge enable failed
+6011c971	STATS>>>{"heap_free":%d,"min_heap_free":%d,"cpu_usage":%d,"biggest_block":%d}
+6011c9bf	Flash write failure detected [Write %u, Rewrite %u]
+6011c9f3	FLASH_ERROR
+6011c9ff	thermal.cc
+6011ca0a	charge_complete_timer
+6011ca20	thermal_shutoff_timer
+6011ca36	Failed to check %s: %s (%lu). Deadline passed, shutting down!
+6011ca74	BAT_ERROR
+6011ca7e	Failed to check %s: %s (%lu)
+6011ca9b	Charge done, and disconnected. Waiting for timeout.
+6011cacf	Temperature %u out of operating range (%u, %u), shutting down.
+6011cb0e	thermal shutoff
+6011cb1e	Entering battery charger thermal regulation mode.
+6011cb50	Leaving battery charger thermal regulation mode.
+6011cb81	battery charger
+6011cb91	Failed to read fuel gauge temp, retry attempts exceeded. Shutting down.
+6011cbd9	Failed to read fuel gauge temp, Count %d of %d
+6011cc08	Current battery JEITA profile doesn't correspond with gauge temperature. Shutting down since it is likely a cut temperature wire
+6011cc89	detect bad battery
+6011cc9c	Heap memory low %u
+6011ccaf	HEAP_MEM_LOW
+6011ccbc	No longer disconnected state, cancelling shutdown.
+6011ccef	Charge done, disconnected and timeout done. Going to standby.
+6011cd2d	Charge not complete, cancelling shutdown.
+6011cd57	Starting thermal monitoring.
+6011cd74	Delaying first thermal check to give time for gauge to wake
+6011cdb0	charge complete shutdown
+6011cdc9	trigger_bug_report.cc
+6011cde4	build
+6011cdea	dev_hw
+6011cdf1	internal
+6011cdfa	power_on_ts_sec_epoch
+6011ce10	time_ms
+6011ce18	Can't generate a bug report here!
+6011ce3a	Throttling this request for bug report: %s
+6011ce65	Bug report triggered: %s
+6011ce88	Bootloader
+6011ce93	BootloaderMetaData
+6011cea6	PersistentData
+6011ceb5	Recovery
+6011cec3	Tombstone
+6011cecd	UserData
+6011ced6	Reserved0
+6011cee0	Reserved1
+6011ceea	Reserved2
+6011cef4	Reserved3
+6011cefe	AppAMailbox
+6011cf0a	AppBMailbox
+6011cf16	RecoveryMailbox
+6011cf26	Analytics
+6011cf30	ImageVectorTable
+6011cf41	BootloaderB
+6011cf4d	MainExecutable
+6011cf5c	adapter.h
+6011cf66	gatt_server.h
+6011cf74	gatt_service_handle.h
+6011cf8a	types.h
+6011cf92	Insufficient service handles available, increase kMaxServiceCount
+6011cfd4	Advertising data must be <= 31 bytes. Data provided was 
+6011d00d	 bytes
+6011d014	BoardType
+6011d01e	release
+6011d026	BuildType
+6011d030	basic_string::append
+6011d045	<UNONWN>
+6011d04e	load_error
+6011d059	state_str
+6011d063	retries left
+6011d070	fingerprint
+6011d07c	BookkeepVer
+6011d088	major
+6011d08e	minor
+6011d094	fingerprint_size
+6011d0a5	BookkeepMeta
+6011d0b2	backup
+6011d0b9	AppAMeta
+6011d0c2	AppBMeta
+6011d0cb	Staged
+6011d0d2	Testing
+6011d0da	Verified
+6011d0e3	led_calibration.cc
+6011d0f6	LED calibration: R=0x%02X A=0x%02X W=0x%02X
+6011d122	power_rpcs.cc
+6011d130	disabled
+6011d139	Wakelock %s. Timeout is %lu ms.
+6011d159	IsEnabled()
+6011d165	Component holds
+6011d175	ExpiryMillis()
+6011d184	bug_report.cc
+6011d192	Invalid chunk size %u %u
+6011d1af	Invalid chunk size, tombstone corrupted. Erasing.
+6011d1e1	Tombstone partition full
+6011d1fa	section
+6011d202	cwy_header
+6011d20d	dumpable
+6011d216	CrashRegister
+6011d224	cwy_rpc_dumpable_error
+6011d23b	LogBuffer
+6011d245	FaultInfo
+6011d24f	PreEscalatedCrashInfo
+6011d265	FaulType info
+6011d273	No fault.
+6011d27d	HARDFAULT
+6011d287	Unknown hardfault!
+6011d29a	HARDFAULT_ESCALATED
+6011d2ae	Hard Fault (Escalated hard fault)
+6011d2d0	HARDFAULT_BUS
+6011d2de	Hard Fault (Bus fault on vector table read)
+6011d30a	MEMFAULT
+6011d313	Unknown MemManage fault.
+6011d32c	MEMFAULT_DATA
+6011d33a	Data Access Violation
+6011d350	MEMFAULT_INSTRUCTION
+6011d365	Instruction Access Violation
+6011d382	STACK_OVERFLOW
+6011d391	Stack overflow detected by stack trap!
+6011d3b8	NULL_PTR_CODE
+6011d3c6	Nullptr detected, trying to execute a nullptr!
+6011d3f5	NULL_PTR_DATA
+6011d403	Nullptr detected, trying to use a nullptr!
+6011d42e	MEMFAULT_STACKING
+6011d440	MemManage fault on stacking for exception entry
+6011d470	MEMFAULT_UNSTACKING
+6011d484	MemManage fault on unstacking for exception return
+6011d4b7	MEMFAULT_FLOATING
+6011d4c9	MemManage fault on floating-point lazy state preservation
+6011d503	BUSFAULT
+6011d50c	Unknown Bus Fault.
+6011d51f	BUSFAULT_IMPRECISE
+6011d64f	Bus Fault on floating-point lazy state preservation
+6011d683	USAGEFAULT
+6011d68e	Unknown usage fault
+6011d6a2	DIV_ZERO
+6011d6ab	Usage fault: division-by-zero
+6011d6c9	UNALIGNED
+6011d6d3	Usage fault: unaligned access
+6011d6f1	COPROCESSOR
+6011d6fd	Usage fault: coprocessor instruction without coprocessor on CPU
+6011d73d	USAGE_INVALID_PC
+6011d74e	Usage fault: invalid PC load on exception return
+6011d77f	INVALID_STATE
+6011d78d	Usage fault: invalid EPSR value (e.g. blx/bx to a register value without T bit (LSB) set for destination PC, etc)
+6011d7ff	INVALID_INSTRUCTION
+6011d813	Usage fault: invalid instruction
+6011d834	FATAL
+6011d83a	Fatal error, can be triggered by CHECK also.
+6011d867	No Arg
+6011d876	Task name prefix
+6011d8ab	trace.cc
+6011d8b4	Tracing %s
+6011d8bf	Trace buffer not initialized. Disabling tracing.
+6011d8f0	bee.cc
+6011d8f7	Problem with region alignment, bottom=0x%08x, top=0x%08x
+6011d930	Invalid region provided
+6011d948	Key is unexpected type:%lu
+6011d963	Region(%lu) key provided doesn't match BEE's fused key value(%lu)
+6011d9a5	BEE key doesn't match fused value
+6011d9c7	Region%s is not enabled for address range 0x%08x to 0x%08x
+6011da04	dcp_encryption_engine.cc
+6011da1d	Incompatible cypher type
+6011da36	Detected SNVS soft fail, DCP reinitalization required
+6011da6c	Fetching different HW key, reinitalizing DCP
+6011da99	Key Validation Failed
+6011daaf	fatal_error.cc
+6011dabe	Should not get here (MEMFAULT_INSTRUCTION?)
+6011daea	flash_lut.cc
+6011daf7	flash_lut.h
+6011db03	Internal flash erase error: address not aligned to sector boundary 0x%lX
+6011db4c	Internal flash erase error: invalid num_sector %lu
+6011db7f	Flash write failed, retrying
+6011db9c	Flash rewrite failed
+6011dbb1	Internal flash write error, bad alignment 0x%lX %lu %d
+6011dbe8	i2c.cc
+6011dbef	Delaying I2C until startup time complete
+6011dc18	I2c operations only supported after scheduler start.
+6011dc4d	io_pin.cc
+6011dc69	platform.h
+6011dc74	pwm.h
+6011dc7a	xbara.h
+6011dc82	Invalid XBAR base: %d
+6011dc98	reset.cc
+6011dca1	Going down for soft reset to NXPs BootROM
+6011dccb	sai.cc
+6011dcd2	Unknown SAI type
+6011dce3	SAI Rx Failed to transfer EDMA: 
+6011dd04	Cannot open: SaiRx not enabled.
+6011dd24	Cannot close: SaiRx not enabled.
+6011dd45	SAI Tx Failed to transfer EDMA: 
+6011dd66	Cannot open: SaiTx not enabled.
+6011dd86	Cannot close: SaiTx not enabled.
+6011dda7	srtc.cc
+6011ddaf	Internal oscillator in use; SRTC will be imprecise.
+6011dde3	uart.cc
+6011ddeb	usb_device.cc
+6011dee4	Error setting device role for USB
+6011df06	New USB role: device
+6011df1b	Error setting host role for USB
+6011df3b	New USB role: host
+6011df4e	USB unplugged
+6011df5c	USB device init failed
+6011df73	Unable to enable work queue
+6011df8f	Get string failed for unsupported language: %d
+6011dfbe	serial-not-set
+6011dfcd	usb_device_cdc.cc
+6011dfdf	USB not yet attached. CDC cannot set configuration
+6011e012	Failed CDC Recv: %d
+6011e026	kUSB_DeviceCdcEventSetControlLineState error!
+6011e054	usb_device_vendor.cc
+6011e069	Failed to de-initialize vendor endpoint 
+6011e092	Vendor usb device unloaded.
+6011e0ae	USB not yet attached. Vendor cannot set configuration.
+6011e0e5	Failed to initialize vendor endpoint 
+6011e10b	Completed vendor usb device configuration.
+6011e136	UNKNOWN
+6011e13e	Success
+6011e14b	Invalid handle
+6011e15a	Invalid parameter
+6011e16c	Invalid request
+6011e17c	Controller cannot be found
+6011e197	Invalid controller interface
+6011e1b4	Configuration is not supported
+6011e1d3	Enumeration get configuration retry
+6011e1f7	Transfer stalled
+6011e208	Transfer failed
+6011e218	Allocation failed
+6011e22a	Insufficient swap buffer for KHCI
+6011e24c	The transfer cancelled
+6011e263	Allocate bandwidth failed
+6011e27d	For MSD, the CSW status means fail
+6011e2a0	EHCI Attached
+6011e2ae	EHCI Detached
+6011e2bc	info.cc
+6011e2c4	partition_table.h
+6011e2d7	Couldn't identify which bootloader.
+6011e2fb	Bootloader doesn't have metabuild info.
+6011e323	No bootloader metadata found, using default build version.
+6011e35e	No partition matching partition id:%u
+6011e384	executing_partition_id
+6011e39b	Unknown
+6011e3a3	NotAnAppImage
+6011e3b1	key_app_signed_with
+6011e3c5	BootloaderA
+6011e3d1	running_bootloader_partition
+6011e3ee	running_bootloader_version
+6011e409	DeveloperKey
+6011e416	StageKey
+6011e41f	Production1Key
+6011e42e	Production2Key
+6011e43d	usb_configuration_handler.cc
+6011e6bd	Plugged in while ble is connected (BLE_HID)
+6011e6e9	Detected headset with microphone.
+6011e70b	Detected headset without microphone.
+6011e730	hardware_timer.cc
+6011e742	Multiple initializations of GPT1
+6011e763	Multiple initializations of GPT2
+6011e784	Invalid timer
+6011e792	persistent_crash_register.cc
+6011e7af	Signature clipped to store in buffer
+6011e7d4	timestamp_ms
+6011e7e1	help_str
+6011e7ea	usb_device_audio.cc
+6011e7fe	Failed to send USB audio feedback: 
+6011e822	Unknown alternate interface setting for audio: 
+6011e852	Microphone enabling: 
+6011e868	Headphone playback enabling: 
+6011e886	USB not yet attached. Audio cannot set configuration.
+6011e8bc	Could not cancel audio transfer: 
+6011e8de	No parameter on send response.
+6011e8fd	No parameter on feedback response.
+6011e920	No parameter on receive response.
+6011e942	Audio device event 
+6011e956	 was NOT handled
+6011e967	Failed to send USB audio: 
+6011e987	Unknown audio class event: 
+6011e9a3	UNMUTED
+6011e9ab	New volume: 
+6011e9bc	usb_device_hid.cc
+6011e9ce	USB not yet attached. HID cannot set configuration.
+6011ea02	Unimplemented hid device event: %ld
+6011ea26	Unknown/unsupported hid device event: %ld
+6011ea50	usb_host.cc
+6011ea5c	Host attached
+6011ea6a	Audio attached
+6011ea79	Host event not supported
+6011ea92	Host enumeration done: VID: 0x%lx PID: 0x%lx
+6011eabf	Unable to initialize usb host
+6011eadd	Error processing hid event %lu (error: %d)
+6011eb08	Error processing audio event %lu (error: %d)
+6011eb35	usb_host_audio.cc
+6011eb47	UsbAudioHeadphones
+6011eb5a	Master:
+6011eb62	INCORRECTLY SIZED BUFFER IN USB audio
+6011eb88	Error in USB_HostAudioStreamSend
+6011eba9	Error in USB_HostAudioStreamRecv
+6011ebca	Unable to set mute
+6011ebdd	Error setting V2 mute
+6011ebf3	USB audio attached
+6011ec06	Exiting invalid state
+6011ec1c	Unable to set volume
+6011ec31	Error setting V2 volume
+6011ec49	Unknown audio spec version
+6011ec64	speaker
+6011ec70	Feature unit request error on %s, cmd = %lu
+6011ec9c	Unable to find control interface %d
+6011ecc0	Unable to set control interface
+6011ece0	Failed to query clock source: %d
+6011ed01	Unable to find streaming interface
+6011ed24	Error setting interface units
+6011ed42	USB %s will %s at %lukHz %u bit %u channel.
+6011ed6e	Unable to set sampling frequency
+6011ed8f	Unable to set clock selector
+6011edac	Error with USB audio clock definitions - not supported
+6011ede3	Speaker volume:
+6011edf3	Mic volume
+6011edfe	Entering ERROR state
+6011ee13	Entering invalid state
+6011ee2a	Mute change supported: %s
+6011ee49	False
+6011ee4f	Volume change supported: %s
+6011ee6b	Min: %d, Max = %d, Res = %d, Cur = %d
+6011ee91	Failed to set mute on device
+6011eeae	Failed to set volume on device (%d)
+6011eed2	UsbMicBuffer
+6011eedf	UsbSpeakerFrame
+6011eeef	UsbSpeakerBuffer
+6011ef00	audio
+6011ef06	UsbMicFrame
+6011ef12	UsbAttached
+6011ef1e	StageDone
+6011ef28	StageDoneAlt
+6011ef35	DataReceived
+6011ef42	TriggerSend
+6011ef4e	Retry
+6011ef54	Unattached
+6011ef5f	SetControlInterface
+6011ef73	QueryClock
+6011ef7e	SetStreamInterface
+6011ef91	SetSamplingFreq
+6011efa1	GetVolumeSetup
+6011efb0	GetVolumeParamsV2
+6011efc2	GetCurVolumeV2
+6011efd1	GetMinVolume
+6011efde	GetMaxVolume
+6011efeb	GetResVolume
+6011eff8	GetCurVolumeV1
+6011f007	VolumeSummary
+6011f015	usb_host_audio_topology.cc
+6011f030	Multipliers are not yet supported
+6011f052	Control channel must be selected before parsing clock list
+6011f08d	Path contains unit id not in units_
+6011f0b1	configurable clock sources are not yet supported
+6011f0e2	No Clock source in path
+6011f0fa	Clock source %u not listed in selector %u
+6011f124	Mutlipliers not currently supported
+6011f148	missing clock query information for id %u
+6011f172	Control channel must be selected before streaming interface
+6011f1ae	Error finding volume control - wrong number of sinks
+6011f1e3	Error getting audio interface extension: %s, len = %d, ptr = %p
+6011f223	Unknown audio spec version 0x%x
+6011f243	No sources for audio unit %u
+6011f260	Unable to find control unit with id %u (source for %u)
+6011f297	Unable to find terminal with id %u
+6011f2ba	terminal %u is neither an input nor an output
+6011f2e8	error parsing unit type = %s
+6011f305	Clock select descriptor is too short
+6011f32a	map::at
+6011f332	vector::_M_realloc_insert
+6011f34c	Input terminal
+6011f35b	Output terminal
+6011f36b	Mixer unit
+6011f376	Selector unit
+6011f384	Feature unit
+6011f391	Effect unit
+6011f39d	Processing unit
+6011f3ad	Extension unit
+6011f3bc	Clock source
+6011f3c9	Clock select
+6011f3d6	Clock mult
+6011f3e1	Sample rate converter
+6011f3f7	usb_host_hid.cc
+6011f407	UsbHostHid
+6011f412	USB HID attached
+6011f423	Error setting interface stat = %d
+6011f445	Error setting idle
+6011f458	Unable to find hid report descriptor
+6011f47d	Unable to allocate DMA memory for the HID report descriptor
+6011f4b9	Error getting hid report descriptor
+6011f4dd	Error setting HID protocol
+6011f4f8	Unable to allocate DMA memory for HID inbuf
+6011f524	Init packet size greater than max packet size
+6011f552	Unable to allocate DMA memory for init pkt
+6011f57d	Error sending PS3 init packet
+6011f59b	Error sending init packet
+6011f5b5	Error setting up receive buffers
+6011f5d6	Error sending output
+6011f5eb	No HID descriptor found
+6011f603	Resetting host USB
+6011f630	detach received
+6011f640	SetInterface
+6011f64d	SetIdle
+6011f655	GetReportDescriptor
+6011f669	SetProtocol
+6011f675	PrepareToRun
+6011f682	usb_host_worker.cc
+6011f695	Unable to queue host event
+6011f6b0	starting host task
+6011f6c3	USB host task
+6011f6d1	haptics.cc
+6011f6dc	failed to stop timer
+6011f6f1	Failed to update duty cycle
+6011f70d	Failed to start watchdog
+6011f726	Failed to get battery voltage, can't scale haptics.
+6011f75a	haptics_cluster.cc
+6011f76d	failed to stop left haptic
+6011f788	failed to stop right haptic
+6011f7a4	failed to enable left haptic
+6011f7c1	failed to enable right haptic
+6011f7df	ble_info.cc
+6011f7eb	Invalid separator: ... %s
+6011f805	Invalid hex bytes: ... %s
+6011f81f	No stored random BLE MAC found - generating new random mac
+6011f85a	Unable to store new random BLE MAC to KVS
+6011f884	Unable to generate new random BLE MAC
+6011f8aa	<DII>
+6011f8b0	keys.cc
+6011f8c4	Unknown type for key %s
+6011f8dc	Given type does not match default type
+6011f903	%s is a string. Please use GetString function.
+6011f932	Internal error: Key %s has unknown type
+6011f95a	No key found with name 
+6011f972	Unable to set factory properties
+6011f993	Property 
+6011f99d	 cannot be set from the command line
+6011f9c2	Unable to erase factory properties
+6011f9e5	 cannot be erased from the command line
+6011fa0d	<no entry>
+6011fa18	<...>
+6011fa24	basic_string::_M_construct null not valid
+6011fa4e	Unable to erase key 
+6011fa63	in persistent KVS
+6011fa75	Invalid key
+6011fa81	 is not a string.
+6011fa98	 is too long (
+6011faa7	 bytes) for the given buffer size 
+6011faca	KVS error: KVS has been corrupted for key 
+6011faf5	KVS error: 
+6011fb01	Cannot write to persistent KVS
+6011fb20	p_WifiSecurity
+6011fb2f	Locale
+6011fb36	CountryCode
+6011fb4a	ClientId
+6011fb53	BugReportId
+6011fb5f	CloudId
+6011fb67	p_UpdateDays
+6011fb74	p_UpdateDaysBl
+6011fb83	p_UpdateTrack
+6011fb91	DcsTrack
+6011fb9a	unknown-channel
+6011fbaa	p_NoOta
+6011fbb2	p_NoBugUpload
+6011fbc0	NoAutolink
+6011fc3f	OtaFromBuild
+6011fc4c	BugReportCombo
+6011fc5b	TrCalSkipFirst
+6011fc6a	TrCalSkipLast
+6011fc78	TrRestDzMilli
+6011fc86	TrPullDzMilli
+6011fc94	TrRestDzStrtMl
+6011fca3	TrRestDzAdjMl
+6011fcb1	TrDynWindowMs
+6011fcbf	TrDynWindowCnt
+6011fcce	JoyMidDzMilli
+6011fcdc	JoyEndDzMilli
+6011fcea	HidPollMs
+6011fcf4	RandomBtMac
+6011fd00	BleName
+6011fd08	AppImageFdrVer
+6011fd17	BootImageFdrVer
+6011fd27	HidOverGatt
+6011fd33	SupportNoBat
+6011fd40	LogToUart
+6011fd4a	CrashReboot
+6011fd56	StatsDumpSec
+6011fd63	ButtonLed
+6011fd6d	EnterSleep
+6011fd78	P_WifiSSID
+6011fd83	P_WifiPassword
+6011fd92	P_AndroidToken
+6011fda1	P_AndroidId
+6011fdad	P_IidToken
+6011fdb8	P_DeviceName
+6011fdc5	P_LastLinkSSID
+6011fdd4	BtMacAddr
+6011fdde	WFMacAddr
+6011fde8	DeviceCert
+6011fdf3	DevSerial
+6011fdfd	LedCalibration
+6011fe0c	w_LockedCountry
+6011fe1c	ModelId
+6011fe28	KvsToken
+6011fe31	DeviceKey
+6011fe3b	gotham_patterns.cc
+6011fe4e	Fade out then into white
+6011fe67	Fade out then into orange
+6011fe81	Fade out then off
+6011fe93	Ramp orange down
+6011fea4	Ramp white down
+6011feb4	Ramp white down to dim
+6011fecb	Ramp white up from dim
+6011fee2	Ramp white on from off
+6011fef9	CrashDisconnected
+6011ff0b	CrashPowerDown
+6011ff1a	CrashOobe
+6011ff24	CrashHid
+6011ff2d	CrashWifi
+6011ff37	CrashOta
+6011ff40	CrashCast
+6011ff4a	CrashGame
+6011ff54	LedOff
+6011ff5b	LedOffSilent
+6011ff68	WakeOrange
+6011ff73	WakeOrangeTransition
+6011ff88	WakeOrangeSilentTransition
+6011ffa3	WakeWhite
+6011ffad	WakeWhiteOn
+6011ffb9	OobeDiscovery
+6011ffc7	OobeDiscoveryAlt1
+6011ffd9	OobeDiscoveryAlt2
+6011ffeb	Notification
+6011fff8	RumbleStop
+60120003	RumbleNoLedChange
+60120015	FactoryReset
+60120022	Charging
+6012002b	ChargingSilent
+6012003a	Connected
+60120044	ConnectedDim
+60120051	BootUp
+60120058	PendingUserInput
+60120069	Assistant
+60120073	DiscoveryMatched
+60120084	CancelAutolink
+60120093	DiscoveryFailed
+601200a3	CastError
+601200ad	OobeInProgress
+601200bc	Invalid pattern %d
+601200cf	[unnamed_pattern]
+601200e1	No transition from '%s' to '%s'
+60120101	binary_build_metadata.cc
+6012011a	Getting BinBuildMetadata failed, partition id not valid
+60120152	Getting BinBuildMetadata failed, couldn't find partition
+6012018b	Getting BinBuildMetadata failed, reading first word failed
+601201c6	Getting BinBuildMetadata failed, couldn't get meta mcu addr
+60120202	Seems like no metadata exists, likely legacy binary
+60120236	gotham.cc
+60120240	BIO operations data is missing
+6012025f	Flush failed: 
+6012026e	Reset failed: 
+6012027d	Failed to read: 
+6012028e	Invalid write length
+601202a3	write failed: 
+601202b2	Gotham BIO
+601202bd	Failed to allocate new BIO Method
+601202df	Gotham BIO method not yet defined (need to call GothamBioInit)
+6012031e	Failed to allocate BIO memory
+6012033c	Failed to initialize operations: 
+6012035e	logging.cc
+60120369	mimxrt10xx_flash_memory.cc
+60120384	flash_memory.h
+60120393	Attempted out-of-bound flash memory access (address:
+601203c8	 length:
+601203d1	i2c_device.h
+601203de	accessory_detect_ts3a227e.cc
+601203fb	Failed to communicate with TS3A227E
+6012041f	I2C device is not a TS3A227E device
+60120443	Failed to get initial headphone status
+6012046a	TS3A227E available
+6012047d	battery_charger_bq25601.h
+60120497	battery_charger_bq25601.cc
+601204b2	Error getting bus status: %s
+601204cf	cutoff voltage
+601204de	Invalid product Number 0x%04X != 0x%04X
+60120506	terminal charge
+60120516	Battery charger %s set to %u, target %u (0x%02X)
+60120547	precharge
+60120551	fastcharge
+6012055c	battery_gauge_bq2742X.cc
+60120575	battery_gauge_bq2742X.h
+6012058d	GPIO not provided for fuel guauge, can't exit shutdown.
+601205c5	Checksum invalid: expected 0x%02X, actual 0x%02X
+601205f6	Gauge did not reply, returning success anyway
+60120624	Gauge did not reply, trying to toggle GPOUT to wake
+60120658	Gauge is now awake, and running.
+60120679	Invalid product ID 0x%04X
+60120693	Battery gauge device_type 0x%04X
+601206b4	Battery gauge fw_version 0x%04X
+601206d4	Updating fuel gauge parameters.
+601206f4	Invalid chem_id 0x%04X != 0x%04X
+60120715	Battery gauge chem_id 0x%04X
+60120732	activation_sequence.cc
+60120749	UUID16-0x%04X
+60120757	%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X
+6012079c	Activation continued without any services. Giving up
+601207d1	Server does not support service 
+601207f2	adapter.cc
+601207fd	GATT read to handle 
+60120812	No active connection
+60120827	Failed to add new service for activation
+60120850	Prepare write already has data prepared.
+60120879	Prepare write for different attributes.
+601208a1	Connection failed: 
+601208b5	Failed to enable gatt server
+601208d2	Empty GATT Server: no services!
+601208f2	Failed disconnect handling: %s
+60120911	Failed to set random BD address at HCI layer!
+6012093f	Failed to set advertising speed parameters: %d!
+6012096f	GATT application registration failed. Aborting initialization.
+601209ae	Activation sequence interrupted due to failure.
+601209de	Activation sequence completed.
+601209fd	Failed to register GATTS: 
+60120a18	New MTU: %d
+60120a24	Operation failure: 
+60120a38	Failed to de-register GATTS: %d (%s)
+60120a5d	Failed to create GATTS: 
+60120a76	Failed to create characteristic: 
+60120a98	Failed to create characteristic descriptor: 
+60120ac5	Got BLE connection from peer: %s
+60120ae6	Started updating BLE connection parameters: 
+60120b13	Got BLE disconnection.
+60120b2a	Timeout while waiting for application configuration.
+60120b5f	Name too long
+60120b6d	Failed to set BLE advertising TX power in scan response.
+60120ba6	Failed to set BLE advertising TX power in adv.
+60120bd5	Cancelling prepared write
+60120bef	Cannot execute %s without being initialized
+60120c1b	GATT write to handle 
+60120c31	, size 
+60120c39	Bluetooth MAC Address: %s
+60120c53	Waiting for BLE to come up...
+60120c71	BLE is not enabled
+60120c84	ReadRequest
+60120c90	GattsCreated
+60120c9d	ConnectHandle
+60120cab	GattsRegistered
+60120cbb	DisconnectHandle
+60120ccc	CharacteristicAdded
+60120ce0	CommitPreparedWrite
+60120cf4	CharacteristicDescriptorAdded
+60120d12	BTA_DM_INQ_RES_EVT
+60120d25	BTA_DM_INQ_CMPL_EVT
+60120d39	BTA_DM_DISC_RES_EVT
+60120d4d	BTA_DM_DISC_BLE_RES_EVT
+60120d65	BTA_DM_DISC_CMPL_EVT
+60120d7a	BTA_DM_DI_DISC_CMPL_EVT
+60120d92	BTA_DM_SEARCH_CANCEL_CMPL_EVT
+60120db0	BTA_DM_MPS_SET_RECORD_CMPL_EVT
+60120dcf	BTA_DM_MPS_DISC_CMPL_EVT
+60120de8	BTA_GATT_OK
+60120df4	BTA_GATT_INVALID_HANDLE
+60120e0c	BTA_GATT_READ_NOT_PERMIT
+60120e25	BTA_GATT_WRITE_NOT_PERMIT
+60120e3f	BTA_GATT_INVALID_PDU
+60120e54	BTA_GATT_INSUF_AUTHENTICATION
+60120e72	BTA_GATT_REQ_NOT_SUPPORTED
+60120e8d	BTA_GATT_INVALID_OFFSET
+60120ea5	BTA_GATT_INSUF_AUTHORIZATION
+60120ec2	BTA_GATT_PREPARE_Q_FULL
+60120eda	BTA_GATT_NOT_FOUND
+60120eed	BTA_GATT_NOT_LONG
+60120eff	BTA_GATT_INSUF_KEY_SIZE
+60120f17	BTA_GATT_INVALID_ATTR_LEN
+60120f31	BTA_GATT_ERR_UNLIKELY
+60120f47	BTA_GATT_INSUF_ENCRYPTION
+60120f61	BTA_GATT_UNSUPPORT_GRP_TYPE
+60120f7d	BTA_GATT_INSUF_RESOURCE
+60120f95	BTA_GATT_NO_RESOURCES
+60120fab	BTA_GATT_INTERNAL_ERROR
+60120fc3	BTA_GATT_WRONG_STATE
+60120fd8	BTA_GATT_DB_FULL
+60120fe9	BTA_GATT_BUSY
+60120ff7	BTA_GATT_ERROR
+60121006	BTA_GATT_CMD_STARTED
+6012101b	BTA_GATT_ILLEGAL_PARAMETER
+60121036	BTA_GATT_PENDING
+60121047	BTA_GATT_AUTH_FAIL
+6012105a	BTA_GATT_MORE
+60121068	BTA_GATT_INVALID_CFG
+6012107d	BTA_GATT_SERVICE_STARTED
+60121096	BTA_GATT_ENCRYPED_NO_MITM
+601210b0	BTA_GATT_NOT_ENCRYPTED
+601210c7	BTA_GATT_CONGESTED
+601210da	BTA_GATT_DUP_REG
+601210eb	BTA_GATT_ALREADY_OPEN
+60121101	BTA_GATT_CANCEL
+60121111	gatt_server.cc
+60121120	Overriding existing handle %d
+6012113e	Failed to store characteristic handle
+60121164	Adding service: 
+60121175	Reading descriptor on handle 
+60121193	Characteristic not available on handle: 
+601211bc	Failed to read attribute: 
+601211d7	Writing descriptor on handle 
+601211f5	Failed to find characteristic for this descriptor
+60121227	Invalid CCC data size - should be a uint16_t
+60121254	Invalid characteristic handle on write: 
+6012127d	Deleting service 
+6012128f	Cannot find service 
+601212a4	 to add characteristic 
+601212bc	UUID 
+601212c2	 already has a handle: 
+601212da	Failed to set characteristic handle
+601212fe	Cannot find characteristic 
+6012131a	 in service 
+60121327	Provided characteristic data is too large
+60121351	No active connection to notify
+60121370	Descriptor 
+60121380	 mapped to handle 
+60121393	Failed to map characteristic handle.
+601213b8	led_driver_lp5562.cc
+601213cd	Unable to set LP5562 'red' channel current via I2C.
+60121401	Unable to set LP5562 'green' channel current via I2C.
+60121437	Unable to set LP5562 'blue' channel current via I2C.
+6012146c	Unable to set LP5562 'white' channel current via I2C.
+601214a2	Unable to set LP5562 'red' channel PWM value via I2C.
+601214d8	Unable to set LP5562 'green' channel PWM value via I2C.
+60121510	Unable to set LP5562 'blue' channel PWM value via I2C.
+60121547	Unable to set LP5562 'white' channel PWM value via I2C.
+6012157f	Unable to reset the LP5562 via I2C.
+601215a3	Unable to write the ChipEnable field on the LP5562 via I2C.
+601215df	Unable to write the EnableInternalClock field on the LP5562 via I2C.
+60121624	Unable to set LP5562 to PWM mode via I2C.
+6012164e	usb_port_controller_tusb320.cc
+6012166d	023BSUT
+60121675	Insufficient space for additional USB callbacks
+601216a5	Checking port controller ID failed, using default role
+601216dc	Unable to read source preference register
+60121706	Failed to communicate with TUSB320
+60121729	TUSB320 ID is incorrect. Expected: 
+6012174d	 Got: 
+60121754	Read interrupt status from worker thread failed, recovery not implemented
+6012179e	sound_codec_wm8904.cc
+601217b4	Time-out waiting for the sound codec to finish sequence %d
+601217ef	Failed to communicate with WM8904
+60121811	I2C device is not a WM8094 device
+60121833	WM8904 Available
+60121844	Sound codec powering on
+6012185c	Sound codec powering off
+60121875	Enabling differential microphone (headset) - left channel
+601218af	Enabling digital microphone - right channel
+601218db	Disabling all microphone input
+601218fa	bte_hcisu_send
+60121909	bte_hcisu_lp_allow_bt_device_sleep
+6012192c	bte_hcisu_task
+6012193b	bte_hcisu_start_quick_timer
+60121957	HCIS: AMP not included. Discarding AMP message.
+60121987	Other task send timer2 out
+601219a2	bte_hcisu_task up
+601219b4	bte_hcisu_task sleep_interval:%d
+601219d5	[APPL  ]
+601219de	[USB   ]
+601219e7	[SERIAL]
+601219f0	[LC    ]
+601219f9	[LM    ]
+60121a02	[HCI   ]
+60121a0b	[L2CAP ]
+60121a14	[RFCOMM]
+60121a1d	[SDP   ]
+60121a26	[BTM   ]
+60121a2f	[GAP   ]
+60121a38	[HSP2  ]
+60121a41	[SPP   ]
+60121a4a	[BTU   ]
+60121a53	[GKI   ]
+60121a5c	[HFP   ]
+60121a65	[AVP   ]
+60121a6e	[A2D   ]
+60121a77	[ATT   ]
+60121a80	[SMP   ]
+60121a89	[CONSOLE]
+60121a93	[PAN   ]
+60121a9c	[BNEP  ]
+60121aa5	[Undef ]
+60121ac7	BT_BTU
+60121ace	BT_HCI
+60121ad5	BT_APPL
+60121add	bte_baud_update_cback status=%d
+60121afd	BT HCILP Enable Success!
+60121b16	BT HCILP Enable Failed... Status:%d
+60121b3a	bte_post_reset
+60121b49	Patch successfully downloaded. Proceding with startup...
+60121b82	User set to use no lpo option!
+60121ba1	bte_prm_cback failed status=0x%x
+60121bc2	Disallow send no lpo VSC to BT controller while BT controller has external LPO present!
+60121c1a	bte_set_no_lpo_cb status:%d
+60121c36	btapp_task
+60121c41	btapp_task up
+60121c4f	add a LE device
+60121c5f	encryption failed.
+60121c72	btapp_dm_proc_ble_io_req
+60121c8b	btapp_dm_proc_io_req cfg:%d, auth_req:%d, oob:%d
+60121cbc	auth_req:0x%02x, io_caps:%d
+60121cd8	btapp_dm_proc_io_rsp auth_req:%d, is_dd_bond:%d
+60121d08	from NV p_device_rec->device_type = %d
+60121d2f	add an LE device
+60121d40	  %02x:%02x:%02x:%02x:%02x:%02x \n
+60121d62	 btapp_dm_security_cback  event %d 
+60121d86	btapp_dm_init_continue privacy_enabled = %d
+60121db2	local bdaddr %02x:%02x:%02x:%02x:%02x:%02x
+60121ddd	auth_req:%d
+60121de9	BT stack bring-up success!
+60121e04	FreeRTOS free heap size:%d
+60121e1f	rssi value %d
+60121e2d	link quality value %d
+60121e43	btapp_dm_security_cback: bda:%s link_type:%d
+60121e70	allocating a device record for the newly link_up device
+60121ea8	disconnected from bdaddr %02x:%02x:%02x:%02x:%02x:%02x reason %04x
+60121eeb	btapp_dm_security_cback BTA_DM_PIN_REQ_EVT
+60121f16	btapp_dm_security_cback BTA_DM_SP_CFM_REQ_EVT
+60121f44	btapp_dm_security_cback BTA_DM_SP_KEY_NOTIF_EVT
+60121f74	btapp_dm_security_cback BTA_DM_SP_KEY_REQ_EVT
+60121fa2	btapp_dm_security_cback BTA_DM_SP_RMT_OOB_EVT
+60121fd0	btapp_dm_security_cback BTA_DM_SP_KEYPRESS_EVT
+60121fff	BTA_DM_AUTH_CMPL_EVT success:%d, fail reason:0x%x
+60122031	peer bdaddr %02x:%02x:%02x:%02x:%02x:%02x\n
+6012205c	link_key %s \n
+6012206a	allocating a device record for the newly bonded device!
+601220a2	Authenticate with peer failed !!
+601220c3	Can't find the BLE device record!!
+601220e6	btapp_dm_security_cback BTA_DM_AUTHORIZE_EVT
+60122113	btapp_dm_security_cback BTA_DM_BOND_CANCEL_CMPL_EVT
+60122147	btapp_dm_security_cback BTA_DM_BLE_SEC_REQ_EVT, req_addr:%s 
+60122184	btapp_dm_security_cback BTA_DM_BLE_PASSKEY_NOTIF_EVT
+601221b9	btapp_dm_security_cback BTA_DM_BLE_PASSKEY_REQ_EVT
+601221ec	btapp_dm_security_cback BTA_DM_BLE_NC_REQ_EVT
+6012221a	BTA_DM_BLE_KEY_EVT bd_addr:%s 
+60122239	BTA_LE_KEY_PENC : %s 
+6012224f	BTA_LE_KEY_PID : %s 
+60122264	BTA_LE_KEY_PCSRK : %s 
+601223c8	RV_CHG_CMD_ADD_CLIENT, current num_clients=%d
+601223f6	Add the clinet to the srv chg db; srv_chg=%d, new num_clients=%d
+60122437	No space to add new srv chg client
+6012245a	Rcv BTA_GATTS_SRV_CHG_CMD_UPDATE_CLIENT BDA: %08x%04x srv_chg=%d
+6012249b	Found the clinet to be updated; index=%d srv_chg=%d,  num_clients=%d
+601224e0	Client to be updated Not Found
+601224ff	Rcv BTA_GATTS_SRV_CHG_CMD_REMOVE_CLIENT BDA: %08x%04x num_clinets=%d
+60122544	found the client to be rmoved index=%d new num_clinets=%d
+6012257e	Client to be removed Not Found, num_clinets=%d
+601225ad	Rcv BTA_GATTS_SRV_CHG_CMD_READ_NUM_CLENTS num_clinets=%d
+601225e6	Rcv BTA_GATTS_SRV_CHG_CMD_READ_CLENT clinet index=%d (one based)
+60122627	btapp_gatts_srv_chg: Unknown clinet index=%d 
+60122655	btapp_gatts_srv_chg: Unknown cmd=%d 
+6012267a	btapp_gatts_srv_chg: return status=%d 
+601226a1	delete
+601226a8	btapp_gatts_update_handle_range: %s handle range [0x%04x - 0x%04x] current num_services=%d
+60122703	btapp_gatts_update_handle_range: Can not add to an existing entry
+60122745	btapp_gatts_update_handle_range: no matching record
+60122779	btapp_gatts_update_handle_range: No space to add
+601227aa	btapp_gatts_update_handle_range: updated num_services=%d 
+601227e4	btapp_cfg_init: tBTAPP_CFG size:%d 
+60122808	btapp_cfg_init: btapp_default_dev_name:%s 
+60122833	Local Addr:%s
+60122841	btapp_cfg_set_addr error param!!!
+60122863	btapp device record is full, return the last index for using!!!!
+601228a4	store ble p_rem_device->device_type = %d
+601228cd	%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x 
+6012291e	bta_gattc_ci_cache_open
+60122936	bta_gattc_ci_cache_load
+6012294e	bta_gattc_ci_cache_save
+60122966	bta_gatts_co_srv_chg cmd=%d
+60122982	bta_sys_hw_ci_enabled
+60122998	bta_sys_hw_ci_disabled
+601229af	Enqueue - Buffer corrupted
+601229ca	Eneueue - buf already linked
+601229e7	Eneueue head - buf already linked
+60122a09	Free - Buf pointer NULL
+60122a21	Free - Buf Corrupted
+60122a36	Freeing Linked Buf
+60122a49	Bad Buf QId
+60122a55	getbuf: Size is zero
+60122a6a	%s to getbuf: Size is too big, buffer need size:%d 
+60122a9e	%s line:%d can't alloc buffer
+60122abc	getpoolbuf bad pool
+60122ad0	%s line:%d Sending to unknown dest:%d, %d, %d 
+60122aff	Send - Buffer corrupted
+60122b17	Send - buffer linked
+60122b2c	GKI_getpoolbuf_T
+60122b3d	GKI_send_msg_T
+60122b4c	GKI_add_to_timer_list : Timerlist Q is empty
+60122b79	*** GKI_add_to_timer_list(): timer list corrupted! ***
+60122bb0	GKI_get_remaining_ticks: timer entry is not active
+60122be3	GKI_get_remaining_ticks: No timer entry in the list
+60122c17	ERROR: GKI task_id must be less than %d
+60122c3f	GKI_create_task func=0x%x  id=%d  name=%s  stack=0x%x  stackSize=%d
+60122c83	GKI_create_task create thread_evt_mutex failed %s!
+60122cb6	GKI_create_task create thread_evt_queue failed %s!
+60122ce9	FreeRTOS CHECK failed
+60122cff	gki_ft.c
+60122d08	********************************************************************
+60122d4d	* GKI_exception(): 0x%02x %s
+60122d6a	GKI Exception: Task %d, code %d, msg %s
+60122d92	gki_timer
+60122d9c	GKI_run_task up
+60122dac	GKI_send_event task out of range, task_id:%d\n
+60122dda	GKI_send_event send to task:%d from task:%, target queue is empty
+60122e1c	GKI_send_event send event fail, task_id:%d\n
+60122e48	GKI_send_event send event fail,current task:%d, send to task_id:%d\n
+60122e8c	GKI_wait wait in task:%d, target queue is empty
+60122ebc	UPIO_Set upio not init yet!
+60122ed8	READ_THREAD
+60122ee4	USERIAL_Read
+60122ef1	userial_read_thread
+60122f05	HCI_LOOPBACK_MODE packet->len=0x%x
+60122f28	bt_bus_receive FAIL in bt_hci_transport_driver_bus_read_handler
+60122f68	bt_bus error acl header
+60122f80	bt_bus error invalid acl len %i
+60122fa0	userial_read_thread up
+60122fb7	Shutdown userial_read_thread
+60122fd4	gotham_16mb_mimxrt10xx_mpu.cc
+60122ff2	external_controller.cc
+60123009	%lu consecutive haptics HID packets dropped due to UNAVAILABLE
+60123048	HAPTICS_HID_PKTS_DROPPED
+60123061	Unsupported external controller: vid 0x%04x pid 0x%04x
+60123098	dualshock_3.cc
+601230a7	Ignoring msg id: %u, size: %lu
+601230ce	switch_pro_controller.cc
+601230e7	Ignoring report id: %u, size: %lu
+60123109	Received Status REQUEST_MAC from unknown device type %u
+60123141	Received REQUEST_MAC
+60123156	Received unexpected status: %u
+60123181	0valve_steam_controller.cc
+6012319c	Incorrect connection event length, expected %u, received %u
+601231d8	Disconnected device
+601231ec	Connected device
+601231fd	Paired device
+6012320b	Unknown connection state: %u
+60123228	Incorrect battery event length, expected %u, received %u
+60123261	Controller battery at %u%% (%umV)
+60123283	Ignoring unknown report type: %u
+601232a4	Ignoring input report with length: %u
+601232dd	board.cc
+601232f2	haptics.h
+601232fc	adc.h
+6012330a	 [Init Failed]
+60123319	BLE_EN
+60123320	WIFI_INIT_ERROR
+60123330	Accessory detect
+60123341	Accessory detect micbias voltage
+60123362	Sound codec
+6012336e	Usb audio volume
+6012337f	Exit shipping mode detector
+6012339b	Charger
+601233a3	Gauge Init failed
+601233b5	Haptics cluster
+601233c5	Heap trace
+601233d0	Gotham Bio init failed
+601233e7	Board ID: 0x%x 
+601233f7	Board check failed, expected: 0x%x actual: 0x%x
+60123427	failed to init trng
+6012343b	Board ID verification failed.
+6012345d	usart1
+6012346e	dma_mux
+6012347b	line_out_dma
+60123488	mic_in_dma
+6012349d	encrypt_engine
+601234ac	snvs gpr
+601234b5	partition table
+601234c5	Google LLC
+601234d0	Stadia Controller rev. A
+601234e9	Haptic pulse
+6012378f	Haptics watchdog expired: Stopping motor
+601237b8	Haptic watchdog
+601237c8	HeapCurrentFree
+601237d8	operations.cc
+601237e6	Failed to erase tombstone
+60123800	Failed to erase user partition:
+60123820	Failed to erase bluetooth partition:
+60123845	audio_states.cc
+60123855	AudioOutputStateMachine
+6012386d	MicStateMachine
+6012387d	Entering invalid mic state
+60123898	default
+601238a0	Using the default processing rate of 16 kHz for the Synapse APM
+601238e0	16000
+601238e6	Using 16 kHz processing rate for the Synapse APM
+60123917	48000
+6012391d	Using 48 kHz processing rate for the Synapse APM
+6012394e	Unknown processing rate specified, using the default processing rate of 16 kHz for the Synapse APM
+601239b1	Gotham Audio resources are being released
+601239db	Attempting to activate gamepad audio before audio setup
+60123a13	Setting up usb audio source
+60123a2f	Audio source could not be created.
+60123a52	Audio sink could not be created.
+60123a73	No AEC setting forced. Using 'Synapse'
+60123a9a	Synapse
+60123aa2	Using 'Synapse' AEC
+60123ab6	SettingsDefault
+60123ac6	Using default Synapse parameters
+60123ae7	SettingsSafeFallback1
+60123bce	Creating the Synapse AEC and NS, but not the AGC
+60123c06	Creating the Synapse AEC and AGC, but not the NS
+60123c37	From call start the Synapse AEC is activated.
+60123c65	From call start the Synapse NS is activated.
+60123c92	From call start the Synapse NS is deactivated as the NS module is not created.
+60123ce1	From call start the Synapse AGC is activated.
+60123d0f	From call start the Synapse AGC is deactivated as the AGC module is not created.
+60123d60	From call start the Synapse NS is deactivated.
+60123d8f	From call start the Synapse AGC is deactivated.
+60123dbf	From call start the Synapse AEC is deactivated.
+60123def	Aec mode is NONE start Synapse disabled.
+60123e18	Unknown echo cancellation type: %s
+60123e3b	Failed to setup audio paths and aec: 
+60123e61	Audio setup failed to set the playback source
+60123e8f	Failed to start audio playback
+60123eae	Audio player not active. De-activation request ignored.
+60123ee6	InternalOnly
+60123f14	UsbGamepadAudioOn
+60123f26	UsbGamepadAudioOff
+60123f39	JackHeadphonesAttached
+60123f50	JackHeadphonesDetached
+60123f67	JackMicAttached
+60123f77	JackMicDetached
+60123f87	UsbGamepadStarted
+60123f99	UsbGamepadStopped
+60123fab	UsbHeadphonesAttached
+60123fc1	UsbHeadphonesDetached
+60123fd7	UsbMicAttached
+60123fe6	UsbMicDetached
+60123ff5	UsbRequestAudioOff
+60124008	UsbRequestAudioOn
+6012401a	ForceAudioOff
+60124028	headphone_state_machine.cc
+60124043	Failed to set USB volume to 
+60124060	 with error 
+6012406d	entering jack headphones state
+6012408c	entering usb headphones state
+601240aa	Headphones state machine entering invalid state
+601240da	Failed to set sound codec volume to 
+601240ff	Failed to set sound codec volume due to invalid volume range, max_volume_db = 
+6012414e	, min_volume_db = 
+60124161	Failed to get sound codec volume range
+60124188	starting usb
+60124195	starting jack
+601241a3	HeadphoneStateMachine
+601241b9	Unplugged
+601241c3	usb_state.cc
+601241d0	UsbStateMachine
+601241e0	Cable attach timer
+601241f3	Device attach timer
+60124207	Host enum timer
+60124217	USB: entering state %s
+6012422e	Entering invalid state in USB state machine
+6012425a	HostRoleSet
+60124266	DeviceRoleSet
+60124274	Disconnection
+60124282	CableAttachTimerExpired
+6012429a	DeviceAttachTimerExpired
+601242b3	HostEnumTimerExpired
+601242c8	DeviceAttached
+601242d7	HostEnumerated
+601242e6	FakeRebootForHostTests
+601242fd	Booting
+60124305	DeviceAttaching
+60124315	HostEnumerating
+60124325	ProvidingCharge
+6012433a	input_task.cc
+60124348	sample
+6012434f	FAILED to get poll period setting for 
+60124376	Poll period set to 
+6012438a	. Spatial threshold: 
+601243a0	 (from 
+601243a8	%). Temporal threshold: 
+601243c5	Failed to load calibration from KVS
+601243e9	Enabling debug button press LED
+60124409	Failed to load calibration from KVS and apply to board
+60124440	input_task
+6012444b	Unable to send input.
+60124461	Input poller
+6012447a	sumsq
+60124480	trigger_reading_correction.cc
+6012449e	Invalid data point found at index 
+601244c1	Invalid trigger calibration at index %d Comparing delta %s to %s
+60124502	Invalid trigger calibration at index 
+60124528	vendor_usb.cc
+60124536	Disabling charging from USB Vendor
+60124559	FROM_USB_VENDOR
+60124569	Entering shipping mode from USB Vendor
+60124590	Updating state of charge on this board from USB Vendor
+601245c7	Invalid vendor RPC request: 
+601248b5	-----\n
+601248bc	Failed to read request.
+601248d4	Ignoring simple request that is not an 'unlock challenge'
+6012490e	Missing unlock token
+60124923	Unlock level must be non-zero
+60124941	Failed to init SHA256
+60124957	Failed to configure public key bio
+6012497a	Failed to load public key
+60124994	Failed to get EC key from public key
+601249b9	Failed to finalize SHA256
+601249d3	EC verification failed.
+601249eb	Failed to send success response
+60124a0b	Failed to send response
+60124a23	Incomplete protobuf read.
+60124a3d	Skipped 
+60124a46	 bytes while parsing protobuf
+60124a64	Failed to decode PB: %s
+60124a7c	Failed to decode request: unknown error
+60124aa4	Device locked for 
+60124ab7	REQUEST 
+60124ac0	 was not handled
+60124ad1	firmware_image_upload.cc
+60124aea	http_flash_writer.h
+60124afe	Missing operation.
+60124b11	Failed to get target partition.
+60124b31	Flash alignment of %lu bytes is too large.
+60124b5c	Space to write (%lu-%lu) extends outside the partition (%lu)
+60124b99	Failed to start firmware upload
+60124bb9	Missing data
+60124bc6	Missing offset
+60124bd5	Missing crc of data
+60124be9	Invalid data crc. Expected crc 
+60124c09	 but buffer crc was 
+60124c1e	 while writing 
+60124c2e	 bytes at 
+60124c39	BUFFER: 
+60124c42	Bad CRC
+60124c4a	Write at offset 
+60124c5b	 but expected 
+60124c6a	WRITING 
+60124c73	 bytes, 
+60124c7c	 bytes written so far
+60124c92	Flash write of 
+60124ca2	 bytes failed. Write returned 
+60124cc1	No current active upload
+60124cda	An error occurred during data writing.
+60124d01	Current upload did not end.
+60124d1d	Failed to get build meta data
+60124d3b	Invalid header magic in build meta data
+60124d63	Invalid footer magic in build meta data
+60124d8b	Vector table address does not look valid: invalid lower bits.
+60124dc9	Partition vector table reset address is out of bounds.
+60124e00	Invalid image flashed.
+60124e17	Unknown operation: 
+60124e3e	get_device_data.cc
+60124e51	Failed to read 
+60124e61	kvs_operations.cc
+60124e73	Missing key name
+60124e84	Failed to read value
+60124e99	Erase failed: 
+60124ea8	Failed to set value: 
+60124ebe	Invalid/unknown value type
+60124ed9	UNKNOWN KVS KEY TYPE: 
+60124ef0	Unknown power state: 
+60124f06	Failed to process: 
+60124f1a	stream_logs_update.cc
+60124f30	Log streaming disabled: failed to stream a log entry.
+60124f66	Failed to add log callback
+60124f81	FROM_USB_BULK_VENDOR
+60124f96	transfer_bug_report.cc
+60124fad	Tombstone written out to protobuf (ok=%d) (bytes=%u)
+60124fe2	{"error": "No bug report data available"}
+6012500c	Transfering Bug report
+60125023	clear_bug_report.cc
+60125037	Clearing Bug reports
+6012504c	Bug reports successfully cleared
+6012506d	Unable to clear bug reports
+60125089	http_flash_writer.cc
+6012509e	Erasing 
+601250a7	 sectors starting at 
+601250bd	Erase cancelled at index %lu
+601250da	Error while erasing flash: 
+601250fb	The response is 
+6012510c	chunked
+60125114	Not enough space: writing 
+6012512f	 bytes to address 
+60125142	Error while writing to flash: 
+60125161	Unable to calculate hash of written data.
+6012518b	On-disk hash %s different from %s
+601251ad	ON-DISK-OTA-HASH-MISMATCH
+601251c7	Verified on-disk data.
+601251de	Validating 
+601251ea	 bytes starting at 
+601251fe	SHA256-INIT-FAILED
+60125211	FLASH-READ-FAILED
+60125223	SHA256-UPDATE-FAILED
+60125238	SHA256-FINAL-FAILED
+6012524c	STARTUP_USB_DETECT
+6012525f	USB_GAMEPAD
+6012526b	BLE_GAMEPAD
+60125277	BLE_CHECK
+60125281	BLE_PAIR
+6012528a	BLE_CONNECT
+60125296	BLE_HID
+6012529e	INACTIVE
+601252a7	POWER_DOWN_RUMBLE
+601252b9	POWER_DOWN_SILENT
+601252cb	INACTIVE_ENTRY
+6012532d	BLE_CONNECTABLE
+6012533d	UNKNOWN/INVALID TYPE
+60125352	UNKNOWN/INVALID OOBE
+60125367	SYSTEM
+6012536e	POWER
+60125379	BUTTON
+60125386	EXTERNAL
+6012538f	SETUP_CAUSE_CHANGE
+601253a7	CONNECT_REQUEST
+601253b7	SNTP_SYNCED
+601253c3	BLE_BOND_NOT_FOUND
+601253d6	BLE_BOND_FOUND
+601253e5	BLE_PAIRING_TIMEOUT
+601253f9	BLE_CONNECTED
+60125407	BLE_FAILED_TO_CONNECT
+6012541d	BLE_DISCONNECTED
+6012542e	BLE_HID_OVERRIDE
+6012543f	WIFI_DISCONNECTION
+60125452	USB_HOST_CONNECTION
+60125466	USB_DISCONNECTION
+60125478	USB_CHARGE_ONLY
+60125488	POWER_DOWN
+60125493	POWER_ON
+6012549c	SETUP_REQUESTED
+601254ac	USB_STARTUP
+601254b8	GO_IDLE
+601254c0	CONTINUE_TRANSITION
+601254d4	NOT_CHARGING
+601254e1	REQUEST_PAIRING
+601254f1	REQUEST_CONNECTABLE
+60125505	TURN_OFF_BLE
+60125512	TURN_ON_BLE
+6012551e	SLOW_DOWN_ADVERTISING
+60125534	DEVICE_STARTUP
+60125543	audio_tasks.cc
+60125552	Audio player task received an invalid audio source
+60125585	Unable to start AudioPlayerTask
+601255a5	linear_interpolation_source.h
+601255c3	frames.h
+601255cc	usb_audio_receive.cc
+601255e1	UsbAudioReceiverTask finished sending feedback
+60125610	UsbAudioReceiverTask finished receiving
+60125638	UsbAudio receive failed
+60125650	Finished buffering
+60125663	Not enough room in buffer to fill in 
+60125689	ms audio gap
+60125696	USB Audio discontinuity linear interpolation failed
+601256ca	UsbAudio receive cancel failed; 
+601256eb	 errors
+601256f3	USB audio RX seems to be stalled, restarting; 
+60125722	 restarts
+6012572c	Usb audio receiving thread is processing data.
+6012575b	Sending USB Audio feedback failed
+6012577d	USB audio receiver was already created.
+601257a5	Usb Audio Receiver
+601257b8	USB audio receive buffer underrun (
+601257dc	 underruns)
+601257e8	Timeout waiting for the USB audio receiver task to stop.
+60125821	usb_audio_send.cc
+60125833	Timed out joining audio UsbAudioSenderTask. Retrying...
+6012586b	USB Audio send task already active
+6012588e	Usb Audio Sender
+6012589f	synapse_audio_processor.cc
+601258ba	append_buffer.h
+601258ca	Undersized Synapse capture bufferData may be lost.
+601258fd	Missing Synapse audio processing module. Audio processing bypassed
+60125940	Synapse echo canceller ENABLED.
+60125960	Using 16 kHz processing rate.
+6012597e	Using 48 kHz processing rate.
+6012599c	Unsupported processing rate, defaulting to 16 kHz.
+601259cf	Failed to initialize Synapse echo canceller.
+601259fc	Synapse echo canceller DISABLED.
+60125a1d	SynapseAEC Task
+60125a2d	Failed to start Synapse echo canceller task.
+60125a5a	vector::_M_fill_insert
+60125a71	vector::_M_default_append
+60125a8b	vector::_M_range_insert
+60125aa3	audio_player.cc
+60125ab3	Audio player stopping
+60125ac9	Audio player starting
+60125adf	Audio buffer sending failed: 
+60125afd	Timed out joining AudioPlayer. Retrying...
+60125b28	Audio Playback
+60125b37	recording_pipeline.cc
+60125b4d	stereo_to_mono_receiver.h
+60125b67	Failed to update audio source
+60125b85	Failed to update headset hardware
+60125ba7	Failed to start SPI task
+60125bc0	No target for recording pipeline
+60125be1	Cannot create stereo to mono sink: null destination.
+60125c16	receiver.cc
+60125c22	ReceiverBuffer
+60125c31	audio
+60125c38	Failed to wake up task.
+60125c50	Spi data Receiver
+60125c62	Failed to start SpiReceiver Task
+60125c83	SPI task not yet active. Receiving stop request ignored.
+60125cbc	Receiver runnable already active.
+60125cde	SPI Receiving started
+60125cf4	SPI task not yet active. Receiving start request ignored.
+60125d2e	Receiver buffers full!
+60125d45	SPI receiving thread started.
+60125d63	SPI Receiving stopped
+60125d79	Timed out joining SpiReceiverTask
+60125d9b	Pausing microphone receiving due to DMA error: 
+60125dcb	pattern_player.cc
+60125ddd	Pattern player is frozen: not setting %s
+60125e06	Finishing transition before starting next pattern
+60125e38	Set period failed
+60125e4a	 Timer start failed
+60125e5e	Pattern player
+60125e6d	[unnamed-pattern]
+60125e7f	[None]
+60125e86	battery_service.cc
+60125e99	State(USB_CHARGING) changed from 
+60125ebb	Failed to read charger status: 
+60125edb	Entering
+60125ee4	Exiting
+60125eec	%s long charge mode
+60125f00	battery_state
+60125f0e	is_charging
+60125f1a	charge_level
+60125f27	NO_BATTERY
+60125f32	CRITICALLY_LOW_BATTERY
+60125f49	CHARGED
+60125f51	wakelock.cc
+60125f5d	Wakelock timer
+60125f6c	No objects preventing shutdown!
+60125f8c	Too many objects preventing shutdown!
+60125fb2	state_machine.cc
+60125fc3	LimitedDiscoveryTimer
+60125fd9	BleConnectionTimer
+60125fec	BLE is not enabled. Cannot set listener.
+60126015	Unkown OOBE event. Asking for help.
+60126039	Failed to start OOBE task
+60126053	BLE services setup
+60126066	Gatt Manager shutting down
+60126081	Failed to shutdown Gatt task
+6012609e	Limited discovery timer schedule failed.
+601260c7	Limited discovery timer stop failed
+601260eb	Discarding OOBE event 
+60126102	 seen before startup!
+60126118	Transitioned to 
+60126129	 after 
+60126131	New setup cause: %d
+60126145	SetupStateMachine
+60126157	INVALID_Status
+60126166	kStartup
+6012616f	HighRateAskingForHelp
+60126185	LowRateAskingForHelp
+6012619a	kConnectableOnly
+601261ab	NoBle
+601261b9	gatt_manager_task.cc
+601261ce	Failed to start oobe handler task: 
+601261f2	OOBE task runnable started.
+6012620e	Received uninitialized OobeRequest!
+60126232	Several instances of the OOBE handler task were created
+6012626a	OOBE task runnable destroyed.
+60126288	gatt_mgr_task
+60126296	advertiser.cc
+601262a8	Device is not advertising
+601262c2	Advertising with setup token: '%s'
+601262e5	Device is %s connectable over BLE
+60126307	Stadia
+601272fb	missing required field
+60127312	array max size exceeded
+6012732a	callback error
+60127339	bytes size exceeded
+6012734d	invalid field descriptor
+60127366	invalid data_size
+60127378	submsg size changed
+6012738c	invalid field type
+6012739f	stream full
+601273ab	io error
+601273b4	array overflow
+601273c3	callback failed
+601273d3	bytes overflow
+601273e2	incorrect fixed length bytes size
+60127404	size too large
+60127413	no malloc support
+60127425	string overflow
+60127435	integer too large
+60127447	varint overflow
+60127457	parent stream too short
+6012746f	end-of-stream
+6012747d	invalid wire_type
+6012748f	remote_device_db.cc
+601274a3	No data to serialize
+601274b8	Writing remote device database to flash.
+601274e1	Failed to save BLE database to flash
+60127506	BleDbWriteTmr
+60127514	#BONDING
+6012751d	BTA Load request.
+6012752f	Failed to allocate memory for remote device de-serialization.
+6012756d	Invalid storage header tag.
+60127589	Invalid storage header version:
+601275a9	Invalid storage header compatibility:
+601275cf	Invalid entry count:
+601275e4	Header checksum 
+601275f5	 does not match actual checksum of 
+60127619	Failed to load serialized remote device data from flash: 
+60127653	Loaded device %s
+60127664	Retrieved local keys from storage
+60127686	BTA store local keys request
+601276a3	BTA Save request.
+601276b5	Failed to allocate memory for remote device serialization
+601276ef	Saved %d devices from BT device database.
+60127719	parser.cc
+60127723	JSON parsing error: 
+60127738	private_heap.cc
+60127748	Corrupted heap: checksum is invalid
+6012776c	Invalid header state (neither free nor in use) at %p
+601277a1	Corrupted heap: checksum is invalid at %p
+601277cb	%s0x%08lX
+601277d9	stack overflow : task %s
+601277f2	UNKNOWN/INVALID
+60127802	Previously saved fault info:
+6012781f		FaulType info: %s
+60127832		Description: %s
+60127843		Image info: %s
+60127853		CpuState:
+6012785e			r0: 0x%08lx
+6012786c			r1: 0x%08lx
+6012787a			r2: 0x%08lx
+60127888			r3: 0x%08lx
+60127896			r4: 0x%08lx
+601278a4			r5: 0x%08lx
+601278b2			r6: 0x%08lx
+601278c0			r7: 0x%08lx
+601278ce			r8: 0x%08lx
+601278dc			r9: 0x%08lx
+601278ea			r10: 0x%08lx
+601278f9			r11: 0x%08lx
+60127908			r12: 0x%08lx
+60127917			r13/psp: 0x%08lx
+6012792a			r13/msp: 0x%08lx
+6012793d			r14/lr: 0x%08lx
+6012794f			r15/pc: 0x%08lx
+60127961			psr: 0x%08lx
+60127970			cfsr: 0x%08lx
+60127980			mmfar: 0x%08lx
+60127991			bfar: 0x%08lx
+601279a1			icsr: 0x%08lx
+601279b1			exc_return: 0x%08lx
+601279c7			control: 0x%08lx
+601279da		Main Backtrace:
+601279f5		NumTasks: %u
+60127a03		Task[%u]: "%.*s", %s
+60127a19	Description
+60127a25	Image info
+60127a54	r13/psp
+60127a5c	r13/msp
+60127a64	r14/lr
+60127a6b	r15/pc
+60127a7b	mmfar
+60127a8b	exc_return
+60127a96	control
+60127a9e	Main Backtrace
+60127aad	NumTasks
+60127ab6	Task Name
+60127ac0	Task State
+60127acb	BLOCKED
+60127ad3	DELETED
+60127adb	READY
+60127ae1	SUSPENDED
+60127aec	ENTER
+60127af2	INITIALIZING
+60127aff	 (external)
+60127b0b	 caused 
+60127b19	HANDLING 
+60127b23	Event 
+60127b2a	 was unhandled.
+60127b3f	QUEUEING 
+60127b49	UNKNOWN_EVENT
+60127b57	<none>
+60127b5e	UNKNOWN_STATE
+60127b6c	max_depth must be > 0
+60127b82	bio.c
+60127b88	0123456789abcdef
+60127b99	ecdsa_asn1.c
+60127ba6	evp.c
+60127bac	algorithm %d
+60127bb9	p_dsa_asn1.c
+60127bc8	ec_asn1.c
+60127bd2	p_ed25519_asn1.c
+60127be3	p_rsa_asn1.c
+60127bf0	p_x25519_asn1.c
+60127c00	PUBLIC KEY
+60127c0b	pem_lib.c
+60127c15	Expecting: 
+60127c21	ANY PRIVATE KEY
+60127c31	ENCRYPTED PRIVATE KEY
+60127c47	RSA PRIVATE KEY
+60127c57	EC PRIVATE KEY
+60127c66	DSA PRIVATE KEY
+60127c76	X509 CERTIFICATE
+60127c87	NEW CERTIFICATE REQUEST
+60127c9f	TRUSTED CERTIFICATE
+60127cb3	PKCS7
+60127cb9	PKCS #7 SIGNED DATA
+60127ccd	DEK-Info: 
+60127cd8	Proc-Type: 
+60127ce4	MIC-CLEAR
+60127cee	MIC-ONLY
+60127cf7	BAD-TYPE
+60127d1a	-----END 
+60127d24	DES-EDE3-CBC
+60127d31	AES-128-CBC
+60127d3d	AES-192-CBC
+60127d49	AES-256-CBC
+60127d55	pem_oth.c
+60127d5f	NO X509_NAME
+60127d71	obj.c
+60127d77	0123456789ABCDEF
+60127d88	X509_ALGORS
+60127d9f	algorithm
+60127da9	X509_EXTENSIONS
+60127db9	X509_EXTENSION
+60127dc8	critical
+60127dd1	X509_NAME_INTERNAL
+60127de4	X509_NAME_ENTRIES
+60127dfb	X509_NAME_ENTRY
+60127e0b	x_name.c
+60127e2b	algor
+60127e31	public_key
+60127e41	cert_info
+60127e5d	serialNumber
+60127e6a	validity
+60127e73	issuerUID
+60127e7d	subjectUID
+60127e88	X509_CERT_AUX
+60127e96	trust
+60127e9c	reject
+60127ea3	alias
+60127eaf	AUTHORITY_KEYID
+60127ebf	v3_cpols.c
+60127eca	,name:
+60127ed1	section:
+60127eda	,value:
+60127ee9	policyIdentifier
+60127efa	userNotice
+60127f05	explicitText
+60127f12	noticeNumbers
+60127f20	NOTICEREF
+60127f2a	noticenos
+60127f34	USERNOTICE
+60127f3f	noticeref
+60127f49	exptext
+60127f51	POLICYQUALINFO
+60127f60	pqualid
+60127f68	d.cpsuri
+60127f71	d.usernotice
+60127f7e	d.other
+60127f86	POLICYINFO
+60127f91	policyid
+60127f9a	qualifiers
+60127fa5	CERTIFICATEPOLICIES
+60127fb9	ISSUING_DIST_POINT
+60127fcc	distpoint
+60127fd6	onlyattr
+60127fdf	CRL_DIST_POINTS
+60127fef	CRLDistributionPoints
+60128005	DIST_POINT_NAME
+60128015	name.fullname
+60128023	name.relativename
+60128035	Unused
+6012803c	unused
+60128043	Key Compromise
+60128052	keyCompromise
+60128060	CA Compromise
+6012806e	CACompromise
+6012807b	Affiliation Changed
+6012808f	affiliationChanged
+601280a2	Superseded
+601280ad	superseded
+601280b8	Cessation Of Operation
+601280cf	cessationOfOperation
+601280e4	Certificate Hold
+601280f5	certificateHold
+60128105	Privilege Withdrawn
+60128119	privilegeWithdrawn
+6012812c	AA Compromise
+6012813a	AACompromise
+60128147	reasons
+6012814f	CRLissuer
+60128159	GENERAL_NAMES
+60128167	GeneralNames
+60128174	GENERAL_NAME
+60128181	d.otherName
+6012819a	d.dNSName
+601281a4	d.x400Address
+601281b2	d.directoryName
+601281c2	d.ediPartyName
+601281d1	d.uniformResourceIdentifier
+601281ed	d.iPAddress
+601281f9	d.registeredID
+60128208	EDIPARTYNAME
+60128215	nameAssigner
+60128222	partyName
+6012822c	OTHERNAME
+60128236	type_id
+6012823e	NAME_CONSTRAINTS
+6012824f	permittedSubtrees
+60128261	excludedSubtrees
+60128272	GENERAL_SUBTREE
+60128647	NIST P-521
+60128652	NIST P-384
+6012865d	NIST P-256
+60128668	NIST P-224
+6012867d	bcm.c
+60128afe	a_bitstr.c
+60128b09	a_int.c
+60128b11	a_object.c
+60128b1c	ASN1_TIME
+60128b26	asn1_lib.c
+60128b31	tasn_dec.c
+60128b3c	, Type=
+60128b44	Field=
+60128b4b	tasn_new.c
+60128b56	ASN1_SET_ANY
+60128b63	ASN1_SEQUENCE_ANY
+60128b75	ASN1_OCTET_STRING_NDEF
+60128b8c	ASN1_FBOOLEAN
+60128b9a	ASN1_TBOOLEAN
+60128ba8	ASN1_BOOLEAN
+60128bb5	DIRECTORYSTRING
+60128bc5	DISPLAYTEXT
+60128bd1	ASN1_PRINTABLE
+60128be0	ASN1_SEQUENCE
+60128bf7	ASN1_OBJECT
+60128c03	ASN1_NULL
+60128c0d	ASN1_BMPSTRING
+60128c1c	ASN1_UNIVERSALSTRING
+60128c31	ASN1_VISIBLESTRING
+60128c44	ASN1_GENERALIZEDTIME
+60128c59	ASN1_UTCTIME
+60128c66	ASN1_GENERALSTRING
+60128c79	ASN1_IA5STRING
+60128c88	ASN1_T61STRING
+60128c97	ASN1_PRINTABLESTRING
+60128cac	ASN1_UTF8STRING
+60128cbc	ASN1_BIT_STRING
+60128ccc	ASN1_ENUMERATED
+60128cdc	ASN1_INTEGER
+60128ce9	ASN1_OCTET_STRING
+60128cfb	tasn_utl.c
+60128d06	bn_asn1.c
+60128d10	buf.c
+60128d19	dsa.c
+60128d31	ex_data.c
+6012a55a	+ep+eqUNDEF
+6012a566	undefined
+6012a577	RSA Data Security, Inc.
+6012a594	RSA Data Security, Inc. PKCS
+6012a5b9	rsaEncryption
+6012a5cf	md2WithRSAEncryption
+6012a5ec	md5WithRSAEncryption
+6012a601	PBE-MD2-DES
+6012a60d	pbeWithMD2AndDES-CBC
+6012a622	PBE-MD5-DES
+6012a62e	pbeWithMD5AndDES-CBC
+6012a648	directory services (X.500)
+6012a666	commonName
+6012a671	countryName
+6012a67d	localityName
+6012a68a	stateOrProvinceName
+6012a69e	organizationName
+6012a6b2	organizationalUnitName
+6012a6da	pkcs7-signedData
+6012a6eb	pkcs7-envelopedData
+6012a6ff	pkcs7-signedAndEnvelopedData
+6012a71c	pkcs7-digestData
+6012a72d	pkcs7-encryptedData
+6012a747	dhKeyAgreement
+6012a77e	DES-EDE
+6012a786	des-ede
+6012a81a	shaWithRSAEncryption
+6012a82f	DES-EDE-CBC
+6012a83b	des-ede-cbc
+6012a87c	emailAddress
+6012a889	unstructuredName
+6012a89a	contentType
+6012a8a6	messageDigest
+6012a8b4	signingTime
+6012a8c0	countersignature
+6012a8d1	challengePassword
+6012a8e3	unstructuredAddress
+6012a8f7	extendedCertificateAttributes
+6012a915	Netscape
+6012a91e	Netscape Communications Corp.
+6012a93c	nsCertExt
+6012a946	Netscape Certificate Extension
+6012a965	nsDataType
+6012a970	Netscape Data Type
+6012a983	DES-EDE-CFB
+6012a98f	des-ede-cfb
+6012a9b5	DES-EDE-OFB
+6012a9c1	des-ede-ofb
+6012a9cd	DES-EDE3-OFB
+6012a9da	des-ede3-ofb
+6012a9e7	RSA-SHA1
+6012a9f0	sha1WithRSAEncryption
+6012aa06	DSA-SHA
+6012aa0e	dsaWithSHA
+6012aa21	dsaEncryption-old
+6012aa33	PBE-SHA1-RC2-64
+6012aa43	pbeWithSHA1AndRC2-CBC
+6012aa60	DSA-SHA1-old
+6012aa6d	dsaWithSHA1-old
+6012aa7d	nsCertType
+6012aa88	Netscape Cert Type
+6012aa9b	nsBaseUrl
+6012aaa5	Netscape Base Url
+6012aab7	nsRevocationUrl
+6012aac7	Netscape Revocation Url
+6012aadf	nsCaRevocationUrl
+6012aaf1	Netscape CA Revocation Url
+6012ab0c	nsRenewalUrl
+6012ab19	Netscape Renewal Url
+6012ab2e	nsCaPolicyUrl
+6012ab3c	Netscape CA Policy Url
+6012ab53	nsSslServerName
+6012ab63	Netscape SSL Server Name
+6012ab7c	nsComment
+6012ab86	Netscape Comment
+6012ab97	nsCertSequence
+6012aba6	Netscape Certificate Sequence
+6012abdc	subjectKeyIdentifier
+6012abf1	X509v3 Subject Key Identifier
+6012ac0f	keyUsage
+6012ac18	X509v3 Key Usage
+6012ac29	privateKeyUsagePeriod
+6012ac3f	X509v3 Private Key Usage Period
+6012ac5f	subjectAltName
+6012ac6e	X509v3 Subject Alternative Name
+6012ac8e	issuerAltName
+6012ac9c	X509v3 Issuer Alternative Name
+6012acbb	basicConstraints
+6012accc	X509v3 Basic Constraints
+6012ace5	crlNumber
+6012acef	X509v3 CRL Number
+6012ad01	certificatePolicies
+6012ad15	X509v3 Certificate Policies
+6012ad31	authorityKeyIdentifier
+6012ad48	X509v3 Authority Key Identifier
+6012adae	mdc2WithRSA
+6012adda	givenName
+6012ade7	surname
+6012adef	initials
+6012adf8	crlDistributionPoints
+6012ae0e	X509v3 CRL Distribution Points
+6012ae38	md5WithRSA
+6012ae43	title
+6012ae49	description
+6012aea5	pbeWithMD5AndCast5CBC
+6012aebb	DSA-SHA1
+6012aec4	dsaWithSHA1
+6012aee2	RSA-SHA1-2
+6012aeed	sha1WithRSA
+6012aef9	dsaEncryption
+6012af07	ripemd160
+6012af11	RSA-RIPEMD160
+6012af1f	ripemd160WithRSA
+6012af75	zlib compression
+6012af86	extendedKeyUsage
+6012af97	X509v3 Extended Key Usage
+6012afbc	serverAuth
+6012afc7	TLS Web Server Authentication
+6012afe5	clientAuth
+6012aff0	TLS Web Client Authentication
+6012b00e	codeSigning
+6012b01a	emailProtection
+6012b02a	E-mail Protection
+6012b03c	timeStamping
+6012b049	msCodeInd
+6012b053	Microsoft Individual Code Signing
+6012b075	msCodeCom
+6012b07f	Microsoft Commercial Code Signing
+6012b0a1	msCTLSign
+6012b0ab	Microsoft Trust List Signing
+6012b0ce	Microsoft Server Gated Crypto
+6012b0f2	Microsoft Encrypted File System
+6012b118	Netscape Server Gated Crypto
+6012b135	deltaCRL
+6012b13e	X509v3 Delta CRL Indicator
+6012b159	CRLReason
+6012b163	X509v3 CRL Reason Code
+6012b17a	invalidityDate
+6012b189	Invalidity Date
+6012b1a1	Strong Extranet ID
+6012b1b4	PBE-SHA1-RC4-128
+6012b1c5	pbeWithSHA1And128BitRC4
+6012b1dd	PBE-SHA1-RC4-40
+6012b1ed	pbeWithSHA1And40BitRC4
+6012b204	PBE-SHA1-3DES
+6012b212	pbeWithSHA1And3-KeyTripleDES-CBC
+6012b233	PBE-SHA1-2DES
+6012b241	pbeWithSHA1And2-KeyTripleDES-CBC
+6012b262	PBE-SHA1-RC2-128
+6012b273	pbeWithSHA1And128BitRC2-CBC
+6012b28f	PBE-SHA1-RC2-40
+6012b29f	pbeWithSHA1And40BitRC2-CBC
+6012b2c1	pkcs8ShroudedKeyBag
+6012b2d5	certBag
+6012b2e4	secretBag
+6012b2ee	safeContentsBag
+6012b2fe	friendlyName
+6012b30b	localKeyID
+6012b316	x509Certificate
+6012b326	sdsiCertificate
+6012b34b	hmacWithSHA1
+6012b358	id-qt-cps
+6012b362	Policy Qualifier CPS
+6012b377	id-qt-unotice
+6012b385	Policy Qualifier User Notice
+6012b3b8	SMIME-CAPS
+6012b3c3	S/MIME Capabilities
+6012b3e6	pbeWithMD2AndRC2-CBC
+6012b40a	pbeWithMD5AndRC2-CBC
+6012b41f	PBE-SHA1-DES
+6012b42c	pbeWithSHA1AndDES-CBC
+6012b442	msExtReq
+6012b44b	Microsoft Extension Request
+6012b467	extReq
+6012b46e	dnQualifier
+6012b486	authorityInfoAccess
+6012b49a	Authority Information Access
+6012b4bc	caIssuers
+6012b4c6	CA Issuers
+6012b4d1	OCSPSigning
+6012b4dd	OCSP Signing
+6012b4f2	member-body
+6012b4fe	ISO Member Body
+6012b515	ISO US Member Body
+6012b550	SMIME
+6012b55d	id-smime-mod
+6012b56a	id-smime-ct
+6012b576	id-smime-aa
+6012b582	id-smime-alg
+6012b58f	id-smime-cd
+6012b59b	id-smime-spq
+6012b5a8	id-smime-cti
+6012b5b5	id-smime-mod-cms
+6012b5c6	id-smime-mod-ess
+6012b5d7	id-smime-mod-oid
+6012b5e8	id-smime-mod-msg-v3
+6012b5fc	id-smime-mod-ets-eSignature-88
+6012b61b	id-smime-mod-ets-eSignature-97
+6012b63a	id-smime-mod-ets-eSigPolicy-88
+6012b659	id-smime-mod-ets-eSigPolicy-97
+6012b678	id-smime-ct-receipt
+6012b68c	id-smime-ct-authData
+6012b6a1	id-smime-ct-publishCert
+6012b6b9	id-smime-ct-TSTInfo
+6012b6cd	id-smime-ct-TDTInfo
+6012b6e1	id-smime-ct-contentInfo
+6012b6f9	id-smime-ct-DVCSRequestData
+6012b715	id-smime-ct-DVCSResponseData
+6012b732	id-smime-aa-receiptRequest
+6012b74d	id-smime-aa-securityLabel
+6012b767	id-smime-aa-mlExpandHistory
+6012b783	id-smime-aa-contentHint
+6012b79b	id-smime-aa-msgSigDigest
+6012b7b4	id-smime-aa-encapContentType
+6012b7d1	id-smime-aa-contentIdentifier
+6012b7ef	id-smime-aa-macValue
+6012b804	id-smime-aa-equivalentLabels
+6012b821	id-smime-aa-contentReference
+6012b83e	id-smime-aa-encrypKeyPref
+6012b858	id-smime-aa-signingCertificate
+6012b877	id-smime-aa-smimeEncryptCerts
+6012b895	id-smime-aa-timeStampToken
+6012b8b0	id-smime-aa-ets-sigPolicyId
+6012b8cc	id-smime-aa-ets-commitmentType
+6012b8eb	id-smime-aa-ets-signerLocation
+6012b90a	id-smime-aa-ets-signerAttr
+6012b925	id-smime-aa-ets-otherSigCert
+6012b942	id-smime-aa-ets-contentTimestamp
+6012b963	id-smime-aa-ets-CertificateRefs
+6012b983	id-smime-aa-ets-RevocationRefs
+6012b9a2	id-smime-aa-ets-certValues
+6012b9bd	id-smime-aa-ets-revocationValues
+6012b9de	id-smime-aa-ets-escTimeStamp
+6012b9fb	id-smime-aa-ets-certCRLTimestamp
+6012ba1c	id-smime-aa-ets-archiveTimeStamp
+6012ba3d	id-smime-aa-signatureType
+6012ba57	id-smime-aa-dvcs-dvc
+6012ba6c	id-smime-alg-ESDHwith3DES
+6012ba86	id-smime-alg-ESDHwithRC2
+6012ba9f	id-smime-alg-3DESwrap
+6012bab5	id-smime-alg-RC2wrap
+6012baca	id-smime-alg-ESDH
+6012badc	id-smime-alg-CMS3DESwrap
+6012baf5	id-smime-alg-CMSRC2wrap
+6012bb0d	id-smime-cd-ldap
+6012bb1e	id-smime-spq-ets-sqt-uri
+6012bb37	id-smime-spq-ets-sqt-unotice
+6012bb54	id-smime-cti-ets-proofOfOrigin
+6012bb73	id-smime-cti-ets-proofOfReceipt
+6012bb93	id-smime-cti-ets-proofOfDelivery
+6012bbb4	id-smime-cti-ets-proofOfSender
+6012bbd3	id-smime-cti-ets-proofOfApproval
+6012bbf4	id-smime-cti-ets-proofOfCreation
+6012bc19	id-pkix-mod
+6012bc47	id-on
+6012bc69	id-pkix1-explicit-88
+6012bc7e	id-pkix1-implicit-88
+6012bc93	id-pkix1-explicit-93
+6012bca8	id-pkix1-implicit-93
+6012bcbd	id-mod-crmf
+6012bcc9	id-mod-cmc
+6012bcd4	id-mod-kea-profile-88
+6012bcea	id-mod-kea-profile-93
+6012bd00	id-mod-cmp
+6012bd0b	id-mod-qualified-cert-88
+6012bd24	id-mod-qualified-cert-93
+6012bd3d	id-mod-attribute-cert
+6012bd53	id-mod-timestamp-protocol
+6012bd6d	id-mod-ocsp
+6012bd79	id-mod-dvcs
+6012bd85	id-mod-cmp2000
+6012bd94	biometricInfo
+6012bda2	Biometric Info
+6012bdb1	qcStatements
+6012bdbe	ac-auditEntity
+6012bdcd	ac-targeting
+6012bdda	aaControls
+6012bde5	sbgp-ipAddrBlock
+6012bdf6	sbgp-autonomousSysNum
+6012be0c	sbgp-routerIdentifier
+6012be22	textNotice
+6012be2d	ipsecEndSystem
+6012be3c	IPSec End System
+6012be4d	ipsecTunnel
+6012be59	IPSec Tunnel
+6012be66	ipsecUser
+6012be70	IPSec User
+6012be7b	id-it-caProtEncCert
+6012be8f	id-it-signKeyPairTypes
+6012bea6	id-it-encKeyPairTypes
+6012bebc	id-it-preferredSymmAlg
+6012bed3	id-it-caKeyUpdateInfo
+6012bee9	id-it-currentCRL
+6012befa	id-it-unsupportedOIDs
+6012bf10	id-it-subscriptionRequest
+6012bf2a	id-it-subscriptionResponse
+6012bf45	id-it-keyPairParamReq
+6012bf5b	id-it-keyPairParamRep
+6012bf71	id-it-revPassphrase
+6012bf85	id-it-implicitConfirm
+6012bf9b	id-it-confirmWaitTime
+6012bfb1	id-it-origPKIMessage
+6012bfc6	id-regCtrl
+6012bfd1	id-regInfo
+6012bfdc	id-regCtrl-regToken
+6012bff0	id-regCtrl-authenticator
+6012c009	id-regCtrl-pkiPublicationInfo
+6012c027	id-regCtrl-pkiArchiveOptions
+6012c044	id-regCtrl-oldCertID
+6012c059	id-regCtrl-protocolEncrKey
+6012c074	id-regInfo-utf8Pairs
+6012c089	id-regInfo-certReq
+6012c09c	id-alg-des40
+6012c0a9	id-alg-noSignature
+6012c0bc	id-alg-dh-sig-hmac-sha1
+6012c0d4	id-alg-dh-pop
+6012c0e2	id-cmc-statusInfo
+6012c0f4	id-cmc-identification
+6012c10a	id-cmc-identityProof
+6012c11f	id-cmc-dataReturn
+6012c131	id-cmc-transactionId
+6012c146	id-cmc-senderNonce
+6012c159	id-cmc-recipientNonce
+6012c16f	id-cmc-addExtensions
+6012c184	id-cmc-encryptedPOP
+6012c198	id-cmc-decryptedPOP
+6012c1ac	id-cmc-lraPOPWitness
+6012c1c1	id-cmc-getCert
+6012c1d0	id-cmc-getCRL
+6012c1de	id-cmc-revokeRequest
+6012c1f3	id-cmc-regInfo
+6012c202	id-cmc-responseInfo
+6012c216	id-cmc-queryPending
+6012c22a	id-cmc-popLinkRandom
+6012c23f	id-cmc-popLinkWitness
+6012c255	id-cmc-confirmCertAcceptance
+6012c272	id-on-personalData
+6012c285	id-pda-dateOfBirth
+6012c298	id-pda-placeOfBirth
+6012c2ac	id-pda-gender
+6012c2ba	id-pda-countryOfCitizenship
+6012c2d6	id-pda-countryOfResidence
+6012c2f0	id-aca-authenticationInfo
+6012c30a	id-aca-accessIdentity
+6012c320	id-aca-chargingIdentity
+6012c338	id-aca-group
+6012c345	id-aca-role
+6012c351	id-qcs-pkixQCSyntax-v1
+6012c368	id-cct-crs
+6012c373	id-cct-PKIData
+6012c382	id-cct-PKIResponse
+6012c395	ad_timestamping
+6012c3a5	AD Time Stamping
+6012c3c6	basicOCSPResponse
+6012c3d8	Basic OCSP Response
+6012c3ec	OCSP Nonce
+6012c3f7	CrlID
+6012c3fd	OCSP CRL ID
+6012c409	acceptableResponses
+6012c41d	Acceptable OCSP Responses
+6012c437	noCheck
+6012c43f	OCSP No Check
+6012c44d	archiveCutoff
+6012c45b	OCSP Archive Cutoff
+6012c46f	serviceLocator
+6012c47e	OCSP Service Locator
+6012c493	extendedStatus
+6012c4a2	Extended OCSP Status
+6012c4b7	trustRoot
+6012c4c1	Trust Root
+6012c4cc	rsaSignature
+6012c4d9	X500algorithms
+6012c4e8	directory services - algorithms
+6012c9b4	iA5StringSyntax
+6012c9c4	caseIgnoreIA5StringSyntax
+6012c9de	pilotObject
+6012c9ea	pilotPerson
+6012c9f6	account
+6012c9fe	document
+6012ca0c	documentSeries
+6012ca1b	rFC822localPart
+6012ca2b	dNSDomain
+6012ca35	domainRelatedObject
+6012ca49	friendlyCountry
+6012ca59	simpleSecurityObject
+6012ca6e	pilotOrganization
+6012ca80	pilotDSA
+6012ca89	qualityLabelledData
+6012ca9d	userId
+6012caa4	textEncodedORAddress
+6012cabe	rfc822Mailbox
+6012cacc	favouriteDrink
+6012cadb	roomNumber
+6012cae6	photo
+6012caec	userClass
+6012caf6	manager
+6012cafe	documentIdentifier
+6012cb11	documentTitle
+6012cb1f	documentVersion
+6012cb2f	documentAuthor
+6012cb3e	documentLocation
+6012cb4f	homeTelephoneNumber
+6012cb63	secretary
+6012cb6d	otherMailbox
+6012cb7a	lastModifiedTime
+6012cb8b	lastModifiedBy
+6012cb9a	aRecord
+6012cba2	pilotAttributeType27
+6012cbb7	mXRecord
+6012cbc0	nSRecord
+6012cbc9	sOARecord
+6012cbd3	cNAMERecord
+6012cbdf	associatedDomain
+6012cbf0	associatedName
+6012cbff	homePostalAddress
+6012cc11	personalTitle
+6012cc1f	mobileTelephoneNumber
+6012cc35	pagerTelephoneNumber
+6012cc4a	friendlyCountryName
+6012cc5e	organizationalStatus
+6012cc73	janetMailbox
+6012cc80	mailPreferenceOption
+6012cc95	buildingName
+6012cca2	dSAQuality
+6012ccad	singleLevelQuality
+6012ccc0	subtreeMinimumQuality
+6012ccd6	subtreeMaximumQuality
+6012ccec	personalSignature
+6012ccfe	dITRedirect
+6012cd0a	documentPublisher
+6012cd1c	x500UniqueIdentifier
+6012cd31	mime-mhs
+6012cd3a	MIME MHS
+6012cd43	mime-mhs-headings
+6012cd55	mime-mhs-bodies
+6012cd65	id-hex-partial-message
+6012cd7c	id-hex-multipart-message
+6012cd95	generationQualifier
+6012cda9	pseudonym
+6012cdb3	id-set
+6012cdba	Secure Electronic Transactions
+6012cdd9	set-ctype
+6012cde3	content types
+6012cdf1	set-msgExt
+6012cdfc	message extensions
+6012ce0f	set-attr
+6012ce18	set-policy
+6012ce23	set-certExt
+6012ce2f	certificate extensions
+6012ce46	set-brand
+6012ce50	setct-PANData
+6012ce5e	setct-PANToken
+6012ce6d	setct-PANOnly
+6012ce7b	setct-OIData
+6012ce88	setct-PI
+6012ce91	setct-PIData
+6012ce9e	setct-PIDataUnsigned
+6012ceb3	setct-HODInput
+6012cec2	setct-AuthResBaggage
+6012ced7	setct-AuthRevReqBaggage
+6012ceef	setct-AuthRevResBaggage
+6012cf07	setct-CapTokenSeq
+6012cf19	setct-PInitResData
+6012cf2c	setct-PI-TBS
+6012cf39	setct-PResData
+6012cf48	setct-AuthReqTBS
+6012cf59	setct-AuthResTBS
+6012cf6a	setct-AuthResTBSX
+6012cf7c	setct-AuthTokenTBS
+6012cf8f	setct-CapTokenData
+6012cfa2	setct-CapTokenTBS
+6012cfb4	setct-AcqCardCodeMsg
+6012cfc9	setct-AuthRevReqTBS
+6012cfdd	setct-AuthRevResData
+6012cff2	setct-AuthRevResTBS
+6012d006	setct-CapReqTBS
+6012d016	setct-CapReqTBSX
+6012d027	setct-CapResData
+6012d038	setct-CapRevReqTBS
+6012d04b	setct-CapRevReqTBSX
+6012d05f	setct-CapRevResData
+6012d073	setct-CredReqTBS
+6012d084	setct-CredReqTBSX
+6012d096	setct-CredResData
+6012d0a8	setct-CredRevReqTBS
+6012d0bc	setct-CredRevReqTBSX
+6012d0d1	setct-CredRevResData
+6012d0e6	setct-PCertReqData
+6012d0f9	setct-PCertResTBS
+6012d10b	setct-BatchAdminReqData
+6012d123	setct-BatchAdminResData
+6012d13b	setct-CardCInitResTBS
+6012d151	setct-MeAqCInitResTBS
+6012d167	setct-RegFormResTBS
+6012d17b	setct-CertReqData
+6012d18d	setct-CertReqTBS
+6012d19e	setct-CertResData
+6012d1b0	setct-CertInqReqTBS
+6012d1c4	setct-ErrorTBS
+6012d1d3	setct-PIDualSignedTBE
+6012d1e9	setct-PIUnsignedTBE
+6012d1fd	setct-AuthReqTBE
+6012d20e	setct-AuthResTBE
+6012d21f	setct-AuthResTBEX
+6012d231	setct-AuthTokenTBE
+6012d244	setct-CapTokenTBE
+6012d256	setct-CapTokenTBEX
+6012d269	setct-AcqCardCodeMsgTBE
+6012d281	setct-AuthRevReqTBE
+6012d295	setct-AuthRevResTBE
+6012d2a9	setct-AuthRevResTBEB
+6012d2be	setct-CapReqTBE
+6012d2ce	setct-CapReqTBEX
+6012d2df	setct-CapResTBE
+6012d2ef	setct-CapRevReqTBE
+6012d302	setct-CapRevReqTBEX
+6012d316	setct-CapRevResTBE
+6012d329	setct-CredReqTBE
+6012d33a	setct-CredReqTBEX
+6012d34c	setct-CredResTBE
+6012d35d	setct-CredRevReqTBE
+6012d371	setct-CredRevReqTBEX
+6012d386	setct-CredRevResTBE
+6012d39a	setct-BatchAdminReqTBE
+6012d3b1	setct-BatchAdminResTBE
+6012d3c8	setct-RegFormReqTBE
+6012d3dc	setct-CertReqTBE
+6012d3ed	setct-CertReqTBEX
+6012d3ff	setct-CertResTBE
+6012d410	setct-CRLNotificationTBS
+6012d429	setct-CRLNotificationResTBS
+6012d445	setct-BCIDistributionTBS
+6012d45e	setext-genCrypt
+6012d46e	generic cryptogram
+6012d481	setext-miAuth
+6012d48f	merchant initiated auth
+6012d4a7	setext-pinSecure
+6012d4b8	setext-pinAny
+6012d4c6	setext-track2
+6012d59d	setCext-TokenIdentifier
+6012d5b5	setCext-Track2Data
+6012d5c8	setCext-TokenType
+6012d5da	setCext-IssuerCapabilities
+6012d5f5	setAttr-Cert
+6012d602	setAttr-PGWYcap
+6012d612	payment gateway capabilities
+6012d62f	setAttr-TokenType
+6012d641	setAttr-IssCap
+6012d650	issuer capabilities
+6012d664	set-rootKeyThumb
+6012d675	set-addPolicy
+6012d683	setAttr-Token-EMV
+6012d695	setAttr-Token-B0Prime
+6012d6ab	setAttr-IssCap-CVM
+6012d6be	setAttr-IssCap-T2
+6012d6d0	setAttr-IssCap-Sig
+6012d6e3	setAttr-GenCryptgrm
+6012d6f7	generate cryptogram
+6012d70b	setAttr-T2Enc
+6012d719	encrypted track 2
+6012d72b	setAttr-T2cleartxt
+6012d73e	cleartext track 2
+6012e4fc	10-2001
+6012e504	id-GostR3411-94-with-GostR3410-94
+6012e526	GOST R 34.11-94 with GOST R 34.10-94
+6012e555	GOST R 34.11-94
+6012e565	id-HMACGostR3411-94
+6012e579	HMAC GOST 34.11-94
+6012e5a4	47-89
+6012e5b5	gost-mac
+6012e5be	GOST 28147-89 MAC
+6012e5d0	prf-gostr3411-94
+6012e5e1	GOST R 34.11-94 PRF
+6012e5f5	id-GostR3410-2001DH
+6012e609	GOST R 34.10-2001 DH
+6012e61e	id-GostR3410-94DH
+6012e630	GOST R 34.10-94 DH
+6012e643	id-Gost28147-89-CryptoPro-KeyMeshing
+6012e668	id-Gost28147-89-None-KeyMeshing
+6012e688	id-GostR3411-94-TestParamSet
+6012e6a5	id-GostR3411-94-CryptoProParamSet
+6012e6c7	id-Gost28147-89-TestParamSet
+6012e6e4	id-Gost28147-89-CryptoPro-A-ParamSet
+6012e709	id-Gost28147-89-CryptoPro-B-ParamSet
+6012e72e	id-Gost28147-89-CryptoPro-C-ParamSet
+6012e753	id-Gost28147-89-CryptoPro-D-ParamSet
+6012e778	id-Gost28147-89-CryptoPro-Oscar-1-1-ParamSet
+6012e7a5	id-Gost28147-89-CryptoPro-Oscar-1-0-ParamSet
+6012e7d2	id-Gost28147-89-CryptoPro-RIC-1-ParamSet
+6012e7fb	id-GostR3410-94-TestParamSet
+6012e818	id-GostR3410-94-CryptoPro-A-ParamSet
+6012e83d	id-GostR3410-94-CryptoPro-B-ParamSet
+6012e862	id-GostR3410-94-CryptoPro-C-ParamSet
+6012e887	id-GostR3410-94-CryptoPro-D-ParamSet
+6012e8ac	id-GostR3410-94-CryptoPro-XchA-ParamSet
+6012e8d4	id-GostR3410-94-CryptoPro-XchB-ParamSet
+6012e8fc	id-GostR3410-94-CryptoPro-XchC-ParamSet
+6012e924	id-GostR3410-2001-TestParamSet
+6012e943	id-GostR3410-2001-CryptoPro-A-ParamSet
+6012e96a	id-GostR3410-2001-CryptoPro-B-ParamSet
+6012e991	id-GostR3410-2001-CryptoPro-C-ParamSet
+6012e9b8	id-GostR3410-2001-CryptoPro-XchA-ParamSet
+6012e9e2	id-GostR3410-2001-CryptoPro-XchB-ParamSet
+6012ea0c	id-GostR3410-94-a
+6012ea1e	id-GostR3410-94-aBis
+6012ea33	id-GostR3410-94-b
+6012ea45	id-GostR3410-94-bBis
+6012ea6d	GOST 28147-89 Cryptocom ParamSet
+6012ea97	GOST 34.10-94 Cryptocom
+6012eaba	GOST 34.10-2001 Cryptocom
+6012ead4	id-GostR3411-94-with-GostR3410-94-cc
+6012eaf9	GOST R 34.11-94 with GOST R 34.10-94 Cryptocom
+6012eb28	id-GostR3411-94-with-GostR3410-2001-cc
+6012eb4f	GOST R 34.11-94 with GOST R 34.10-2001 Cryptocom
+6012eb80	id-GostR3410-2001-ParamSet-cc
+6012eb9e	GOST R 3410-2001 Parameter Set Cryptocom
+6012ebd1	LocalKeySet
+6012ebdd	Microsoft Local Key set
+6012ebf5	freshestCRL
+6012ec01	X509v3 Freshest CRL
+6012ec15	id-on-permanentIdentifier
+6012ec2f	Permanent Identifier
+6012ec44	searchGuide
+6012ec50	businessCategory
+6012ec61	postalAddress
+6012ec6f	postOfficeBox
+6012ec7d	physicalDeliveryOfficeName
+6012ec98	telephoneNumber
+6012eca8	telexNumber
+6012ecb4	teletexTerminalIdentifier
+6012ecce	facsimileTelephoneNumber
+6012ece7	x121Address
+6012ecf3	internationaliSDNNumber
+6012ed0b	registeredAddress
+6012ed1d	destinationIndicator
+6012ed32	preferredDeliveryMethod
+6012ed4a	presentationAddress
+6012ed5e	supportedApplicationContext
+6012ed7a	member
+6012ed81	owner
+6012ed87	roleOccupant
+6012ed94	seeAlso
+6012ed9c	userPassword
+6012eda9	userCertificate
+6012edb9	cACertificate
+6012edc7	authorityRevocationList
+6012eddf	certificateRevocationList
+6012edf9	crossCertificatePair
+6012ee0e	enhancedSearchGuide
+6012ee22	protocolInformation
+6012ee36	distinguishedName
+6012ee48	uniqueMember
+6012ee55	houseIdentifier
+6012ee65	supportedAlgorithms
+6012ee79	deltaRevocationList
+6012ee95	id-alg-PWRI-KEK
+6012eee3	id-aes128-wrap-pad
+6012ef2a	id-aes192-wrap-pad
+6012ef57	id-aes256-CCM
+6012ef71	id-aes256-wrap-pad
+6012ef84	AES-128-CTR
+6012ef90	aes-128-ctr
+6012efb4	AES-256-CTR
+6012efc0	aes-256-ctr
+6012efcc	id-camellia128-wrap
+6012efe0	id-camellia192-wrap
+6012eff4	id-camellia256-wrap
+6012f008	anyExtendedKeyUsage
+6012f01c	Any Extended Key Usage
+6012f03d	RSASSA-PSS
+6012f048	rsassaPss
+6012f06a	AES-256-XTS
+6012f076	aes-256-xts
+6012f09c	AES-128-CBC-HMAC-SHA1
+6012f0b2	aes-128-cbc-hmac-sha1
+6012f0c8	AES-192-CBC-HMAC-SHA1
+6012f0de	aes-192-cbc-hmac-sha1
+6012f0f4	AES-256-CBC-HMAC-SHA1
+6012f10a	aes-256-cbc-hmac-sha1
+6012f12b	rsaesOaep
+6012f135	dhpublicnumber
+6012f14d	brainpoolP160r1
+6012f15d	brainpoolP160t1
+6012f16d	brainpoolP192r1
+6012f17d	brainpoolP192t1
+6012f18d	brainpoolP224r1
+6012f19d	brainpoolP224t1
+6012f1ad	brainpoolP256r1
+6012f1bd	brainpoolP256t1
+6012f1cd	brainpoolP320r1
+6012f1dd	brainpoolP320t1
+6012f1ed	brainpoolP384r1
+6012f1fd	brainpoolP384t1
+6012f20d	brainpoolP512r1
+6012f21d	brainpoolP512t1
+6012f22d	PSPECIFIED
+6012f238	pSpecified
+6012f243	dhSinglePass-stdDH-sha1kdf-scheme
+6012f265	dhSinglePass-stdDH-sha224kdf-scheme
+6012f289	dhSinglePass-stdDH-sha256kdf-scheme
+6012f2ad	dhSinglePass-stdDH-sha384kdf-scheme
+6012f2d1	dhSinglePass-stdDH-sha512kdf-scheme
+6012f2f5	dhSinglePass-cofactorDH-sha1kdf-scheme
+6012f31c	dhSinglePass-cofactorDH-sha224kdf-scheme
+6012f345	dhSinglePass-cofactorDH-sha256kdf-scheme
+6012f36e	dhSinglePass-cofactorDH-sha384kdf-scheme
+6012f397	dhSinglePass-cofactorDH-sha512kdf-scheme
+6012f3cb	dh-cofactor-kdf
+6012f3ea	ChaCha20-Poly1305
+6012f3fc	chacha20-poly1305
+6012f439	AuthRSA
+6012f441	auth-rsa
+6012f44a	AuthECDSA
+6012f454	auth-ecdsa
+6012f467	auth-psk
+6012f47d	AuthANY
+6012f485	auth-any
+6012f4c3	notBefore
+6012f4cd	notAfter
+6012f4d6	a_mbstr.c
+6012f4e0	'()+,-./:=?
+6012f4ec	minsize=
+6012f4f5	maxsize=
+6012f4fe	util.cc
+6012f506	Key '%s' found with no matching value. Using the key's index.\n
+6012f545	Multiple matching values for key '%s'. Using the first value.\n
+6012f584	work_queue.cc
+6012f592	Work Queue Task
+6012f5a2	Work queue is full. Unable to add work object
+6012f632	;BCM43458F 37.4MHz Google Gotham BT4.2 [Version: 0054.0161]
+6013c69b	event_groups.c
+6013c6aa	queue.c
+6013c6b2	tasks.c
+6013c6ba	INVALID: pxReadyTasksLists
+6013c6d5	INVALID: pxDelayedTaskList
+6013c6f0	INVALID: pxOverflowDelayedTaskList
+6013c713	INVALID: xTasksWaitingTermination
+6013c735	INVALID: xSuspendedTaskList
+6013c756	Tmr Svc
+6013c75e	timers.c
+6013c767	Terminal
+6013c774	SEGGER
+6013c77b	mpu.cc
+6013c782	Failed to disable MPU region %d!
+6013c7a3	Failed to enable default MPU region %d!
+6013c7cb	key_value_store.cc
+6013c7de	key_value_store.h
+6013c7f0	Can't add: reached max supported keys %d
+6013c819	Can't add: got invalid key: %s!
+6013c839	Failed to read chunk: 
+6013c850	KVS garbage collecting to get a free sector
+6013c87c	KVS: trying to clean non-pending sectors for more space
+6013c8b4	KVS: Full garbage collecting to try to free space
+6013c8e6	Currently unaligned offsets are not supported
+6013c914	Out of bounds read: offset(%u) + size(%u) > data_size(%u)
+6013c94e	KVS CRC does not match for key=%s [expected %u, found %u]
+6013c988	Partition is larger then KVS max sector count, not all space will be used.
+6013c9d3	Unsupported KVS version in sector: 
+6013c9f7	Sector 
+6013c9ff	 has unexpected alignment 
+6013ca1f	Failed to force clean at boot, no free sectors available!
+6013ca59	Next sync_token is not clear!
+6013ca77	INVALID STATUS
+6013ca86	CANCELLED
+6013ca90	INVALID_ARGUMENT
+6013caa1	ALREADY_EXISTS
+6013cab0	PERMISSION_DENIED
+6013cac2	RESOURCE_EXHAUSTED
+6013cad5	FAILED_PRECONDITION
+6013cae9	ABORTED
+6013caf1	OUT_OF_RANGE
+6013cafe	UNIMPLEMENTED
+6013cb0c	DATA_LOSS
+6013cb16	UNAUTHENTICATED
+6013cb2d	binary_log
+6013cb38	init.cc
+6013cb40	buffer.cc
+6013cb4a	logger.cc
+6013cb54	Dropped %u log messages
+6013cbc3	%s%u.%04u
+6013cbcd	heap_5_improved.c
+6013cbdf	0123456789
+6013cbea	not enough space for format expansion (Please submit full bug report at https://gcc.gnu.org/bugs/):\n    
+6013cc53	POSIX
+6013cd5a	#-0+ 
+6013cd64	efgEFG
+6013cd6b	0123456789ABCDEF
+6013cd7c	0123456789abcdef
+6013ee0b	00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
