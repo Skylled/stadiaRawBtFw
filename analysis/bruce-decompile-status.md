@@ -62,15 +62,15 @@ That 586/55,458 is a subset of §1's "Totally unknown" row. Netting it out gives
 | `usb_host_audio_topology.cc` | 8 | 8 | 2876 | 2876 | 0 |
 | `audio_states.cc` | 6 | 6 | 2392 | 2392 | 0 |
 | `usb_host_audio.cc` | 9 | 9 | 2346 | 2346 | 0 |
-| `device_info.cc` | 7 | 0 | 2300 | 0 | 2300 |
+| `device_info.cc` | 7 | 7 | 2300 | 2300 | 0 |
 | `tasks.c` | 19 | 19 | 2220 | 2220 | 0 |
-| `remote_device_db.cc` | 4 | 0 | 2070 | 0 | 2070 |
+| `remote_device_db.cc` | 4 | 4 | 2070 | 2070 | 0 |
 | `gatt_server.cc` | 8 | 8 | 2028 | 2028 | 0 |
 | `usb_audio_receive.cc` | 8 | 8 | 1994 | 1994 | 0 |
 | `key_value_store.cc` | 6 | 6 | 1968 | 1968 | 0 |
-| `application_state.cc` | 6 | 0 | 1956 | 0 | 1956 |
-| `firmware_image_upload.cc` | 1 | 0 | 1714 | 0 | 1714 |
-| `ec_asn1.c` | 5 | 0 | 1630 | 0 | 1630 |
+| `application_state.cc` | 6 | 6 | 1956 | 1956 | 0 |
+| `firmware_image_upload.cc` | 1 | 1 | 1714 | 1714 | 0 |
+| `ec_asn1.c` | 5 | 5 | 1630 | 1630 | 0 |
 | `queue.c` | 12 | 6 | 1540 | 1090 | 450 |
 | `usb_host_hid.cc` | 3 | 0 | 1468 | 0 | 1468 |
 | `pem_lib.c` | 3 | 0 | 1458 | 0 | 1458 |
@@ -193,7 +193,7 @@ That 586/55,458 is a subset of §1's "Totally unknown" row. Netting it out gives
 | `init.cc` | 1 | 0 | 22 | 0 | 22 |
 | `exit.c` | 1 | 0 | 16 | 0 | 16 |
 
-Files fully decompiled already (0 remaining bytes), **36 of 139** (up from 20 recorded after session 15's patch): `bcm.c`, `tasn_dec.c`, `keys.cc`, `adapter.cc`, `gatt_server.cc`, `main.cc`, `sleep_driver.cc`, `haptics.cc`, `mimxrt10xx_flash_memory.cc`, `gatt_server.h`, `haptics_cluster.cc`, `input_task.cc`, `io_pin.cc`, `advertiser.cc`, `adc.h`, `switch_pro_controller.cc`, `board.cc`, `hid_input_target.cc`, `platform.h`, `evp.c`, plus **9 newly complete session 14/15's log-buffer-framework round**: `usb_device_cdc_acm.c`, `frames.h`, `dynamic_buffer.h`, `append_buffer.h`, `logger.cc`, `buffer.h`, `buffer.cc`, `system_tasks.cc`, `uart.cc` (see prior paragraph), plus **3 newly complete session 17**: `tasks.c` (4/19 → 19/19 — full FreeRTOS task-lifecycle/notification API, `analysis/bruce-itcm.md`'s new §"Session 17" section), `state_machine.cc` (1/11 → 11/11 — the generic hierarchical-state-machine framework plus its BLE-pairing/advertising-mode instantiation, new doc `analysis/bruce-state-machine.md`), `key_value_store.cc` (0/6 → 6/6 — the wear-leveled flash record store underneath `keys.cc`, extends `analysis/bruce-misc-functions.md`'s `keys.cc` section), plus **4 newly complete session 18**: `usb_host_audio_topology.cc` (0/8 → 8/8), `usb_host_audio.cc` (0/9 → 9/9), `usb_audio_receive.cc` (0/8 → 8/8), `audio_states.cc` (0/6 → 6/6) — the USB-host UAC1/UAC2 audio driver + "Synapse" AEC/AGC/NS voice-path policy layer, new doc `analysis/bruce-audio-subsystem.md`.
+Files fully decompiled already (0 remaining bytes), **41 of 139** (up from 36 recorded after session 18's patch): `bcm.c`, `tasn_dec.c`, `keys.cc`, `adapter.cc`, `gatt_server.cc`, `main.cc`, `sleep_driver.cc`, `haptics.cc`, `mimxrt10xx_flash_memory.cc`, `gatt_server.h`, `haptics_cluster.cc`, `input_task.cc`, `io_pin.cc`, `advertiser.cc`, `adc.h`, `switch_pro_controller.cc`, `board.cc`, `hid_input_target.cc`, `platform.h`, `evp.c`, plus **9 newly complete session 14/15's log-buffer-framework round**: `usb_device_cdc_acm.c`, `frames.h`, `dynamic_buffer.h`, `append_buffer.h`, `logger.cc`, `buffer.h`, `buffer.cc`, `system_tasks.cc`, `uart.cc` (see prior paragraph), plus **3 newly complete session 17**: `tasks.c` (4/19 → 19/19 — full FreeRTOS task-lifecycle/notification API, `analysis/bruce-itcm.md`'s new §"Session 17" section), `state_machine.cc` (1/11 → 11/11 — the generic hierarchical-state-machine framework plus its BLE-pairing/advertising-mode instantiation, new doc `analysis/bruce-state-machine.md`), `key_value_store.cc` (0/6 → 6/6 — the wear-leveled flash record store underneath `keys.cc`, extends `analysis/bruce-misc-functions.md`'s `keys.cc` section), plus **4 newly complete session 18**: `usb_host_audio_topology.cc` (0/8 → 8/8), `usb_host_audio.cc` (0/9 → 9/9), `usb_audio_receive.cc` (0/8 → 8/8), `audio_states.cc` (0/6 → 6/6) — the USB-host UAC1/UAC2 audio driver + "Synapse" AEC/AGC/NS voice-path policy layer, new doc `analysis/bruce-audio-subsystem.md`, plus **5 newly complete session 19**: `device_info.cc` (0/7 → 7/7 — device-identity/certificate-provisioning subsystem, new section in `analysis/bruce-misc-functions.md`), `remote_device_db.cc` (0/4 → 4/4 — the flash-persisted BLE bonded-device database, new section in `analysis/bruce-bta-stack.md`), `application_state.cc` (0/6 → 6/6 — the top-level Application lifecycle state machine, a second concrete `state_machine.cc` instantiation, new section in `analysis/bruce-state-machine.md`), `firmware_image_upload.cc` (0/1 → 1/1 — the in-band OTA firmware-update RPC handler, new section in `analysis/bruce-misc-functions.md`), `ec_asn1.c` (0/5 → 5/5 — BoringSSL's EC key/parameter ASN.1 codec, new section in `analysis/bruce-crypto.md`).
 
 Partial-progress files (5, down from 8 — `tasks.c`/`state_machine.cc`/`key_value_store.cc` moved to fully-complete above): `timer.h` (3/9), `queue.c` (6/12), `xbara.h` (1/2), `heap_5_improved.c` (2/4), `p_ed25519_asn1.c` (2/4), `adapter.h` (1/2).
 
@@ -201,26 +201,28 @@ Partial-progress files (5, down from 8 — `tasks.c`/`state_machine.cc`/`key_val
 
 **Session 18 note**: same hand-patch-only convention — this round's 31 newly-decompiled functions (`usb_host_audio_topology.cc` 8 + `usb_host_audio.cc` 9 + `usb_audio_receive.cc` 8 + `audio_states.cc` 6, 9,608 bytes closed) are **also not yet reflected** in §1/§1a/§4's top-line stats, stacking on top of session 17's un-rejoined delta above. All four are formally-attributed files (none in the BTA/BTE block), so this round's gain also lands entirely in the "attributed AND decompiled" bucket (191 → 222 functions by hand count). Re-run the full join before trusting an exact updated top-line figure — it is now stale by two sessions' worth of gains (31 + 31 = 62 functions, 16,040 bytes).
 
+**Session 19 note**: same hand-patch-only convention — this round's 23 newly-decompiled functions (`device_info.cc` 7 + `remote_device_db.cc` 4 + `application_state.cc` 6 + `firmware_image_upload.cc` 1 + `ec_asn1.c` 5, 9,670 bytes closed) are **also not yet reflected** in §1/§1a/§4's top-line stats, stacking on top of sessions 17–18's un-rejoined deltas above. All five are formally-attributed files (none in the BTA/BTE block), so this round's gain also lands entirely in the "attributed AND decompiled" bucket (222 → 245 functions by hand count). Re-run the full join before trusting an exact updated top-line figure — it is now stale by three sessions' worth of gains (31 + 31 + 23 = 85 functions, 25,710 bytes). New write-ups: `analysis/bruce-misc-functions.md` (`device_info.cc` — device-identity/certificate provisioning; `firmware_image_upload.cc` — in-band OTA firmware-update RPC handler), `analysis/bruce-bta-stack.md` (`remote_device_db.cc` — flash-persisted BLE bonded-device database), `analysis/bruce-state-machine.md` (`application_state.cc` — the top-level Application lifecycle state machine, a second concrete instantiation of the generic HSM engine), `analysis/bruce-crypto.md` (`ec_asn1.c` — BoringSSL's EC key/parameter ASN.1 codec, closing the gap between `tasn_dec.c` and `bcm.c`'s EC/BIGNUM layer).
+
 ## 3. Prioritized gap list
 
 ### 3a. Attributed-but-not-yet-decompiled — cheapest wins (top 10 files by remaining bytes)
 
-**Session 18 update**: `usb_host_audio_topology.cc` (#1), `audio_states.cc` (#2), `usb_host_audio.cc` (#3), and `usb_audio_receive.cc` (#6) — the entire USB-audio cluster flagged as the best next lever in the prior version of this table — were fully decompiled this session as one coherent sweep (see §2, the "Files fully decompiled" list above, and new doc `analysis/bruce-audio-subsystem.md`) and drop out of this table entirely. The table below is refreshed by pulling the next-largest `Remaining bytes` files from §2's full per-file listing (not a fresh regen of the whole doc — same hand-patch convention as sessions 15/17).
+**Session 19 update**: `device_info.cc` (#1), `remote_device_db.cc` (#2), `application_state.cc` (#3), `firmware_image_upload.cc` (#4), and `ec_asn1.c` (#5) — the entire prior top-5 — were fully decompiled this session (see §2, the "Files fully decompiled" list above, and new sections in `analysis/bruce-misc-functions.md` ×2, `analysis/bruce-bta-stack.md`, `analysis/bruce-state-machine.md`, and `analysis/bruce-crypto.md`) and drop out of this table entirely. `application_state.cc` did turn out to be a `state_machine.cc` instantiation as predicted in the prior version of this table's note, but a *different* one (the top-level Application lifecycle machine, not the BLE-adapter/pairing-mode one) — see `bruce-state-machine.md`'s session-19 section. The table below is refreshed by pulling the next-largest `Remaining bytes` **zero-progress** files from §2's full per-file listing (not a fresh regen of the whole doc — same hand-patch convention as sessions 15/17/18).
 
 | Rank | Src file | Remaining funcs | Remaining bytes | Already decompiled |
 |---:|---|---:|---:|---:|
-| 1 | `device_info.cc` | 7 | 2300 | 0/7 |
-| 2 | `remote_device_db.cc` | 4 | 2070 | 0/4 |
-| 3 | `application_state.cc` | 6 | 1956 | 0/6 |
-| 4 | `firmware_image_upload.cc` | 1 | 1714 | 0/1 |
-| 5 | `ec_asn1.c` | 5 | 1630 | 0/5 |
-| 6 | `usb_host_hid.cc` | 3 | 1468 | 0/3 |
-| 7 | `pem_lib.c` | 3 | 1458 | 0/3 |
-| 8 | `http_flash_writer.cc` | 4 | 1116 | 0/4 |
-| 9 | `synapse_audio_processor.cc` | 2 | 1060 | 0/2 |
-| 10 | `thermal.cc` | 4 | 912 | 0/4 |
+| 1 | `usb_host_hid.cc` | 3 | 1468 | 0/3 |
+| 2 | `pem_lib.c` | 3 | 1458 | 0/3 |
+| 3 | `http_flash_writer.cc` | 4 | 1116 | 0/4 |
+| 4 | `synapse_audio_processor.cc` | 2 | 1060 | 0/2 |
+| 5 | `thermal.cc` | 4 | 912 | 0/4 |
+| 6 | `gotham.cc` | 5 | 882 | 0/5 |
+| 7 | `stats.cc` | 1 | 816 | 0/1 |
+| 8 | `receiver.cc` | 4 | 812 | 0/4 |
+| 9 | `battery_gauge_bq2742X.cc` | 3 | 808 | 0/3 |
+| 10 | `flash_lut.cc` | 3 | 706 | 0/3 |
 
-`application_state.cc` (rank 3) is a natural pairing with session 17's `state_machine.cc` work — `application_state__6005b8dc`/`application_state__6005b1c0` are both direct callers of `state_machine__600849a4` (`bruce-state-machine.md`), so decompiling it would likely resolve that doc's open thread about the OOBE state/event names. `synapse_audio_processor.cc` (rank 9) is the natural next step after this session's audio-cluster work — it's the AEC/AGC/NS object `audio_states__60075088` constructs and wires to the USB source/sink pair (`analysis/bruce-audio-subsystem.md`), along with the smaller siblings `usb_device_audio.cc`/`usb_host_worker.cc`/`recording_pipeline.cc`/`audio_tasks.cc`/`usb_audio_send.cc` noted as open threads there (none individually large enough for this top-10 table).
+`synapse_audio_processor.cc` (rank 4) is the natural next step after session 18's audio-cluster work — it's the AEC/AGC/NS object `audio_states__60075088` constructs and wires to the USB source/sink pair (`analysis/bruce-audio-subsystem.md`), along with the smaller siblings `usb_device_audio.cc`/`usb_host_worker.cc`/`recording_pipeline.cc`/`audio_tasks.cc`/`usb_audio_send.cc` noted as open threads there (none individually large enough for this top-10 table). `http_flash_writer.cc` (rank 3) and `thermal.cc` (rank 5) are both natural pairings with this session's work: `firmware_image_upload.cc` (`bruce-misc-functions.md`) calls directly into `http_flash_writer__60079778`/`60079778c`, and `application_state.cc` (`bruce-state-machine.md`) calls `thermal__6005d1e4`. `gotham.cc` (rank 6) is the RPC layer `device_info.cc`'s certificate-derivation flow (`bruce-misc-functions.md`) calls through (`gotham__60067d14`) — decompiling it would help settle whether that flow is live or dormant shared-platform code.
 
 Regenerate the full per-file remaining-function list anytime with:
 ```python
