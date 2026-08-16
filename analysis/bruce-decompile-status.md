@@ -2,11 +2,9 @@
 
 Data-driven status doc for the "decompile all of `bruce` to source-reconstruction quality" effort. Regenerate the numbers here whenever `bruce_functions.csv`, `bruce_srcmap.csv`, or `analysis/decomp/` change materially — don't hand-edit stale tables into new prose, just re-run the join described in [Methodology](#methodology) below.
 
-**Snapshot: 2026-08-16 01:21 EDT (session ~13 regeneration).** Full refresh of every table in the doc, built on top of sessions 9–13's work since the session-8 baseline: all 52 `bcm.c` functions (BoringSSL BIGNUM/EC, not a Broadcom BT driver — see CLAUDE.md's known-traps note), the button/ADC/report-packing investigation (sessions 8–12, `bruce-io-paths.md`), and continued BTA/BTE stack decompilation. `analysis/decomp/` **was growing live while this snapshot was taken** — a first pass mid-session read 677 files, a later pass 90 seconds later read 767 — consistent with a concurrent session actively decompiling, per this task's own heads-up. All tables below are built from **one single consistent read** taken at 767 files (`analysis/decomp/`), joined against the unchanged `bruce_functions.csv` (4,995 rows) and `bruce_srcmap.csv` (448 rows, 139 src files — no re-import happened, same as every prior snapshot). As always: treat every count below as a lower bound as of the snapshot instant, not a hard current total — re-run before trusting exact numbers for planning.
+**Snapshot: 2026-08-16 02:27 EDT (full regeneration after sessions 14–16).** Prior full regeneration was session ~13 (41.4% union / 47.3% truly-unidentified, by bytes), hand-patched once afterward (session 15: `tasn_dec.c`/`adapter.cc`/`keys.cc` → complete, not re-joined). Since then: session 14 found and decompiled the codebase-wide diagnostic **log/message-buffer framework** (`analysis/bruce-log-buffer.md` — a small class + emit engine referenced from 64 of 139 attributed source files), session 15 resolved its RPC transport (`StreamLogBuffer` handler + a 16-entry debug-command dispatch table) and finished `tasn_dec.c`/`adapter.cc`/`keys.cc`, and this session's own snapshot-taking caught a **concurrent Ghidra session actively sweeping the BTA/BTE block in real time**: `analysis/decomp/` was read once at 896 files (already reflecting all of the above), then found to have grown to 976 files 90 seconds later on a routine re-check. Per this doc's own methodology note (learned session 13, re-confirmed this session), a **fresh single directory listing + parse pass was taken at the final 976-file count** and every table below is derived from that one in-memory snapshot — no table mixes counts from the 896-file read and the 976-file read. The concurrent session's gains landed entirely inside the already-identified BTA/BTE block (§1a: 410→490 of 1,076 decompiled between the two reads); nothing outside that block changed in the 90 seconds between reads. As always: treat every count below as a lower bound as of the snapshot instant — re-run before trusting exact numbers for planning, especially if Ghidra is still running.
 
-**Session 15 patch (2026-08-16, on top of this snapshot):** hand-applied §2/§3a updates only, for `tasn_dec.c`/`adapter.cc`/`keys.cc` going to fully-decompiled (see the inline patch notes in §2 and §3a) — not a full re-join, so §1/§1a/§3b/§4's top-line numbers below still reflect the session-13 snapshot and are correspondingly stale on top of it (they don't yet reflect these 3 files, sessions 14's work, or any other concurrent session's progress). Re-run the full methodology before trusting exact top-line percentages.
-
-Unlike the session-8→9 patch (a hand-adjustment of a few numbers), this is a full mechanical re-join from scratch, so there's no separate "patch" section this time — every number below, including the BTA/BTE block figures in §1a, comes from the same strict address-join against the current `analysis/decomp/` state described in [Methodology](#methodology). Note this means the BTA/BTE-block decompiled count here (**410 of 1,076**) is computed the same way as last time's self-consistent 319, not compared against `bruce-bta-stack.md`'s own self-reported running count (328, last updated at that doc's session 8 — stale relative to this snapshot, since sessions 9–13's concurrent BTA work hadn't been written back into that doc's prose as of this pass). See the §1a footnote for that discrepancy.
+`bruce_functions.csv` (4,995 rows, 660,570 bytes) and `bruce_srcmap.csv` (448 rows, 139 src files) are both **byte-for-byte unchanged** from every prior snapshot back to session 6 — reloaded fresh this session and reconfirmed identical (no re-import happened). All growth this round is exclusively in `analysis/decomp/`.
 
 ## 1. Top-line stats
 
@@ -14,38 +12,40 @@ Unlike the session-8→9 patch (a hand-adjustment of a few numbers), this is a f
 |---|---:|---:|---:|---:|
 | **Total functions (census)** | 4,995 | 100% | 660,570 | 100% |
 | **Attributed** (leaked `__FILE__` → 139 src files) | 448 | 8.97% | 97,450 | 14.75% |
-| **Decompiled** (`analysis/decomp/*.c`, matched to a census address) | 634 | 12.69% | 201,935 | 30.57% |
-| **Attributed ∪ Decompiled** (understood in *some* way) | 976 | 19.54% | 273,139 | **41.35%** |
-| **Totally unknown** (no attribution, no decompile) | 4,019 | 80.46% | 387,431 | **58.65%** |
+| **Decompiled** (`analysis/decomp/*.c`, matched to a census address) | 836 | 16.74% | 246,879 | 37.37% |
+| **Attributed ∪ Decompiled** (understood in *some* way) | 1,124 | 22.50% | 305,815 | **46.30%** |
+| **Totally unknown** (no attribution, no decompile) | 3,871 | 77.50% | 354,755 | **53.70%** |
 
-Size-weighted (bytes) is still the more honest progress metric than function-count, for the same reason as before (a handful of huge functions dominate the byte total disproportionately to their count). **Bottom line: ~41% of the binary's code by size is now understood in some way, up from ~35% at the session-8 snapshot (~22% at session 6) — real, continued progress, but 59% (387 KB across 4,019 functions) is still completely unmapped.**
+Size-weighted (bytes) is still the more honest progress metric than function-count, for the same reason as every prior snapshot (a handful of huge functions dominate the byte total disproportionately to their count). **Bottom line: ~46% of the binary's code by size is now understood in some way, up from ~41% at the session-13 snapshot (~35% at session 8, ~22% at session 6).**
 
 Notes on the numbers:
-- **CLAUDE.md / project memory says "5,137 functions"** — `bruce_functions.csv` still has only 4,995 data rows, unchanged since session 6 (no re-import happened this round either). Same ~142-function discrepancy as before; still not chased further here.
+- **CLAUDE.md / project memory says "5,137 functions"** — `bruce_functions.csv` still has only 4,995 data rows, unchanged since session 6. Same ~142-function discrepancy as before; still not chased further here.
 - **`bruce_functions.csv`'s `name` column is still stale for all 448 attributed addresses** — same gotcha as every prior session, unchanged. Always join on `address`.
-- Of the 767 files currently in `analysis/decomp/` (up from 546 at the session-8 snapshot, +221), **634 map onto an address in the 4,995-function census; 133 do not** (up from 439/107 respectively) — the non-census ones are the tiny (mostly ≤364-byte) `Decompile.java`-carved-out ITCM-thunk/veneer-style functions described in `bruce-itcm.md`, plus a scattering of other sub-boundary carve-outs. They total 13,400 bytes of real decompiled code that stays outside the 4,995/660,570 baseline for the same consistency reason as before. Re-spot-checked this session: **0 size mismatches** between census `size_bytes` and the decomp-header `size=` field across all 634 in-census decompiled functions, and 0 unparseable decomp-file headers across all 767 — the header format (`// <addr>  <name>  size=<N> bytes`) has held steady.
-- Of the 634 in-census decompiled functions, **106 are also formally attributed** to a source file (up from 88 at the session-8/9 snapshot). The other **528 are decompiled-but-unattributed** — of those, **410 are inside the identified BTA/BTE Bluetooth-stack block** (§1a below, up from 319), and the remaining **118** are scattered elsewhere (crypto-stack/I/O-path decompiles from earlier sessions, plus non-BTA gains this round — see the per-file table in §2, e.g. `tasks.c`, `state_machine.cc`, `timer.h`, `adapter.cc`, `main.cc`/`gatt_server.cc`/`advertiser.cc`/`platform.h` all newly complete or improved).
-- **Growth attribution since session 8**: decompiled-in-census bytes grew from 145,891 to 201,935, **+56,044 bytes**. Of that, **+36,870 bytes (65.8%) is inside the BTA/BTE block** (§1a's own strict-join figure: 92,535 → 129,405 — use this doc's own numbers for the before/after, not `bruce-bta-stack.md`'s stale self-reported prose figure, for an apples-to-apples delta). The remaining **+19,174 bytes (34.2%)** landed in newly-completed or newly-touched attributed files (`bcm.c`'s 52 functions were already folded in by the session-8 snapshot; genuinely new this round includes `gatt_server.cc` (0→8/8), `main.cc` (1→2/2), `advertiser.cc` (0→1/1), `platform.h` (0→1/1), `tasks.c` (3→4/19), `queue.c` (unchanged at 6/12), `state_machine.cc` (0→1/11), `adapter.cc` (0→1/16), `timer.h` (2→3/9)) plus scattered unattributed non-BTA gains (§3b run deltas below).
+- Of the 976 files currently in `analysis/decomp/` (up from 767 at session 13, +209), **836 map onto an address in the 4,995-function census; 140 do not** (up from 634/133 respectively) — the non-census ones are the tiny (mostly ≤364-byte) `Decompile.java`-carved-out ITCM-thunk/veneer-style functions described in `bruce-itcm.md`, plus a scattering of other sub-boundary carve-outs. They total 14,676 bytes of real decompiled code that stays outside the 4,995/660,570 baseline for consistency. Re-spot-checked this session: **0 size mismatches** between census `size_bytes` and the decomp-header `size=` field across all 836 in-census decompiled functions, and 0 unparseable decomp-file headers, 0 duplicate addresses across all 976 files — the header format has held steady.
+- Of the 836 in-census decompiled functions, **160 are also formally attributed** to a source file (up from 106 at session 13). The other **676 are decompiled-but-unattributed** — of those, **490 are inside the identified BTA/BTE Bluetooth-stack block** (§1a below, up from 410 — entirely from the concurrent session caught mid-run, see the Snapshot note above), and the remaining **186 are scattered elsewhere** (unchanged from the 896-file read, i.e. no concurrent-session activity touched non-BTA territory in the 90-second gap) — crypto-stack/I/O-path decompiles from earlier sessions, plus the session-14/15 log-buffer framework's core (unattributed) functions, a BoringSSL runtime-support extension, and a GKI buffer-pool extension. See §2/§3b for the per-file/per-range detail.
+- **Growth attribution since session 13**: decompiled-in-census bytes grew from 201,935 to 246,879, **+44,944 bytes**, cleanly splitting three ways: **+19,586 bytes (43.6%) inside the BTA/BTE block** (410→490 functions, entirely the concurrent session caught by this snapshot — see §1a); **+12,268 bytes (27.3%) in files that are both attributed and now decompiled** (106→160 functions — the session-15 `tasn_dec.c`/`adapter.cc`/`keys.cc` completions, 39 functions, plus 9 newly-complete log-buffer-framework attributed files — `usb_device_cdc_acm.c`, `frames.h`, `dynamic_buffer.h`, `append_buffer.h`, `logger.cc`, `buffer.h`, `buffer.cc`, `system_tasks.cc`, `uart.cc`, 14 functions — plus `adapter.h` partial, +1); and **+13,090 bytes (29.1%) scattered outside both** (118→186 unattributed non-BTA functions — the log-buffer framework's core unattributed cluster plus its RPC-transport/dispatch-table functions, a BoringSSL runtime-support extension, and a GKI buffer-pool extension — see §3b's per-run deltas and `bruce-log-buffer.md`). This last bucket is the only one of the three that opens genuinely new (not-previously-identified) territory — see §4 for why.
 
 ### 1a. Module-identified-but-not-formally-attributed (informational — not folded into "Attributed" above)
 
-`analysis/bruce-bta-stack.md` identifies the entire `0x600921b8`–`0x600c9cc4` range as the Broadcom BTA/BTE stack via a ~400-entry leaked function-name string table cross-referenced with `FindRef.java`, plus independent spec-level confirmation (HCI opcodes, HCI/LE-Meta event codes, SDP/GAP framing bytes — see that doc for full evidence). This is a **different provenance than `bruce_srcmap.csv`'s `__FILE__`-leak attribution** (no `.cc`/`.c` source filename is recovered, just a Broadcom-internal function name and module identity), so it is deliberately **not** merged into the "Attributed" row above — that row's definition stays a clean join against `bruce_srcmap.csv` per the methodology. Instead, it's broken out here as its own status tier, because lumping its still-undecompiled functions into "Totally unknown" would misrepresent them — their *identity* is known, just not their *decompiled content*.
+`analysis/bruce-bta-stack.md` identifies the entire `0x600921b8`–`0x600c9cc4` range as the Broadcom BTA/BTE stack via a ~400-entry leaked function-name string table cross-referenced with `FindRef.java`, plus independent spec-level confirmation (HCI opcodes, HCI/LE-Meta event codes, SDP/GAP framing bytes — see that doc for full evidence). Same different-provenance reasoning as every prior snapshot: **not** merged into "Attributed" above, kept as its own tier.
 
 | | Functions | Bytes | % of block |
 |---|---:|---:|---:|
 | BTA/BTE block total | 1,076 | 204,449 | 100% |
-| — decompiled (also counted in §1's "Decompiled" row) | 410 | 129,405 | 63.3% |
-| — **identified but not yet decompiled** | 666 | 75,044 | 36.7% |
+| — decompiled (also counted in §1's "Decompiled" row) | 490 | 148,991 | 72.9% |
+| — **identified but not yet decompiled** | 586 | 55,458 | 27.1% |
 
-That 666/75,044 is a subset of §1's "Totally unknown" row. Netting it out gives a more honest "no idea at all" figure:
+That 586/55,458 is a subset of §1's "Totally unknown" row. Netting it out gives a more honest "no idea at all" figure:
 
 | | Functions | % of 4,995 | Bytes | % of 660,570 |
 |---|---:|---:|---:|---:|
-| Totally unknown (§1, includes BTA-identified-but-undecompiled) | 4,019 | 80.46% | 387,431 | 58.65% |
-| — of which: BTA-identified, module known, just not decompiled | 666 | 13.33% | 75,044 | 11.36% |
-| **— truly unidentified (no attribution, no decompile, no module ID)** | **3,353** | **67.13%** | **312,387** | **47.29%** |
+| Totally unknown (§1, includes BTA-identified-but-undecompiled) | 3,871 | 77.50% | 354,755 | 53.70% |
+| — of which: BTA-identified, module known, just not decompiled | 586 | 11.73% | 55,458 | 8.40% |
+| **— truly unidentified (no attribution, no decompile, no module ID)** | **3,285** | **65.77%** | **299,297** | **45.31%** |
 
-(`bruce-bta-stack.md`'s own prose still self-reports "328 of 1,076... ~93,700 bytes (~45.8%)" — that text was last hand-updated at its own session 8 and hasn't been rewritten to reflect the concurrent decompile work that landed in `analysis/decomp/` since (this session's read found 410/1,076 by strict address-join, not 328). This is expected drift, not an error: that doc's prose is a narrative snapshot from whenever it was last edited, while this doc's numbers come from a fresh join against the live `analysis/decomp/` directory at read time. If you're picking up BTA/BTE work next, trust `bruce-bta-stack.md`'s *identification* evidence and address-range map, but trust *this* doc's function-count/byte figures — and re-run the join yourself if either file has moved since.)
+**A near-live capture of concurrent work:** this snapshot's BTA/BTE decompiled count (490/1,076, 72.9%) is up sharply from session 13's 410/1,076 (63.3%) — an 80-function jump that, per the Snapshot note above, happened *during this regeneration's own directory reads* (896-file read still showed 410; the final 976-file read showed 490). `bruce-bta-stack.md`'s own self-reported prose (last hand-updated with a "Session 9: 418 of 1,076" figure, itself already stale relative to session 13's 410-by-fresh-join) is now stale by an even larger margin — expected, not an error, per the same reasoning as every prior snapshot: trust *this* doc's address-join for counts, trust `bruce-bta-stack.md` for the identification evidence and module map, and re-run the join yourself if either file has moved since.
+
+**Worth flagging for whoever picks up BTA/BTE work next**: since a concurrent session is (or very recently was) actively working this exact block, check `analysis/decomp/`'s current file count before starting — it may already be past 976.
 
 ## 2. Per-source-file table (all 139 attributed files, sorted by total byte size descending)
 
@@ -83,7 +83,7 @@ That 666/75,044 is a subset of §1's "Totally unknown" row. Netting it out gives
 | `stats.cc` | 1 | 0 | 816 | 0 | 816 |
 | `receiver.cc` | 4 | 0 | 812 | 0 | 812 |
 | `battery_gauge_bq2742X.cc` | 3 | 0 | 808 | 0 | 808 |
-| `usb_device_cdc_acm.c` | 3 | 0 | 750 | 0 | 750 |
+| `usb_device_cdc_acm.c` | 3 | 3 | 750 | 750 | 0 |
 | `sleep_driver.cc` | 1 | 1 | 744 | 744 | 0 |
 | `flash_lut.cc` | 3 | 0 | 706 | 0 | 706 |
 | `headphone_state_machine.cc` | 5 | 0 | 672 | 0 | 672 |
@@ -112,7 +112,7 @@ That 666/75,044 is a subset of §1's "Totally unknown" row. Netting it out gives
 | `types.h` | 3 | 0 | 424 | 0 | 424 |
 | `asn1_lib.c` | 3 | 0 | 422 | 0 | 422 |
 | `gatt_server.h` | 3 | 3 | 418 | 418 | 0 |
-| `frames.h` | 2 | 0 | 402 | 0 | 402 |
+| `frames.h` | 2 | 2 | 402 | 402 | 0 |
 | `timers.c` | 5 | 0 | 360 | 0 | 360 |
 | `haptics_cluster.cc` | 2 | 2 | 332 | 332 | 0 |
 | `p_dsa_asn1.c` | 2 | 0 | 332 | 0 | 332 |
@@ -137,15 +137,15 @@ That 666/75,044 is a subset of §1's "Totally unknown" row. Netting it out gives
 | `board.cc` | 2 | 2 | 230 | 230 | 0 |
 | `usb_audio_send.cc` | 1 | 0 | 230 | 0 | 230 |
 | `power_rpcs.cc` | 1 | 0 | 228 | 0 | 228 |
-| `dynamic_buffer.h` | 2 | 0 | 226 | 0 | 226 |
+| `dynamic_buffer.h` | 2 | 2 | 226 | 226 | 0 |
 | `a_bitstr.c` | 1 | 0 | 218 | 0 | 218 |
-| `logger.cc` | 1 | 0 | 216 | 0 | 216 |
+| `logger.cc` | 1 | 1 | 216 | 216 | 0 |
 | `bio.c` | 3 | 0 | 200 | 0 | 200 |
 | `binary_build_metadata.cc` | 1 | 0 | 194 | 0 | 194 |
 | `pattern_player.h` | 1 | 0 | 190 | 0 | 190 |
 | `gotham_patterns.cc` | 1 | 0 | 190 | 0 | 190 |
 | `hardware_timer.cc` | 1 | 0 | 188 | 0 | 188 |
-| `append_buffer.h` | 2 | 0 | 186 | 0 | 186 |
+| `append_buffer.h` | 2 | 2 | 186 | 186 | 0 |
 | `sound_codec_wm8904.cc` | 2 | 0 | 184 | 0 | 184 |
 | `external_controller.cc` | 1 | 0 | 180 | 0 | 180 |
 | `led_calibration.cc` | 1 | 0 | 178 | 0 | 178 |
@@ -159,26 +159,26 @@ That 666/75,044 is a subset of §1's "Totally unknown" row. Netting it out gives
 | `snvs.h` | 1 | 0 | 138 | 0 | 138 |
 | `parser.cc` | 1 | 0 | 136 | 0 | 136 |
 | `get_device_data.cc` | 1 | 0 | 134 | 0 | 134 |
-| `adapter.h` | 2 | 0 | 132 | 0 | 132 |
+| `adapter.h` | 2 | 1 | 132 | 60 | 72 |
 | `gotham_16mb_mimxrt10xx_mpu.cc` | 1 | 0 | 132 | 0 | 132 |
 | `wakelock.cc` | 1 | 0 | 132 | 0 | 132 |
 | `util.cc` | 1 | 0 | 132 | 0 | 132 |
 | `flash_memory.h` | 1 | 0 | 130 | 0 | 130 |
-| `buffer.h` | 1 | 0 | 128 | 0 | 128 |
+| `buffer.h` | 1 | 1 | 128 | 128 | 0 |
 | `event_groups.c` | 2 | 0 | 128 | 0 | 128 |
 | `buf.c` | 2 | 0 | 122 | 0 | 122 |
 | `pwm.h` | 3 | 0 | 116 | 0 | 116 |
-| `uart.cc` | 1 | 0 | 114 | 0 | 114 |
+| `uart.cc` | 1 | 1 | 114 | 114 | 0 |
 | `battery_charger_bq25601.cc` | 2 | 0 | 114 | 0 | 114 |
 | `usb_configuration_handler.cc` | 1 | 0 | 112 | 0 | 112 |
 | `reboot_reason.cc` | 1 | 0 | 108 | 0 | 108 |
 | `obj.c` | 1 | 0 | 102 | 0 | 102 |
-| `system_tasks.cc` | 1 | 0 | 100 | 0 | 100 |
+| `system_tasks.cc` | 1 | 1 | 100 | 100 | 0 |
 | `persistent_crash_register.cc` | 1 | 0 | 100 | 0 | 100 |
 | `i2c_device.h` | 1 | 0 | 100 | 0 | 100 |
 | `tasn_utl.c` | 1 | 0 | 100 | 0 | 100 |
 | `logging.cc` | 1 | 0 | 98 | 0 | 98 |
-| `buffer.cc` | 1 | 0 | 94 | 0 | 94 |
+| `buffer.cc` | 1 | 1 | 94 | 94 | 0 |
 | `ecdsa_asn1.c` | 1 | 0 | 92 | 0 | 92 |
 | `pem_oth.c` | 1 | 0 | 88 | 0 | 88 |
 | `key_value_store.h` | 1 | 0 | 88 | 0 | 88 |
@@ -193,15 +193,15 @@ That 666/75,044 is a subset of §1's "Totally unknown" row. Netting it out gives
 | `init.cc` | 1 | 0 | 22 | 0 | 22 |
 | `exit.c` | 1 | 0 | 16 | 0 | 16 |
 
-Files fully decompiled already (0 remaining bytes), 17 of 139 (up from 12): `bcm.c`, `gatt_server.cc`, `main.cc`, `sleep_driver.cc`, `haptics.cc`, `mimxrt10xx_flash_memory.cc`, `gatt_server.h`, `haptics_cluster.cc`, `input_task.cc`, `io_pin.cc`, `advertiser.cc`, `adc.h`, `switch_pro_controller.cc`, `board.cc`, `hid_input_target.cc`, `platform.h`, `evp.c`. New completions this round vs. session 8: `gatt_server.cc` (0/8 → 8/8), `gatt_server.h` (0/3 → 3/3), `main.cc` (1/2 → 2/2), `advertiser.cc` (0/1 → 1/1), `platform.h` (0/1 → 1/1). Partial-progress files worth noting: `tasks.c` (3/19 → 4/19), `queue.c` unchanged at 6/12, `timer.h` (2/9 → 3/9), `state_machine.cc` (0/11 → 1/11).
+Files fully decompiled already (0 remaining bytes), **29 of 139** (up from 20 recorded after session 15's patch): `bcm.c`, `tasn_dec.c`, `keys.cc`, `adapter.cc`, `gatt_server.cc`, `main.cc`, `sleep_driver.cc`, `haptics.cc`, `mimxrt10xx_flash_memory.cc`, `gatt_server.h`, `haptics_cluster.cc`, `input_task.cc`, `io_pin.cc`, `advertiser.cc`, `adc.h`, `switch_pro_controller.cc`, `board.cc`, `hid_input_target.cc`, `platform.h`, `evp.c`, plus **9 newly complete this round**: `usb_device_cdc_acm.c` (0/3 → 3/3), `frames.h` (0/2 → 2/2), `dynamic_buffer.h` (0/2 → 2/2), `append_buffer.h` (0/2 → 2/2), `logger.cc` (0/1 → 1/1), `buffer.h` (0/1 → 1/1), `buffer.cc` (0/1 → 1/1), `system_tasks.cc` (0/1 → 1/1), `uart.cc` (0/1 → 1/1). All 9 are session-14/15 log-buffer-framework files (`analysis/bruce-log-buffer.md`) — the small `buffer.h`/`buffer.cc`/`dynamic_buffer.h`/`append_buffer.h`/`frames.h` quintet turned out to be members of the codebase-wide diagnostic log/message-buffer class, plus `logger.cc`/`system_tasks.cc`/`uart.cc` as adjacent transport/registration call sites.
 
-**Session 15 targeted patch (hand-applied, not a full mechanical re-join — see note below):** `tasn_dec.c` (0/7 → **7/7, file complete**, extends `bruce-crypto.md`'s ASN.1/BoringSSL narrative — it's `crypto/asn1/tasn_dec.c`, the DER decode engine), `adapter.cc` (1/16 → **16/16, file complete**, documented in `bruce-bta-stack.md`'s new "Session 15" subsection — a first-party BLE peripheral-adapter wrapper over the `gatt_server.cc`/BTA_GATTS engine, with a promising unexplored subscribe/unsubscribe vtable-dispatch lead for `bruce-io-paths.md`'s report-packing thread), `keys.cc` (2/19 → **19/19, file complete**, documented in `bruce-misc-functions.md`'s new "Session 15" subsection — confirms it's a generic typed config/property KV store, reinforcing CLAUDE.md's known trap). **Files fully decompiled count is now 20 of 139** (17 above + these 3). All three files' new byte totals were cross-checked by summing individual decompiled-function sizes against the pre-existing "Total bytes" column and matched exactly (tasn_dec.c 3856, adapter.cc 3216, keys.cc 3296 — see `analysis/decomp/tasn_dec__*.c` / `adapter__*.c` / `keys__*.c`), so these three rows are trustworthy even though the rest of the doc (§1, §1a, §3b, §4 top-line stats) was **not** re-joined this pass and is now mildly stale on top of session 13's own staleness re: sessions 14+ concurrent BTA/BTE work — a full regeneration per [Methodology](#methodology) is still owed whenever convenient.
+Partial-progress files (8, unchanged in count from session 13, no new movement this round beyond what's already reflected above): `timer.h` (3/9), `state_machine.cc` (1/11 — still the only top-10-gap file with any progress, see §3a), `tasks.c` (4/19), `queue.c` (6/12), `xbara.h` (1/2), `heap_5_improved.c` (2/4), `p_ed25519_asn1.c` (2/4), `adapter.h` (1/2).
 
 ## 3. Prioritized gap list
 
 ### 3a. Attributed-but-not-yet-decompiled — cheapest wins (top 10 files by remaining bytes)
 
-**Session 15 update: the former #1–#3 (`tasn_dec.c`, `adapter.cc`, `keys.cc`) are now all fully decompiled** (see the patch note in §2 above) — dropped from this table. `usb_host_audio_topology.cc` is now the top cheap-win target.
+**Correction this session**: the session-13 version of this table omitted `tasks.c` (1,736 remaining bytes) from the top 10 despite it having more remaining bytes than the #10 entry at the time (`firmware_image_upload.cc`, 1,714) — an apparent oversight, not a methodology change. Restored to its correct rank (#10) this pass; `firmware_image_upload.cc` drops to #11.
 
 | Rank | Src file | Remaining funcs | Remaining bytes | Already decompiled |
 |---:|---|---:|---:|---:|
@@ -214,33 +214,33 @@ Files fully decompiled already (0 remaining bytes), 17 of 139 (up from 12): `bcm
 | 7 | `usb_audio_receive.cc` | 8 | 1994 | 0/8 |
 | 8 | `key_value_store.cc` | 6 | 1968 | 0/6 |
 | 9 | `application_state.cc` | 6 | 1956 | 0/6 |
-| 10 | `firmware_image_upload.cc` | 1 | 1714 | 0/1 |
+| 10 | `tasks.c` | 15 | 1736 | 4/19 |
 
-Ranks 8-10 are carried forward from §2's full per-file table (not independently re-verified against `analysis/decomp/` this session beyond the three rows patched above) — worth a quick re-check before starting on them in case a concurrent session has already touched them.
+(#11, just outside the table: `firmware_image_upload.cc`, 1 func / 1714 bytes, 0/1 decompiled.)
 
-`state_machine.cc` remains the only file in this top-10 with any progress (1/11) — a natural next cheap-win pick since it's already partway there. Note three of the four USB-audio-shaped files here (`usb_host_audio_topology.cc`, `usb_host_audio.cc`, `usb_audio_receive.cc`) plus `audio_states.cc` look like they could be one coherent "USB audio subsystem" sweep worth doing together rather than file-by-file, given the accessory/headphone-jack audio hardware (`sound_codec_wm8904.cc`, `headphone_state_machine.cc`, `accessory_detect_ts3a227e.cc`) already visible elsewhere in §2's table.
+No further movement this round on any of these 10 — `tasn_dec.c`/`adapter.cc`/`keys.cc` (session 15) and the log-buffer framework's attributed files (session 14/15) that *did* complete this round were all outside this list already (smaller files, see §2). `state_machine.cc` remains the only top-10 entry with any progress (1/11) — still the natural next cheap-win pick. The USB-audio cluster (`usb_host_audio_topology.cc`, `usb_host_audio.cc`, `usb_audio_receive.cc`, `audio_states.cc`) is still worth doing as one coherent sweep rather than file-by-file, per session 13's note — untouched since.
 
 Regenerate the full per-file remaining-function list anytime with:
 ```python
 # addresses in bruce_srcmap.csv for src_file == X, minus addresses with a header-matching file in analysis/decomp/
 ```
-(join key is the 8-hex-digit address suffix on the decomp filename / the first line's address, *not* the filename string — see methodology note on stale names below.)
+(join key is the 8-hex-digit address suffix on the decomp filename / the first line's address, *not* the filename string.)
 
 ### 3b. Unattributed contiguous address ranges — candidate whole modules
 
-Same 168 runs as every prior snapshot (the attributed set hasn't changed, so run boundaries are identical) — only the "already decompiled" counts moved. Run #1 continues to be an *identified* module (§1a), not an unknown blob — kept in this table for continuity (it's still the biggest single lever by size) but should be read as "still has 36.7% left to decompile," not "still unidentified."
+Same 168 runs as every prior snapshot (the attributed set hasn't changed, so run boundaries are identical, re-verified this session: span sum 899,666 / code-bytes sum 563,120 = 660,570 − 97,450 exactly) — only the "already decompiled" counts moved.
 
 | # | Start | End | Span (B) | Code bytes | Funcs | Already decompiled | Density | Largest function in range |
 |---:|---|---|---:|---:|---:|---:|---:|---|
-| 1★ | `0x600921b8` | `0x600c9cc4` | 228108 | 204449 | 1076 | 410 | 89.6% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |
-| 2 | `0x600ecb72` | `0x6013d4e4` | 330098 | 95117 | 1006 | 5 | 28.8% | `FUN_601054dc` (2546B @ `601054dc`) |
-| 3 | `0x600df286` | `0x600ea868` | 46562 | 44326 | 316 | 9 | 95.2% | `FUN_600e398a` (6270B @ `600e398a`) |
-| 4 | `0x600cc6e4` | `0x600d4560` | 32380 | 24998 | 304 | 4 | 77.2% | `FUN_600ccfb4` (1568B @ `600ccfb4`) |
-| 5 | `0x600d8a12` | `0x600df24c` | 26682 | 23204 | 399 | 7 | 87.0% | `FUN_600dcf8c` (984B @ `600dcf8c`) |
+| 1★ | `0x600921b8` | `0x600c9cc4` | 228108 | 204449 | 1076 | 490 | 89.6% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |
+| 2† | `0x600ecb72` | `0x6013d4e4` | 330098 | 95117 | 1006 | 14 | 28.8% | `FUN_601054dc` (2546B @ `601054dc`) |
+| 3† | `0x600df286` | `0x600ea868` | 46562 | 44326 | 316 | 15 | 95.2% | `FUN_600e398a` (6270B @ `600e398a`) |
+| 4† | `0x600cc6e4` | `0x600d4560` | 32380 | 24998 | 304 | 35 | 77.2% | `FUN_600ccfb4` (1568B @ `600ccfb4`) |
+| 5† | `0x600d8a12` | `0x600df24c` | 26682 | 23204 | 399 | 16 | 87.0% | `FUN_600dcf8c` (984B @ `600dcf8c`) |
 | 6 | `0x6004cd58` | `0x60051164` | 17420 | 17174 | 10 | 1 | 98.6% | `FUN_6004cdb8` (15662B @ `6004cdb8`) |
 | 7 | `0x60086720` | `0x6008ac36` | 17686 | 14608 | 19 | 0 | 82.6% | `FUN_60087970` (4036B @ `60087970`) |
 | 8 | `0x60040500` | `0x60047038` | 27448 | 12698 | 92 | 10 | 46.3% | `FUN_60043ecc` (1364B @ `60043ecc`) |
-| 9 | `0x60054f30` | `0x60058570` | 13888 | 10908 | 66 | 0 | 78.5% | `FUN_60056fa4` (1694B @ `60056fa4`) |
+| 9 | `0x60054f30` | `0x60058570` | 13888 | 10908 | 66 | 1 | 78.5% | `FUN_60056fa4` (1694B @ `60056fa4`) |
 | 10 | `0x6004898c` | `0x6004cb5c` | 16848 | 10520 | 171 | 25 | 62.4% | `FUN_6004a4e6` (840B @ `6004a4e6`) |
 | 11 | `0x600d56b8` | `0x600d89ec` | 13108 | 10254 | 177 | 3 | 78.2% | `FUN_600d80f4` (260B @ `600d80f4`) |
 | 12 | `0x6007b96c` | `0x6007e69c` | 11568 | 9552 | 53 | 0 | 82.6% | `FUN_6007d144` (980B @ `6007d144`) |
@@ -248,15 +248,14 @@ Same 168 runs as every prior snapshot (the attributed set hasn't changed, so run
 | 14 | `0x60072260` | `0x60073b7c` | 6428 | 6400 | 3 | 2 | 99.6% | `FUN_600723b4` (6088B @ `600723b4`) |
 | 15 | `0x6006c35c` | `0x6006e480` | 8484 | 5784 | 53 | 0 | 68.2% | `FUN_6006d998` (712B @ `6006d998`) |
 
-★ = identified module (§1a), not an unknown blob — kept in this "unattributed" table only because it fails the strict `bruce_srcmap.csv` join, not because it's a mystery.
+★ = fully identified module (§1a) — the confirmed BTA/BTE stack.
+† = **partially identified this round** — `analysis/bruce-log-buffer.md` (sessions 14–15) traced real, named clusters inside these four runs (same representational pattern as the ★ marker, one tier down in confidence/completeness — see below). Not a whole-range identification like BTA/BTE; each of these runs is still mostly either genuinely unidentified or generic C-library code, with the log-buffer-framework functions accounting for only a modest slice of each run's *decompiled* count, not its total.
 
-168 unattributed runs total (unchanged); span across all of them sums to 899,666 bytes, code bytes sum to 563,120 (both unchanged from every prior snapshot — run boundaries and their contents outside `analysis/decomp/` are a function of the attributed set only, which hasn't changed; 563,120 = 660,570 − 97,450 exactly, a good consistency check on this pass).
+Per-range deltas vs. the session-13 snapshot, for the top 15: run #1 (BTA) **410→490** (+80, the concurrent session caught mid-run by this snapshot — see §1a), run #2 **5→14** (+9, `bruce-log-buffer.md`'s emit/append/sink engine + the `StreamLogBuffer` RPC handler + the 16-entry debug-command dispatch table, all sitting in this run's `0x60100exx`–`0x60103xxx` sub-span), run #3 **9→15** (+6, a BoringSSL/OpenSSL runtime-support extension — `ERR_put_error`-shaped ring buffer, `OPENSSL_malloc`-shaped allocator, bignum helpers — called from `bcm.c`/`evp.c`/`tasn_dec.c`, not part of the log-buffer framework itself but found via the same session's sweep), run #4 **4→35** (+31, the single biggest scattered mover — the log-buffer framework's core buffer ctor/dtor/emit cluster, plus incidentally-identified fdlibm-shaped float math and a newlib `vfprintf`-shaped formatter core, all coexisting in this one range), run #5 **7→16** (+9, a GKI buffer-pool free-list allocator pair plus BTA/BTE-control-block-shaped zero-init code — extends `bruce-bta-stack.md`'s territory beyond its formal block boundary — plus one stray radix-4 FFT butterfly), run #6–8/10–15 **unchanged** except run #9 **0→1** (+1, untraced this session, likely incidental). Full per-run detail and evidence for all of these is in `bruce-log-buffer.md`, not reproduced here.
 
-Per-range deltas vs. the session-8 snapshot (using that doc's own strict-join numbers, not `bruce-bta-stack.md`'s self-reported prose figure), for the top 15: run #1 **319→410** (the single biggest mover this round — 91 more BTA/BTE functions decompiled), #2 **2→5**, #3 7→9, #4 2→4, #5 4→7, #6 1→1 (no change), #7 0→0 (no change), #8 9→10, #9 0→0 (no change), #10 25→25 (no change — no further work landed in this range since the earlier 3→25 jump), #11 2→3, #12 0→0 (no change), #13 3→3 (no change), #14 2→2 (no change), #15 0→0 (no change).
+**#1 remains the headline finding by size**: `0x600921b8`–`0x600c9cc4`, 204,449 bytes of dense (89.6%) code across 1,076 functions, the confirmed Broadcom BTA/BTE Bluetooth stack (`analysis/bruce-bta-stack.md`), now **72.9% decompiled by size** (up from 63.3% at session 13, and that jump happened *during this session's own snapshot-taking* — see §1a). **586 functions / 55,458 bytes remain in this block.**
 
-**#1 remains the headline finding by size, and its status keeps improving: `0x600921b8`–`0x600c9cc4`, 204,449 bytes of dense (89.6%) code across 1,076 functions, is the confirmed Broadcom BTA/BTE Bluetooth stack (`analysis/bruce-bta-stack.md`), now 63.3% decompiled by size** (up from 45.3% at the session-8 snapshot). Full evidence for the identification (a ~400-entry leaked BTA function-name string table, HCI command opcodes verified byte-for-byte against the spec, and the top-level HCI event dispatcher's switch matching the real HCI/LE-Meta event-code tables) is in that doc, along with a module-by-module address-range map (HCI transport, BTM, BTA DM, GATT client+server, L2CAP, SDP, SMP, and NIST P-256/P-192 EC field arithmetic for LE Secure Connections). **666 functions / 75,044 bytes remain in this block.**
-
-Runner-up #2 (`0x600ecb72`–`0x6013d4e4`, 330 KB span but only 28.8% density) picked up 3 more decompiled functions this round (2→5) but is still overwhelmingly untouched. `bruce-bta-stack.md` separately notes that many of `smp_sm_event`'s 54 callers live in `0x600faxxx`–`0x600fcxxx`, inside this run — meaning run #2 likely contains a substantial chunk of real SMP per-state-handler code, not just miscellaneous ITCM-thunk mechanical tail code. Still worth a dedicated string-xref sweep before the next full-doc regeneration, per that doc's own "New lead for a future session" note.
+Run #2 (`0x600ecb72`–`0x6013d4e4`, 330 KB span, still only 28.8% density) remains the largest still-mostly-unmapped range. `bruce-bta-stack.md` separately notes `smp_sm_event`'s 54 callers live in `0x600faxxx`–`0x600fcxxx`, inside this run — still strong circumstantial evidence for a real pocket of SMP per-state-handler code here, not yet swept. `bruce-log-buffer.md` additionally confirms this run's `0x60102xxx`–`0x60103xxx` sub-span is a dense mixed debug/diagnostic string-table region (RPC command names, Synaptics audio-debug strings, the BTA build-banner string all sit within a few hundred bytes of each other) — useful color for anyone navigating this run next, but not itself a large decompile win. Still the best candidate for genuinely new-territory progress at scale.
 
 ## 4. The honest bottom line
 
@@ -265,27 +264,27 @@ Of **4,995 total functions** (the current census — see the 5,137-vs-4,995 disc
 | | Functions | Bytes |
 |---|---:|---:|
 | Attributed to a source file | 448 | 97,450 |
-| Decompiled (in census) | 634 | 201,935 |
-| — of which both attributed AND decompiled | 106 | 26,246 |
-| — of which in the identified-but-not-formally-attributed BTA/BTE stack (§1a) | 410 | 129,405 |
-| **Understood in some way (union)** | **976 (19.5%)** | **273,139 (41.4%)** |
-| **Completely unknown — no attribution, no decompile, no module ID** | 4,019 (80.5%), or **3,353 (67.1%) excluding BTA-identified** | 387,431 (58.7%), or **312,387 (47.3%) excluding BTA-identified** |
+| Decompiled (in census) | 836 | 246,879 |
+| — of which both attributed AND decompiled | 160 | 38,514 |
+| — of which in the identified-but-not-formally-attributed BTA/BTE stack (§1a) | 490 | 148,991 |
+| **Understood in some way (union)** | **1,124 (22.5%)** | **305,815 (46.3%)** |
+| **Completely unknown — no attribution, no decompile, no module ID** | 3,871 (77.5%), or **3,285 (65.8%) excluding BTA-identified** | 354,755 (53.7%), or **299,297 (45.3%) excluding BTA-identified** |
 
-**Compared to the session-8 snapshot: union coverage grew by function count (17.0% → 19.5%) and by byte-weight (35.4% → 41.4%).** The "truly unidentified, no module guess at all" byte figure improved only slightly (47.7% → 47.3%) — most of this round's gains landed inside the already-*identified* BTA/BTE block (moving functions from "identified but undecompiled" to "decompiled," a real quality upgrade that doesn't move the "truly unidentified" needle) rather than opening new unidentified territory. That's expected and still valuable progress: the single biggest coherent subsystem in the image (the BTA/BTE Bluetooth stack) is now nearly two-thirds decompiled by size, up from under half.
+**Compared to the session-13 snapshot: union coverage grew by function count (19.5% → 22.5%) and by byte-weight (41.4% → 46.3%).** The "truly unidentified, no module guess at all" byte figure improved from 47.3% to **45.3%**, a real ~2-point gain — and unlike the session-8→13 comparison (where most gains sat inside the already-identified BTA block and didn't move this number at all), **this round's improvement is entirely attributable to genuinely new territory** opened by the log-buffer-framework work (sessions 14–15) and its incidental BoringSSL/GKI extensions. This is provable directly from the numbers: the "truly unidentified" byte figure is mathematically *exactly* `358,671 − (scattered non-BTA-non-attributed decompiled bytes)` — a fixed constant (`total_bytes − attributed_bytes − BTA_block_bytes`) minus whatever's been decompiled outside both the attributed set and the BTA block. BTA/BTE progress (even this session's own concurrent +80-function jump) provably cannot move this number by construction; only work in the "scattered" bucket can, and this round scattered grew by 13,090 bytes (118→186 functions) — the log-buffer framework's genuine contribution. Worth internalizing this distinction going forward: **BTA/BTE progress is valuable (it's finishing an already-mapped subsystem) but it will never shrink the "truly unidentified" figure — only work that identifies genuinely new clusters (like session 14's log-buffer find) does that.**
 
-**3,353 functions and ~312 KB of code — still just under half the binary by size — remain truly unidentified with no attribution, no decompile, and no module ID of any kind.** That's the real remaining scope of the "full decompile to source-reconstruction quality" goal. The single best next lever by size is still finishing §1a/§3b-run-#1 (666 functions / 75,044 bytes still to decompile, but already identified — cheap in the sense that no more detective work is needed, just `Decompile.java` + read, same as §3a); the next cheapest *fresh-territory* win is `tasn_dec.c` (§3a, still fully untouched); and run #2 (330 KB, mixed ITCM-thunk mechanical work plus a real pocket of SMP state-handler code per `bruce-bta-stack.md`) remains the best candidate for genuinely new-territory progress at scale, now that most of the "cheap, already-identified" BTA work is roughly two-thirds done.
+**3,285 functions and ~299 KB of code — just under half the binary by size — remain truly unidentified with no attribution, no decompile, and no module ID of any kind.** That's the real remaining scope of the "full decompile to source-reconstruction quality" goal. The single best next lever by size is still finishing §1a/§3b-run-#1 (586 functions / 55,458 bytes still to decompile, but already identified, cheap in the "no more detective work needed" sense — and apparently already being worked concurrently as of this snapshot); the best candidate for *new* territory at scale remains run #2 (330 KB, mixed ITCM-thunk mechanical work, a real pocket of SMP state-handler code, and a debug-string-table region, per `bruce-bta-stack.md` and `bruce-log-buffer.md`); and the top-10 cheap-win attributed files in §3a (`usb_host_audio_topology.cc` and the rest of the USB-audio cluster, `state_machine.cc`, `device_info.cc`, `remote_device_db.cc`, `key_value_store.cc`, `application_state.cc`, `tasks.c`) remain completely untouched since session 13.
 
 ## Methodology (for regenerating this doc)
 
 Inputs: `analysis/ghidra/bruce_functions.csv` (address, name, size_bytes — full census), `analysis/ghidra/bruce_srcmap.csv` (address, name, src_file — 448-row attribution), `analysis/decomp/*.c` (one file per decompiled function; first line is a `// <addr>  <name>  size=<N> bytes` header written by `Decompile.java` — parse *that*, not the filename, for address/size ground truth).
 
 Join key is always the **8-hex-digit address**, lowercase, zero-padded — not the name string. Same gotchas as every prior session, still true:
-1. `bruce_functions.csv`'s `name` column is stale (pre-attribution `FUN_xxxxxxxx` defaults) for every one of the 448 attributed addresses; only `bruce_srcmap.csv` has the current name. Sizes/addresses in `bruce_functions.csv` are fine (re-spot-checked this session: 0 mismatches between census size and decomp-header size across all 634 in-census decompiled functions).
-2. Not every file in `analysis/decomp/` corresponds to a census address — `Decompile.java` will create a function (and thus a decomp file) at an address Ghidra's auto-analysis didn't already recognize as a function boundary. 133 of 767 current decomp files are like this (all ≤364 bytes, same pattern as prior sessions) — exclude them from census-relative stats or the percentages won't reconcile against `bruce_functions.csv`'s totals.
-3. For any block identified by means *other* than `bruce_srcmap.csv` (i.e. string-table cross-reference, as in `bruce-bta-stack.md`, rather than a leaked `__FILE__` path): **do not fold it into the "Attributed" join.** Keep it as a separate reported tier (this doc's §1a) so the core `bruce_srcmap.csv`-based join stays a clean, mechanically-reproducible number, while still surfacing the fact that "unattributed" isn't the same thing as "unidentified" for that range. When computing §1a's own decompiled-count, use a fresh strict address-join against the current `analysis/decomp/` state — **don't** just copy `bruce-bta-stack.md`'s self-reported running-count prose, which is only updated when that doc itself is hand-edited and can lag well behind the actual directory contents (this session found 410/1,076 by join vs. that doc's stale self-reported 328).
+1. `bruce_functions.csv`'s `name` column is stale (pre-attribution `FUN_xxxxxxxx` defaults) for every one of the 448 attributed addresses; only `bruce_srcmap.csv` has the current name. Sizes/addresses in `bruce_functions.csv` are fine (re-spot-checked this session: 0 mismatches between census size and decomp-header size across all 836 in-census decompiled functions).
+2. Not every file in `analysis/decomp/` corresponds to a census address — `Decompile.java` will create a function (and thus a decomp file) at an address Ghidra's auto-analysis didn't already recognize as a function boundary. 140 of 976 current decomp files are like this (all ≤364 bytes, same pattern as prior sessions) — exclude them from census-relative stats or the percentages won't reconcile against `bruce_functions.csv`'s totals.
+3. For any block identified by means *other* than `bruce_srcmap.csv` (i.e. string-table cross-reference, as in `bruce-bta-stack.md`, or call-graph/shape identification, as in `bruce-log-buffer.md`, rather than a leaked `__FILE__` path): **do not fold it into the "Attributed" join.** Keep it as a separate reported tier or annotation (§1a's numeric tier for the large, cleanly-bounded BTA/BTE block; §3b's lighter-weight `†` annotation for the log-buffer framework's more scattered, partial-range identifications) so the core `bruce_srcmap.csv`-based join stays a clean, mechanically-reproducible number, while still surfacing that "unattributed" isn't the same thing as "unidentified." When computing §1a's own decompiled-count, use a fresh strict address-join against the current `analysis/decomp/` state — **don't** just copy `bruce-bta-stack.md`'s self-reported running-count prose, which lags well behind the actual directory contents (this session found 490/1,076 by join vs. that doc's stale self-reported figures from session 9).
 
 Unattributed contiguous ranges (§3b) = walk `bruce_functions.csv` in address order, group maximal runs where no function's address is in the attributed set, compute span (last function's end − first function's start) and code_bytes (sum of `size_bytes` in the run) separately since span includes non-function bytes.
 
-**A note on snapshot consistency**, learned again this session: if `analysis/decomp/` is being actively written to by a concurrent session, take **one single directory listing + parse pass** and derive every table in the doc from that same in-memory snapshot (e.g. dump to a pickle/dict and reuse it), rather than re-listing the directory for each table. A first exploratory pass this session read 677 decomp files; a later pass 90 seconds later read 767 — using a stale count for one table and a fresher one for another would have produced internally-inconsistent numbers (e.g. a per-file table that doesn't sum to the top-line total). This doc's final numbers are all from the 767-file read.
+**A note on snapshot consistency**, reconfirmed again this session (first learned session 13): if `analysis/decomp/` is being actively written to by a concurrent session, take **one single directory listing + parse pass** and derive every table in the doc from that same in-memory snapshot, rather than re-listing the directory for each table. This session's first exploratory pass read 896 decomp files; a routine re-check 90 seconds later found 976 — the gap was entirely inside the BTA/BTE block (410→490 decompiled), consistent with a concurrent session actively sweeping that exact block. All of this doc's final numbers are from a single, final 976-file read (parsed once, cached, and reused for every table above) — using a stale count for one table and a fresher one for another would have produced internally-inconsistent numbers (e.g. a per-file table that doesn't sum to the top-line total, or a §1a figure that doesn't match §4's).
 
-See also: `bruce-ghidra.md` (workspace/tooling, original module-mass table), `bruce-io-paths.md` / `bruce-crypto.md` / `bruce-itcm.md` (subsystem-level narrative findings for functions already decompiled), `bruce-bta-stack.md` (the BTA/BTE stack identification and address-range map — its prose is stale relative to this doc's function-count/byte figures as of this snapshot, see §1a), `firmware-map.md` (bruce vs gotham top-level structure).
+See also: `bruce-ghidra.md` (workspace/tooling, original module-mass table), `bruce-io-paths.md` / `bruce-crypto.md` / `bruce-itcm.md` (subsystem-level narrative findings for functions already decompiled), `bruce-bta-stack.md` (the BTA/BTE stack identification and address-range map — its prose is stale relative to this doc's function-count/byte figures as of this snapshot, see §1a), `bruce-log-buffer.md` (the codebase-wide log/message-buffer framework — sessions 14–15, see §2/§3b), `firmware-map.md` (bruce vs gotham top-level structure).
