@@ -4,6 +4,8 @@ Data-driven status doc for the "decompile all of `bruce` to source-reconstructio
 
 **Snapshot: 2026-08-16 01:21 EDT (session ~13 regeneration).** Full refresh of every table in the doc, built on top of sessions 9–13's work since the session-8 baseline: all 52 `bcm.c` functions (BoringSSL BIGNUM/EC, not a Broadcom BT driver — see CLAUDE.md's known-traps note), the button/ADC/report-packing investigation (sessions 8–12, `bruce-io-paths.md`), and continued BTA/BTE stack decompilation. `analysis/decomp/` **was growing live while this snapshot was taken** — a first pass mid-session read 677 files, a later pass 90 seconds later read 767 — consistent with a concurrent session actively decompiling, per this task's own heads-up. All tables below are built from **one single consistent read** taken at 767 files (`analysis/decomp/`), joined against the unchanged `bruce_functions.csv` (4,995 rows) and `bruce_srcmap.csv` (448 rows, 139 src files — no re-import happened, same as every prior snapshot). As always: treat every count below as a lower bound as of the snapshot instant, not a hard current total — re-run before trusting exact numbers for planning.
 
+**Session 15 patch (2026-08-16, on top of this snapshot):** hand-applied §2/§3a updates only, for `tasn_dec.c`/`adapter.cc`/`keys.cc` going to fully-decompiled (see the inline patch notes in §2 and §3a) — not a full re-join, so §1/§1a/§3b/§4's top-line numbers below still reflect the session-13 snapshot and are correspondingly stale on top of it (they don't yet reflect these 3 files, sessions 14's work, or any other concurrent session's progress). Re-run the full methodology before trusting exact top-line percentages.
+
 Unlike the session-8→9 patch (a hand-adjustment of a few numbers), this is a full mechanical re-join from scratch, so there's no separate "patch" section this time — every number below, including the BTA/BTE block figures in §1a, comes from the same strict address-join against the current `analysis/decomp/` state described in [Methodology](#methodology). Note this means the BTA/BTE-block decompiled count here (**410 of 1,076**) is computed the same way as last time's self-consistent 319, not compared against `bruce-bta-stack.md`'s own self-reported running count (328, last updated at that doc's session 8 — stale relative to this snapshot, since sessions 9–13's concurrent BTA work hadn't been written back into that doc's prose as of this pass). See the §1a footnote for that discrepancy.
 
 ## 1. Top-line stats
@@ -53,10 +55,10 @@ That 666/75,044 is a subset of §1's "Totally unknown" row. Netting it out gives
 |---|---:|---:|---:|---:|---:|
 | `bcm.c` | 52 | 52 | 11548 | 11548 | 0 |
 | `timer.h` | 9 | 3 | 4016 | 2684 | 1332 |
-| `tasn_dec.c` | 7 | 0 | 3856 | 0 | 3856 |
+| `tasn_dec.c` | 7 | 7 | 3856 | 3856 | 0 |
 | `state_machine.cc` | 11 | 1 | 3332 | 604 | 2728 |
-| `keys.cc` | 19 | 2 | 3296 | 280 | 3016 |
-| `adapter.cc` | 16 | 1 | 3216 | 96 | 3120 |
+| `keys.cc` | 19 | 19 | 3296 | 3296 | 0 |
+| `adapter.cc` | 16 | 16 | 3216 | 3216 | 0 |
 | `usb_host_audio_topology.cc` | 8 | 0 | 2876 | 0 | 2876 |
 | `audio_states.cc` | 6 | 0 | 2392 | 0 | 2392 |
 | `usb_host_audio.cc` | 9 | 0 | 2346 | 0 | 2346 |
@@ -191,30 +193,32 @@ That 666/75,044 is a subset of §1's "Totally unknown" row. Netting it out gives
 | `init.cc` | 1 | 0 | 22 | 0 | 22 |
 | `exit.c` | 1 | 0 | 16 | 0 | 16 |
 
-Files fully decompiled already (0 remaining bytes), 17 of 139 (up from 12): `bcm.c`, `gatt_server.cc`, `main.cc`, `sleep_driver.cc`, `haptics.cc`, `mimxrt10xx_flash_memory.cc`, `gatt_server.h`, `haptics_cluster.cc`, `input_task.cc`, `io_pin.cc`, `advertiser.cc`, `adc.h`, `switch_pro_controller.cc`, `board.cc`, `hid_input_target.cc`, `platform.h`, `evp.c`. New completions this round vs. session 8: `gatt_server.cc` (0/8 → 8/8), `gatt_server.h` (0/3 → 3/3), `main.cc` (1/2 → 2/2), `advertiser.cc` (0/1 → 1/1), `platform.h` (0/1 → 1/1). Partial-progress files worth noting: `tasks.c` (3/19 → 4/19), `queue.c` unchanged at 6/12, `timer.h` (2/9 → 3/9), `state_machine.cc` (0/11 → 1/11), `adapter.cc` (0/16 → 1/16), `keys.cc` unchanged at 2/19.
+Files fully decompiled already (0 remaining bytes), 17 of 139 (up from 12): `bcm.c`, `gatt_server.cc`, `main.cc`, `sleep_driver.cc`, `haptics.cc`, `mimxrt10xx_flash_memory.cc`, `gatt_server.h`, `haptics_cluster.cc`, `input_task.cc`, `io_pin.cc`, `advertiser.cc`, `adc.h`, `switch_pro_controller.cc`, `board.cc`, `hid_input_target.cc`, `platform.h`, `evp.c`. New completions this round vs. session 8: `gatt_server.cc` (0/8 → 8/8), `gatt_server.h` (0/3 → 3/3), `main.cc` (1/2 → 2/2), `advertiser.cc` (0/1 → 1/1), `platform.h` (0/1 → 1/1). Partial-progress files worth noting: `tasks.c` (3/19 → 4/19), `queue.c` unchanged at 6/12, `timer.h` (2/9 → 3/9), `state_machine.cc` (0/11 → 1/11).
+
+**Session 15 targeted patch (hand-applied, not a full mechanical re-join — see note below):** `tasn_dec.c` (0/7 → **7/7, file complete**, extends `bruce-crypto.md`'s ASN.1/BoringSSL narrative — it's `crypto/asn1/tasn_dec.c`, the DER decode engine), `adapter.cc` (1/16 → **16/16, file complete**, documented in `bruce-bta-stack.md`'s new "Session 15" subsection — a first-party BLE peripheral-adapter wrapper over the `gatt_server.cc`/BTA_GATTS engine, with a promising unexplored subscribe/unsubscribe vtable-dispatch lead for `bruce-io-paths.md`'s report-packing thread), `keys.cc` (2/19 → **19/19, file complete**, documented in `bruce-misc-functions.md`'s new "Session 15" subsection — confirms it's a generic typed config/property KV store, reinforcing CLAUDE.md's known trap). **Files fully decompiled count is now 20 of 139** (17 above + these 3). All three files' new byte totals were cross-checked by summing individual decompiled-function sizes against the pre-existing "Total bytes" column and matched exactly (tasn_dec.c 3856, adapter.cc 3216, keys.cc 3296 — see `analysis/decomp/tasn_dec__*.c` / `adapter__*.c` / `keys__*.c`), so these three rows are trustworthy even though the rest of the doc (§1, §1a, §3b, §4 top-line stats) was **not** re-joined this pass and is now mildly stale on top of session 13's own staleness re: sessions 14+ concurrent BTA/BTE work — a full regeneration per [Methodology](#methodology) is still owed whenever convenient.
 
 ## 3. Prioritized gap list
 
 ### 3a. Attributed-but-not-yet-decompiled — cheapest wins (top 10 files by remaining bytes)
 
-`tasn_dec.c` remains the single largest fully-untouched attributed file and the top cheap-win target — file and function boundaries are already known, this is purely `Decompile.java` + a read.
+**Session 15 update: the former #1–#3 (`tasn_dec.c`, `adapter.cc`, `keys.cc`) are now all fully decompiled** (see the patch note in §2 above) — dropped from this table. `usb_host_audio_topology.cc` is now the top cheap-win target.
 
 | Rank | Src file | Remaining funcs | Remaining bytes | Already decompiled |
 |---:|---|---:|---:|---:|
-| 1 | `tasn_dec.c` | 7 | 3856 | 0/7 |
-| 2 | `adapter.cc` | 15 | 3120 | 1/16 |
-| 3 | `keys.cc` | 17 | 3016 | 2/19 |
-| 4 | `usb_host_audio_topology.cc` | 8 | 2876 | 0/8 |
-| 5 | `state_machine.cc` | 10 | 2728 | 1/11 |
-| 6 | `audio_states.cc` | 6 | 2392 | 0/6 |
-| 7 | `usb_host_audio.cc` | 9 | 2346 | 0/9 |
-| 8 | `device_info.cc` | 7 | 2300 | 0/7 |
-| 9 | `remote_device_db.cc` | 4 | 2070 | 0/4 |
-| 10 | `usb_audio_receive.cc` | 8 | 1994 | 0/8 |
+| 1 | `usb_host_audio_topology.cc` | 8 | 2876 | 0/8 |
+| 2 | `state_machine.cc` | 10 | 2728 | 1/11 |
+| 3 | `audio_states.cc` | 6 | 2392 | 0/6 |
+| 4 | `usb_host_audio.cc` | 9 | 2346 | 0/9 |
+| 5 | `device_info.cc` | 7 | 2300 | 0/7 |
+| 6 | `remote_device_db.cc` | 4 | 2070 | 0/4 |
+| 7 | `usb_audio_receive.cc` | 8 | 1994 | 0/8 |
+| 8 | `key_value_store.cc` | 6 | 1968 | 0/6 |
+| 9 | `application_state.cc` | 6 | 1956 | 0/6 |
+| 10 | `firmware_image_upload.cc` | 1 | 1714 | 0/1 |
 
-Runner-up `tasn_dec.c` (ASN.1 DER decode, BoringSSL) top functions: `tasn_dec__6008fa18` (1410B), `tasn_dec__6008f794` (640B), `tasn_dec__6008ffc0` (514B) — unchanged from session 6/8, still untouched.
+Ranks 8-10 are carried forward from §2's full per-file table (not independently re-verified against `analysis/decomp/` this session beyond the three rows patched above) — worth a quick re-check before starting on them in case a concurrent session has already touched them.
 
-`adapter.cc` and `state_machine.cc` each picked up exactly one decompiled function this round (both now show 1/16 and 1/11 respectively) but remain the #2 and #5 cheapest-win targets by remaining bytes — 15 and 10 functions still fully unread in each file.
+`state_machine.cc` remains the only file in this top-10 with any progress (1/11) — a natural next cheap-win pick since it's already partway there. Note three of the four USB-audio-shaped files here (`usb_host_audio_topology.cc`, `usb_host_audio.cc`, `usb_audio_receive.cc`) plus `audio_states.cc` look like they could be one coherent "USB audio subsystem" sweep worth doing together rather than file-by-file, given the accessory/headphone-jack audio hardware (`sound_codec_wm8904.cc`, `headphone_state_machine.cc`, `accessory_detect_ts3a227e.cc`) already visible elsewhere in §2's table.
 
 Regenerate the full per-file remaining-function list anytime with:
 ```python

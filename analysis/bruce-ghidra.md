@@ -30,8 +30,8 @@ HL=/opt/homebrew/opt/ghidra/libexec/support/analyzeHeadless
 |---|---|---|
 | 52 | `bcm.c` | **Not** a Broadcom BT chip driver — see correction in `bruce-crypto.md`: this is BoringSSL's `crypto/fipsmodule/bcm.c` ("BoringCrypto Module") aggregate file, i.e. BIGNUM + generic EC_GROUP/EC_POINT/EC_KEY code (biggest module by function count) |
 | 19 | `tasks.c` | FreeRTOS scheduler |
-| 19 | `keys.cc` | button/key input handling |
-| 16 | `adapter.cc` | Bluetooth adapter/controller logic |
+| 19 | `keys.cc` | **Not** button/key input handling — a generic typed config/property key-value store (Get/Set/GetAsString/Erase, scalar + array-element accessors); fully decompiled and documented in `bruce-misc-functions.md`'s "Session 15" section. Known trap, see CLAUDE.md |
+| 16 | `adapter.cc` | A first-party BLE peripheral-adapter wrapper (GAP advertising-data assembly, GATT characteristic/subscribe fan-out) layered over the Broadcom `gatt_server.cc`/BTA_GATTS engine — not raw controller logic; fully decompiled and documented in `bruce-bta-stack.md`'s "Session 15" section |
 | 12 | `queue.c` | FreeRTOS queues |
 | 11 | `state_machine.cc` | app state machine |
 | 9 | `usb_host_audio.cc` | USB host audio |

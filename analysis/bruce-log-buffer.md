@@ -137,8 +137,79 @@ Not a single contiguous block — two clusters plus a supporting string table, i
 
 - Exact class name and full method set (only ~10 of what's probably a larger method family were read).
 - Whether `LOG`-style (informational, called unconditionally in normal control flow, e.g. `main.cc`/`timer.h`/`adc.h` call sites) and `CHECK`-style (only on an error/bounds branch, e.g. `dynamic_buffer.h`/`append_buffer.h`/`frames.h`) share one macro with a severity parameter or are two related-but-distinct macros — both idioms are visible but not disambiguated.
-- The actual sink transport: does `StreamLogBuffer` push over a BT GATT characteristic (there is BT-adjacent context nearby), USB, or something else? Would need to trace the registered-sink array's contents (the `(fn, ctx)` pairs `FUN_6010162e` walks) — not attempted this session, flagged as the natural next step for whoever picks this up.
+- ~~The actual sink transport~~ — **resolved, session 15, see below.** Short version: `FUN_6010162e`'s registered `(fn,ctx)` pairs are the ring-buffer *write* side, not the transport; the real "get logs off the device" path is the `StreamLogBuffer` RPC command, traced this session to a concrete handler and a generic per-channel transport fan-out (concrete UART/USB/BT class still unconfirmed).
 - `FUN_600d0332`'s cluster (§ What this does not explain) — a real, separate open question inside run #4, not part of this subsystem.
+
+## Session 15 — the sink/transport question, resolved (with a correction to session 14's `StreamLogBuffer` guess)
+
+**Correction first:** session 14 guessed `buffer__60058754` was "likely the `StreamLogBuffer` implementation itself." That guess was reasonable from the evidence available (the `"[ Dumping log entries ]"`/`"[ Log dump completed ]"` bracket strings) but **turned out to be one level removed from the truth** — see below for what it actually is.
+
+### 1. `FUN_6010162e`'s registered sinks are the ring-buffer *write* side, not an external transport
+
+Traced `FUN_6010162e`'s only two callers to find who calls `FUN_600cbe5c` (the function that writes `(fn,ctx)` pairs into the 3-slot sink array at `ctx_obj+0x15c/+0x164/+0x16c`, first-free-slot semantics — confirmed by decompiling it):
+
+- **`system_tasks__60058574`** (`system_tasks.cc`, called from `init__600cbdd4` — early boot init) registers slot 0 unconditionally: fn=`FUN_600d35aa` (a generic 6-byte double-indirect trampoline, `(*ctx_as_fnptr)(record)`), ctx=`FUN_60058510`. **`FUN_60058510` is not a transport — it's a severity-thresholded ring-buffer append**: it locks a mutex (`DAT_60058550`), compares the record's severity byte against two thresholds in a config struct (singleton at RAM `0x200132a4`), routes to one of two ring buffers (base+`0x804` or a second buffer object at RAM `0x20014ab8`), and calls `FUN_601015e6` — a textbook circular-buffer reserve/write/advance-with-wraparound/drop-oldest-on-full sequence (`FUN_6010156a`/`FUN_601015ba`/`FUN_6010155c`).
+- **`FUN_60079270`** (unattributed; sandwiched in the image between `get_device_data.cc` and `transfer_bug_report.cc`, and gated on `*(int*)(param_1+8)==5` — a state-5 handler) registers a *transient* second sink on a bug-report trigger, guarded by the string `"Failed to add log callback"`. This allocates a fresh ~0x120-byte buffer and captures the ring buffer's existing contents into it — this is almost certainly the `SaveBugReport`/`TriggerUserGeneratedBugReport` capture mechanism, **not** a live external transport either.
+
+So at boot, the *only* unconditional log sink is **in-RAM buffering**, not UART/USB/BLE.
+
+### 2. The real `StreamLogBuffer` RPC handler, found via raw binary scan of the command table
+
+Ghidra's static analysis never resolved code xrefs to the debug-command name strings at `0x6010277c`-`0x60103b94` (same "unresolved literal pointer table" limitation already noted for the BTA trace-string table) — confirmed again this session with `FindRef.java` (zero refs to `0x6010277c`, `0x601027b4`, `0x60103897`, etc.). Worked around it with a **raw byte scan of the flash image** for the pointer value itself (a technique worth reusing for future locked tables): searching `bruce_pvt_a_prod_signed.bin` for the little-endian bytes of `0x6010277c` found exactly one hit, at flash `0x6013cdcc`, sitting inside a dense, perfectly regular run of sixteen 20-byte records (found by then searching for the record's repeating shared field, `0x600ce31b` — 16 hits, stride 0x14, spanning `0x6013cd90`-`0x6013cec8`).
+
+Each record is `{name_ptr, 0, 0, common_trampoline=0x600ce31b, handler_fn_ptr}` (confirmed by cross-checking several handlers' decompiled bodies against their paired name — e.g. the record naming `"GetTaskStatistics"` has handler `0x600ce5cc`, which is a stack-guard wrapper calling `stats__60051b50`; the record naming `"StackTrace"` has handler `0x60051a14`, which walks the FreeRTOS task list and formats a per-task backtrace; the record naming `"CarawayBuildInfo"` has handler `0x60058318`, which builds `commit_hash`/`version`/`build_date`/`local_modifications`/`gotham_dvt` fields — all semantically exact matches for their names, confirming the layout). Full 16-entry table (address, name → handler):
+
+| Entry | Name | Handler |
+|---|---|---|
+| `0x6013cd90` | GetTaskStatistics | `0x600ce5cc` → `stats__60051b50` |
+| `0x6013cda4` | StackTrace | `0x60051a14` → `FUN_60051890` (per-task backtrace walk) |
+| `0x6013cdb8` | CarawayBuildInfo | `0x60058318` |
+| `0x6013cdcc` | **StreamLogBuffer** | **`0x6005872c`** |
+| `0x6013cde0` | DumpCalibration | `0x6005969c` |
+| `0x6013cdf4` | GothamStreamState | `0x6005bde8` |
+| `0x6013ce08` | GetGothamBuildVersion | `0x6005dafc` |
+| `0x6013ce1c` | GothamBuildType | `0x6005dabc` |
+| `0x6013ce30` | KvsProperties | `0x600d4562` |
+| `0x6013ce44` | BootloaderKvsMetadata | `0x6005dcc0` |
+| `0x6013ce58` | WakelockState | `0x6005e020` |
+| `0x6013ce6c` | GetExecutingPartitionId | `0x600618f8` |
+| `0x6013ce80` | GetRunningBootloaderVersion | `0x6006185c` |
+| `0x6013ce94` | GetRunningBootloaderPartition | `0x600618a0` |
+| `0x6013cea8` | CrashRegister | `0x60061d38` |
+| `0x6013cebc` | UxPatternLog | `0x6007f7a0` |
+
+(This table does **not** cover every debug-command string seen in session 14's Evidence §3 — `DumpDeviceInformation`/`ResetDeviceIds`/`GetCurrentTime`/`AllowUartLogging`/`RebootWithReason`/etc. aren't in it, so there is at least one more table or dispatch mechanism for those, not found this session.)
+
+**`StreamLogBuffer`'s handler, `FUN_6005872c`, decompiles to one line:** `FUN_60058600(_DAT_60058750 /* = 0x200132a4, the same ring-buffer singleton */, _DAT_6005874c /* = FUN_6005842c */, param_1 /* the RPC channel/session object */)`. This confirms `FUN_60058600` (already found in session 14 walking the two ring buffers merged by timestamp) is a **shared, generic "replay both ring buffers through a callback" utility** with two distinct use sites: session 14's `buffer__60058754`/bug-report-capture path (callback relays into `FUN_6010162e`, i.e. back into the sink array) and this session's real `StreamLogBuffer` RPC path (callback = `FUN_6005842c`, which formats each record and sends it out — see below). `buffer__60058754` is real code and does what session 14 described, it's just a sibling utility, not the RPC entry point itself.
+
+### 3. The transport: a generic, per-channel, vtable-based multi-sink fan-out — concrete class still unresolved
+
+`FUN_6005842c` (the per-record callback for the real `StreamLogBuffer` path) formats each ring-buffer record into a message buffer and calls **`FUN_60101302(channel_handle, msg_buf, len, priority=0x32)`**, using `channel_handle = param_1[6]` from the RPC channel object passed down from the dispatcher. `FUN_60101302` is a **second, independent registered-sink fan-out** (distinct from `FUN_6010162e`'s), this time OOP/vtable-style:
+
+```c
+for (i = 0; i < param_1[0x16]; i++) {           // param_1+0x54..: array of transport objects, count at +0x58
+    obj = ((int**)(param_1+0x54))[i];
+    if (obj && obj->vtable[3]() /* +0xc: "ready?" */ &&
+        (no_priority_gate || per_sink_level[i] <= priority)) {
+        result |= obj->vtable[2](obj, msg_buf, len);   // +8: "write(obj, data, len)"
+    }
+}
+```
+
+This is the **same function** other RPC command handlers use to send their replies (`FUN_6010138c`, the generic "build+send" wrapper used by `stats.cc` and ~10 other call sites, bottoms out in this same `FUN_60101302`) — i.e. it's the shared RPC-reply transport for the whole "cwy" command framework (see `cwy_header`/`cwy_rpc_dumpable_error` strings, referenced from `FUN_6005e810`/`FUN_6005e904` — a related but distinct dispatch-plumbing cluster whose exact relationship to the 16-entry table above wasn't nailed down this session), not something log-specific.
+
+**Not resolved this session:** where the vtable transport objects at `channel+0x54` get constructed/registered. That registration site would name the concrete transport class(es) (UART? USB CDC-ACM? a BLE GATT characteristic? more than one simultaneously, gated by the priority array?) and is the natural next step.
+
+### 4. On the vendor-USB-interface open thread (`firmware-map.md`): likely does *not* close it, but a concrete alternative lead surfaced
+
+Checked `bruce_srcmap.csv` for transport-shaped attributed files: the image has **both `uart.cc`** (4 functions attributed, e.g. `uart__60060b64` — low-level UART peripheral bring-up) **and `usb_device_cdc_acm.c`** (3 functions attributed — standard CDC-ACM virtual-serial-port class driver, USB class 0x02/0x0A). Neither was traced to `FUN_60101302`'s transport array this session (no call chain found), so this is circumstantial, not confirmed. Important distinction for the open thread in `firmware-map.md`: **CDC-ACM is a different, standard USB interface from the vendor-specific class-0xFF bulk-EP7 interface** that thread is asking about — so even if CDC-ACM turns out to carry this RPC/log traffic, it would be a **third** USB function in the composite device, not an answer to the class-0xFF question. This session does not close that thread.
+
+### Summary / confidence
+
+- **Confirmed, address-verified:** `FUN_6010162e`'s sinks are ring-buffer-ingestion callbacks, not a transport (high confidence — full call chain decompiled). The default boot-time sink is a severity-routed in-RAM ring buffer (`FUN_60058510`/`FUN_601015e6`, singleton at RAM `0x200132a4`).
+- **Confirmed, address-verified:** the real `StreamLogBuffer` RPC handler is `0x6005872c`, found via a 16-entry command-dispatch table at flash `0x6013cd90`-`0x6013cec8` (raw-scan-located, cross-validated against 3 other handlers' decompiled semantics). It replays the ring buffers through `FUN_60058600` into `FUN_6005842c`, which sends via `FUN_60101302`.
+- **Confirmed, address-verified:** `FUN_60101302` is a generic, per-RPC-channel, vtable-based multi-transport fan-out shared by all "cwy"-framework RPC command replies, not exclusive to logging.
+- **Not resolved:** the concrete transport class(es) registered into that vtable array — i.e. still cannot say definitively "it's UART" or "it's USB" or "it's BLE GATT," though `uart.cc` and `usb_device_cdc_acm.c` are the two standing candidates found this session (plus BT/BLE GATT, already mapped elsewhere in the project). Does not appear to connect to the still-open vendor-USB (class 0xFF, bulk EP7) thread — that remains open.
 
 ## Also investigated this session (extensions of already-identified subsystems, not new)
 
