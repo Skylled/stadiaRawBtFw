@@ -110,10 +110,10 @@ Given `(context table base, 1-indexed GPIO-bank number, 32-bit "which pins fired
 
 ### Pin-IRQ registration — `FUN_60060040` (flash `0x60060040`) — confirms the `FUN_60071624` lead from `bruce-misc-functions.md`
 `bruce-misc-functions.md` flagged `FUN_60071624` (16 board-bring-up calls right after GPIO-IRQ pin config) as "plausibly NVIC interrupt-registration." **Confirmed.** `FUN_60060040`, called from `FUN_60071624` and from `FUN_6006efd4`, given a pin-descriptor object:
-- Reads the pin's assigned shared IRQ number (u16 at pin+0x2c), validated by `FUN_600d49e4`: `return (*p - 0x50) < 10 || *p < 0x10;` — i.e. **IRQ 80–89 or IRQ <16** — 80–89 is *exactly* the 10 combined-GPIO-bank IRQ numbers surveyed above. Tight, direct confirmation this is GPIO-combined-IRQ-specific registration code.
-- Sets the corresponding bit in the real **NVIC ISER register array at `0xE000E100`** (`*(u32*)(0xE000E100 + (irq>>5)*4) = 1<<(irq&0x1f)`, both address and shift/mask pattern are the textbook Cortex-M "enable IRQ N" idiom), with DSB/ISB barriers.
-- If the pin object carries a stale previous registration (bookkeeping fields at +0x34/+0x38), clears that old slot's bit in the old GPIO bank's **IMR (Interrupt Mask Register, `bank_base+0x14`)**.
-- Computes a flat slot index via **`platform__6005ff5c(port, pin)`**, whose body's return expression `param_2 + (param_1 + 0x7ffffff) * 0x20` is `(port-1)*32 + pin` under mod-2³² arithmetic (plus range-validated logging: port must be 1–5, pin <32), and stores the pin-object pointer into `context_table + 4 + slot*4` — exactly the table `FUN_60049290` reads back from.
+- Reads the pin's assigned shared IRQ number (u16 at pin+0x2c) and checks it via `FUN_600d49e4`: `return (*p - 0x50) < 10 || *p < 0x10;` — i.e. **IRQ 80–89 or IRQ <16** — 80–89 is *exactly* the 10 combined-GPIO-bank IRQ numbers surveyed above.
+- **Correction (post-hoc audit, verified against raw flash bytes):** the block gated on this check is *not* an ISER "enable" for the combined-bank case — it's the opposite on both counts. (1) It only runs when `FUN_600d49e4` returns **false** (`iVar2==0`), i.e. for IRQs *outside* {<16, 80–89} — it is skipped entirely for the combined-bank IRQs this section is about. (2) The address it writes, `DAT_600600bc + ((irq>>5)+0x20)*4`, is not ISER: `DAT_600600bc` = `0xE000E100` (confirmed by reading the raw flash literal at that address — `0x200bc` in the image, bytes `00 e1 00 e0`), but the extra `+0x20` words (`0x80` bytes) is exactly the CMSIS `NVIC_Type` stride from `ISER[]` to `ICER[]`, so this is `NVIC_DisableIRQ(irq)` for the non-shared case, not an enable. The real, correctly-formed NVIC enable for these pins — `0xE000E100 + (irq>>5)*4`, no offset, confirmed via `DAT_6005f5c8` = `0xE000E100` in the raw image — plus IRQ-priority setup (AIRCR PRIGROUP read via `DAT_6005f5c4` = `0xE000ED00`, SHPR3 via `DAT_6005f5d0` = `0xE000ED14`) is in the sibling function `FUN_6005f534` (see the `FUN_60071624` paragraph below), which runs unconditionally for *every* registered pin, combined-bank or not. This doesn't change the overall chain/table-dispatch finding below, but `FUN_60060040` itself is registration bookkeeping (table-slot write + stale-slot cleanup), not the NVIC-enable step.
+- If the pin object carries a stale previous registration (bookkeeping fields at +0x34/+0x38), clears that old slot's bit in the old GPIO bank's **IMR (Interrupt Mask Register, `bank_base+0x14`)** — `DAT_600600c0` confirmed (raw image) to be the same 5-entry GPIO1–5 base-address table (`0x401B8000/0x401BC000/0x401C0000/0x401C4000/0x400C0000`) used elsewhere in this doc.
+- Computes a flat slot index via **`platform__6005ff5c(port, pin)`**, whose body's return expression `param_2 + (param_1 + 0x7ffffff) * 0x20` is `(port-1)*32 + pin` under mod-2³² arithmetic (plus range-validated logging: port must be 1–5, pin <32), and stores ~~the pin-object pointer~~ **(correction, session 9 below: it's the shared *context* argument, not the pin object — see "GPIO button-IRQ callback registration" section)** into `context_table + 4 + slot*4` — exactly the table `FUN_60049290` reads back from.
 
 `FUN_60071624(pin_obj, shared_ctx)` itself: unpacks 7 words of `pin_obj` and calls `FUN_60060040(DAT_6007165c, pin_obj[0..6], shared_ctx)`, then `FUN_600d9b7c(pin_obj)` (→ `io_pin__6005fe04` mux/IMR/ICR config + `FUN_6005f534`, a sibling NVIC-enable/IMR-set helper with the same shape as `FUN_60060040` but without the eviction logic).
 
@@ -127,10 +127,68 @@ From `xbara__600cbdc8`'s tail (the `FUN_60071624` call sequence, cross-checked a
 
 Corroborating evidence these are real physical buttons/digital inputs, not incidental config pins: **5 of these same offsets (`+0x374, +0x3ec, +0x428, +0x4a0, +0x518`) are read directly as raw GPIO input bits via `FUN_600ce24c`** (the "read one GPIO bit" primitive from the session-5 section) earlier in the same function — reading current state once at boot, then arming edge-IRQ for future changes on the same pins. Exactly the pattern you'd expect for buttons.
 
-### What's still open (this is now the precise, narrow next target)
-1. **Who writes each pin sub-object's callback function-pointer/argument (offsets +4/+8) at runtime.** Since the board object is `.bss`, this can't be static data — it needs a constructor call located somewhere between `Reset_Handler`'s `.bss`-zero loop and `xbara__600cbdc8`. Candidates: a C++ global-constructor/init-array table (not yet located for this image), or a dedicated per-peripheral constructor function not yet attributed to a source file. **This is now the direct predecessor of the still-missing report-packing function** — find the callback, read what it touches, and the button→report link should follow quickly.
+### What's still open as of session 8 (superseded by session 9 below, kept for history)
+1. ~~Who writes each pin sub-object's callback function-pointer/argument (offsets +4/+8) at runtime.~~ — **found, session 9 below** (short answer: a generic no-op, by default).
 2. ADC conversion trigger/result read: still unlocated, but now narrowed by the negative IRQ result above — it's polling or DMA-driven, definitively not interrupt-driven.
-3. **Report-packing function**: still unidentified — most efficiently reached by continuing from (1) now, rather than more heuristic function-size/pattern sweeps.
+3. **Report-packing function**: still unidentified.
+
+## GPIO button-IRQ callback registration (session 9, confirmed) — the constructor is found; it writes a no-op default
+
+Followed the exact session-8 target: who writes the per-pin table entries' `+4`/`+8` (callback fn ptr / arg) that `FUN_60049290` invokes. Found it — **`timer__60073bf0`** (the input/HID-task object constructor already covered above, under "Input subsystem construction") — but the answer complicates the picture rather than closing it: the value written is a literal no-op stub, and every other explanation examined leads to the same still-open question about what (if anything) later overrides it.
+
+### Correction to session 8: the table stores one *shared context* object, not a per-pin pointer
+
+`FUN_60060040` (the function `FUN_60071624` calls to actually populate a table slot) has a **9-argument** calling convention that Ghidra's decompiler recovers wrong — it only names `param_1` (r0) and silently drops two of the five stack-passed arguments it doesn't see referenced, which made the session-8 read of this function (via its broken pseudo-C) plausible but incorrect. Manually disassembled the raw Thumb-2 at flash `0x60060040` (session constraints ruled out `-import`, so this and the rest of this section's ISA-level detail come from disassembling the already-extracted `bruce_pvt_a_prod_signed.bin` directly with Capstone, cross-checked against the existing Ghidra decompile):
+
+```
+0x60060040: sub sp,#0x10 ; push {r4,r5,r6,lr}      ; r5=r0(table_base), r6=[sp,#0x30]=9th incoming arg (ctx)
+0x60060050: ldr r4,[r6]                             ; r4 = *ctx   (ctx's own "descriptor" field)
+0x60060052: add.w r0,r4,#0x2c ; bl FUN_600d49e4      ; check IRQ# at descriptor+0x2c against {<16, 80-89}
+0x6006005a: cbnz r0,#0x80                            ; skip the next block when the check is TRUE (matches)
+0x6006005c..7c: (only when check is FALSE, i.e. IRQ outside {<16,80-89}) NVIC_DisableIRQ(irq) via ICER
+                (DAT_600600bc=0xE000E100=NVIC base, +0x80-byte ICER stride — see the corrected
+                "Pin-IRQ registration" writeup above; this is a disable for the *non*-combined-bank
+                case, not an enable for the combined-bank one)
+0x60060080..9c: if descriptor+0x34 != 0, clear a stale prior GPIO-bank IMR bit
+0x6006009e: ldrd r0,r1,[sp,#0x28]                   ; r0=port=pin[5](=pin_obj+0x14), r1=pin_num=pin[6](=pin_obj+0x18)
+0x600600a2: bl platform__6005ff5c                   ; slot = (port-1)*32 + pin_num
+0x600600a6: add.w r0,r5,r0,lsl#2                    ; r0 = table_base + slot*4
+0x600600aa: str r6,[r0,#4]                          ; table[slot+4] = r6 = ctx  <-- NOT the pin object
+```
+
+`FUN_60071624(pin_obj, ctx)` forwards `pin_obj[0..6]` plus `ctx` as that 9th argument; `xbara__600cbdc8`'s loop of 17 calls computes `iVar3 = uVar8 + 0x38b8` **once**, before the loop, and reuses that identical value as `ctx` for every one of the 17 `FUN_60071624(pin, iVar3)` calls. **Consequence: all 17 button-pin table slots end up holding the exact same pointer, `board_singleton + 0x38b8` (RAM `0x20009d78`).** `FUN_60049290`'s per-pin dispatch (session 8) therefore isn't actually per-pin in effect — the fired-pin bitmap only selects *whether* to invoke the callback, never *which* callback; every one of the 17 registered button pins, on any edge, calls the exact same `(*(0x20009d78+4))(*(0x20009d78+8))`.
+
+### The context object's constructor — `timer__60073bf0` @ 0x60073bf0
+
+Confirmed `timer__60073bf0`'s `param_1` **is** the board singleton (`0x200064c0`): it's called as `timer__60073bf0(0x200064c0)` from `FUN_600748ec` (literal `DAT_60074904 = 0x200064c0`, read directly from the image), and independently its `+0x284`/`+0x3684` sub-offset accesses match `xbara__600cbdc8`'s exactly. Near the top of the function (`analysis/decomp/timer__60073bf0.c` lines 58-69) it initializes **four** identical 12-byte `{descriptor_ptr, callback_fn, callback_arg}` triples:
+
+| Object | RAM addr (`0x200064c0+off`) | `descriptor` field → | callback (`+4`) | arg (`+8`) |
+|---|---|---|---|---|
+| ctx_A | `+0x38b8` = `0x20009d78` | board+0x374 (one of the 17 button pins) | `0x600ce232` | `0` |
+| ctx_B | `+0x38c4` = `0x20009d84` | board+0x6d8 | `0x600ce232` | `0` |
+| ctx_C | `+0x38d0` = `0x20009d90` | board+0x714 | `0x600ce232` | `0` |
+| ctx_D | `+0x38dc` = `0x20009d9c` | board+0x9c8 | `0x600ce232` | `0` |
+
+`0x600ce232`, raw-disassembled (Ghidra had mis-bounded it as a bogus 2-byte "function" — not trusted as-is): the single instruction **`bx lr`**, i.e. a real, literal no-op. **At construction time, `ctx_A` — the object every button-GPIO edge interrupt dispatches through — has a callback that does nothing and returns immediately.**
+
+This is not a one-off artifact: the literal `0x600ce233` (its Thumb-bit address, as stored in a function pointer) appears **34 times** in the image's literal pools, i.e. it's the codebase's generic "unset event handler" default, reused by many unrelated constructors — consistent with a C++ idiom of "default this delegate to a no-op; a real subscriber overwrites it later," not proof the button path is inert by itself.
+
+`xbara__600cbdc8` uses `ctx_A` (`+0x38b8`) as the shared registration context for all 17 button pins, and separately self-registers `ctx_C` (`+0x38d0`) via `FUN_6006efd4(uVar8+0x38d0)` — a related single-object variant of the same registration (`FUN_6006efd4(self)` dereferences `*self` for the pin descriptor and passes `self` as its own context, then calls the same `FUN_60060040`). `ctx_B`/`ctx_D` are untouched anywhere in `xbara__600cbdc8`'s decompiled body; `FUN_6006efd4` is also called from `usb_port_controller_tusb320__6006b3e8` (not yet decompiled), so one or both of `ctx_B`/`ctx_D` may belong to the USB-C port-controller's IRQ line rather than buttons.
+
+### What's confirmed vs. still open
+
+**Confirmed (byte-level, via raw disassembly + decompile):**
+- `FUN_60060040`'s real 9-argument shape and its `table[slot] = ctx` store (corrects session 8's "stores the pin-object pointer" to "stores the shared context object").
+- All 17 registered button pins share one context object, `board+0x38b8` (RAM `0x20009d78`).
+- That object's callback/arg fields are initialized by `timer__60073bf0` to a literal no-op (`0x600ce232` = `bx lr`) and `0`.
+- No currently-decompiled function (~500 of ~5,000 in the image) writes to `board+0x38b8..0x38e4` other than `timer__60073bf0`'s own initializer (checked by grepping all of `analysis/decomp/*.c` for those offsets) — i.e. no override has been found yet, but ~90% of the image is still undecompiled, so this isn't a negative proof.
+- Direct-literal search for the absolute RAM addresses of all four contexts and their `+4`/`+8` fields across the entire flash image: **zero hits** — if an override exists, it's built via register-relative arithmetic (`base_ptr + 0x38b8`, computed at runtime), not a compiled-in literal, so it's invisible to address-literal grep and needs either a targeted decompile sweep or the Ghidra GUI (typing the singleton as a real struct so its xref engine can trace field-level access) to find.
+
+**Two live hypotheses, not yet decided between:**
+1. **A real override exists**, most likely a small generic `SetCallback(obj, fn, arg)`-shaped setter (a 2-3 word store, easy to miss in a function-size-ranked sweep), called from whatever starts the input/HID task once it's ready to handle button events — i.e. a sibling of `timer__60073bf0` that actually *runs* the object it constructs, not yet located.
+2. **No override exists, and the no-op is intentional** — the combined-bank GPIO interrupts exist purely to wake the CPU from a low-power `WFI` sleep state (nothing needs to happen in the ISR itself), and actual button-state sampling happens in a still-unlocated **periodic polling task** that runs whenever the CPU is awake. This would also explain why `FUN_600ce24c` ("read one GPIO bit") has no periodic caller found yet (session 5/8), and it unifies with the ADC path: ADC is already confirmed (session 8) to be polled/DMA rather than IRQ-driven, so one shared poll task reading both ADC channels and these same button GPIOs on a timer tick is a plausible single mechanism for both still-missing pieces.
+
+**Next step, under either hypothesis:** find `timer__60073bf0`'s sibling that actually **starts/runs** the input/HID task (look for a FreeRTOS task-create call — `xTaskCreate`-shaped, per the `tasks.c` primitives in `bruce-itcm.md` — taking this same `0x200064c0`-rooted object as its parameter). `timer__60073bf0` itself is confirmed pure object construction (straight-line field stores, no loop, no task-create call in its own body). Either the override (hypothesis 1) or the polling loop (hypothesis 2) most likely lives in that task's body. **Report-packing function: still not located** — this is the most direct lead toward it, but it hasn't been reached yet.
 
 ## Open / next targets (superseded in part by the session-8 section above — kept for history)
 - ~~**ADC conversion trigger + result read**~~ — narrowed (session 8): confirmed *not* interrupt-driven (see above); still not located.
