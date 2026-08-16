@@ -56,18 +56,18 @@ That 586/55,458 is a subset of §1's "Totally unknown" row. Netting it out gives
 | `bcm.c` | 52 | 52 | 11548 | 11548 | 0 |
 | `timer.h` | 9 | 3 | 4016 | 2684 | 1332 |
 | `tasn_dec.c` | 7 | 7 | 3856 | 3856 | 0 |
-| `state_machine.cc` | 11 | 1 | 3332 | 604 | 2728 |
+| `state_machine.cc` | 11 | 11 | 3332 | 3332 | 0 |
 | `keys.cc` | 19 | 19 | 3296 | 3296 | 0 |
 | `adapter.cc` | 16 | 16 | 3216 | 3216 | 0 |
 | `usb_host_audio_topology.cc` | 8 | 0 | 2876 | 0 | 2876 |
 | `audio_states.cc` | 6 | 0 | 2392 | 0 | 2392 |
 | `usb_host_audio.cc` | 9 | 0 | 2346 | 0 | 2346 |
 | `device_info.cc` | 7 | 0 | 2300 | 0 | 2300 |
-| `tasks.c` | 19 | 4 | 2220 | 484 | 1736 |
+| `tasks.c` | 19 | 19 | 2220 | 2220 | 0 |
 | `remote_device_db.cc` | 4 | 0 | 2070 | 0 | 2070 |
 | `gatt_server.cc` | 8 | 8 | 2028 | 2028 | 0 |
 | `usb_audio_receive.cc` | 8 | 0 | 1994 | 0 | 1994 |
-| `key_value_store.cc` | 6 | 0 | 1968 | 0 | 1968 |
+| `key_value_store.cc` | 6 | 6 | 1968 | 1968 | 0 |
 | `application_state.cc` | 6 | 0 | 1956 | 0 | 1956 |
 | `firmware_image_upload.cc` | 1 | 0 | 1714 | 0 | 1714 |
 | `ec_asn1.c` | 5 | 0 | 1630 | 0 | 1630 |
@@ -193,32 +193,34 @@ That 586/55,458 is a subset of §1's "Totally unknown" row. Netting it out gives
 | `init.cc` | 1 | 0 | 22 | 0 | 22 |
 | `exit.c` | 1 | 0 | 16 | 0 | 16 |
 
-Files fully decompiled already (0 remaining bytes), **29 of 139** (up from 20 recorded after session 15's patch): `bcm.c`, `tasn_dec.c`, `keys.cc`, `adapter.cc`, `gatt_server.cc`, `main.cc`, `sleep_driver.cc`, `haptics.cc`, `mimxrt10xx_flash_memory.cc`, `gatt_server.h`, `haptics_cluster.cc`, `input_task.cc`, `io_pin.cc`, `advertiser.cc`, `adc.h`, `switch_pro_controller.cc`, `board.cc`, `hid_input_target.cc`, `platform.h`, `evp.c`, plus **9 newly complete this round**: `usb_device_cdc_acm.c` (0/3 → 3/3), `frames.h` (0/2 → 2/2), `dynamic_buffer.h` (0/2 → 2/2), `append_buffer.h` (0/2 → 2/2), `logger.cc` (0/1 → 1/1), `buffer.h` (0/1 → 1/1), `buffer.cc` (0/1 → 1/1), `system_tasks.cc` (0/1 → 1/1), `uart.cc` (0/1 → 1/1). All 9 are session-14/15 log-buffer-framework files (`analysis/bruce-log-buffer.md`) — the small `buffer.h`/`buffer.cc`/`dynamic_buffer.h`/`append_buffer.h`/`frames.h` quintet turned out to be members of the codebase-wide diagnostic log/message-buffer class, plus `logger.cc`/`system_tasks.cc`/`uart.cc` as adjacent transport/registration call sites.
+Files fully decompiled already (0 remaining bytes), **32 of 139** (up from 20 recorded after session 15's patch): `bcm.c`, `tasn_dec.c`, `keys.cc`, `adapter.cc`, `gatt_server.cc`, `main.cc`, `sleep_driver.cc`, `haptics.cc`, `mimxrt10xx_flash_memory.cc`, `gatt_server.h`, `haptics_cluster.cc`, `input_task.cc`, `io_pin.cc`, `advertiser.cc`, `adc.h`, `switch_pro_controller.cc`, `board.cc`, `hid_input_target.cc`, `platform.h`, `evp.c`, plus **9 newly complete session 14/15's log-buffer-framework round**: `usb_device_cdc_acm.c`, `frames.h`, `dynamic_buffer.h`, `append_buffer.h`, `logger.cc`, `buffer.h`, `buffer.cc`, `system_tasks.cc`, `uart.cc` (see prior paragraph), plus **3 newly complete session 17**: `tasks.c` (4/19 → 19/19 — full FreeRTOS task-lifecycle/notification API, `analysis/bruce-itcm.md`'s new §"Session 17" section), `state_machine.cc` (1/11 → 11/11 — the generic hierarchical-state-machine framework plus its BLE-pairing/advertising-mode instantiation, new doc `analysis/bruce-state-machine.md`), `key_value_store.cc` (0/6 → 6/6 — the wear-leveled flash record store underneath `keys.cc`, extends `analysis/bruce-misc-functions.md`'s `keys.cc` section).
 
-Partial-progress files (8, unchanged in count from session 13, no new movement this round beyond what's already reflected above): `timer.h` (3/9), `state_machine.cc` (1/11 — still the only top-10-gap file with any progress, see §3a), `tasks.c` (4/19), `queue.c` (6/12), `xbara.h` (1/2), `heap_5_improved.c` (2/4), `p_ed25519_asn1.c` (2/4), `adapter.h` (1/2).
+Partial-progress files (5, down from 8 — `tasks.c`/`state_machine.cc`/`key_value_store.cc` moved to fully-complete above): `timer.h` (3/9), `queue.c` (6/12), `xbara.h` (1/2), `heap_5_improved.c` (2/4), `p_ed25519_asn1.c` (2/4), `adapter.h` (1/2).
+
+**Session 17 note on §1/§1a/§4 top-line stats below**: not re-joined/regenerated this session (same hand-patch-only convention as session 15, flagged there too) — this round's 31 newly-decompiled functions (15 `tasks.c` + 10 `state_machine.cc` + 6 `key_value_store.cc`, 6,432 bytes closed) are **not yet reflected** in §1's headline percentages, §1a's BTA/BTE tier (unaffected — none of these three files are in that block), or §4's bottom line. All three are formally-attributed files, so this round's gain lands entirely in the "attributed AND decompiled" bucket (160 → 191 functions by hand count), nudging the overall union-coverage percentage up slightly from the 46.3% recorded below — re-run the full join (§ Methodology) before trusting an exact updated figure.
 
 ## 3. Prioritized gap list
 
 ### 3a. Attributed-but-not-yet-decompiled — cheapest wins (top 10 files by remaining bytes)
 
-**Correction this session**: the session-13 version of this table omitted `tasks.c` (1,736 remaining bytes) from the top 10 despite it having more remaining bytes than the #10 entry at the time (`firmware_image_upload.cc`, 1,714) — an apparent oversight, not a methodology change. Restored to its correct rank (#10) this pass; `firmware_image_upload.cc` drops to #11.
+**Session 17 update**: `tasks.c` (#10), `state_machine.cc` (#2), and `key_value_store.cc` (#8) — three of the prior top-10 — were fully decompiled this session (see §2 and the "Files fully decompiled" list above) and drop out of this table entirely. The table below is refreshed by pulling the next-largest `Remaining bytes` files from §2's full per-file listing (not a fresh regen of the whole doc — same hand-patch convention as session 15).
 
 | Rank | Src file | Remaining funcs | Remaining bytes | Already decompiled |
 |---:|---|---:|---:|---:|
 | 1 | `usb_host_audio_topology.cc` | 8 | 2876 | 0/8 |
-| 2 | `state_machine.cc` | 10 | 2728 | 1/11 |
-| 3 | `audio_states.cc` | 6 | 2392 | 0/6 |
-| 4 | `usb_host_audio.cc` | 9 | 2346 | 0/9 |
-| 5 | `device_info.cc` | 7 | 2300 | 0/7 |
-| 6 | `remote_device_db.cc` | 4 | 2070 | 0/4 |
-| 7 | `usb_audio_receive.cc` | 8 | 1994 | 0/8 |
-| 8 | `key_value_store.cc` | 6 | 1968 | 0/6 |
-| 9 | `application_state.cc` | 6 | 1956 | 0/6 |
-| 10 | `tasks.c` | 15 | 1736 | 4/19 |
+| 2 | `audio_states.cc` | 6 | 2392 | 0/6 |
+| 3 | `usb_host_audio.cc` | 9 | 2346 | 0/9 |
+| 4 | `device_info.cc` | 7 | 2300 | 0/7 |
+| 5 | `remote_device_db.cc` | 4 | 2070 | 0/4 |
+| 6 | `usb_audio_receive.cc` | 8 | 1994 | 0/8 |
+| 7 | `application_state.cc` | 6 | 1956 | 0/6 |
+| 8 | `firmware_image_upload.cc` | 1 | 1714 | 0/1 |
+| 9 | `ec_asn1.c` | 5 | 1630 | 0/5 |
+| 10 | `usb_host_hid.cc` | 3 | 1468 | 0/3 |
 
-(#11, just outside the table: `firmware_image_upload.cc`, 1 func / 1714 bytes, 0/1 decompiled.)
+(#11, just outside the table: `pem_lib.c`, 3 funcs / 1458 bytes, 0/3 decompiled.)
 
-No further movement this round on any of these 10 — `tasn_dec.c`/`adapter.cc`/`keys.cc` (session 15) and the log-buffer framework's attributed files (session 14/15) that *did* complete this round were all outside this list already (smaller files, see §2). `state_machine.cc` remains the only top-10 entry with any progress (1/11) — still the natural next cheap-win pick. The USB-audio cluster (`usb_host_audio_topology.cc`, `usb_host_audio.cc`, `usb_audio_receive.cc`, `audio_states.cc`) is still worth doing as one coherent sweep rather than file-by-file, per session 13's note — untouched since.
+The USB-audio cluster (`usb_host_audio_topology.cc`, `usb_host_audio.cc`, `usb_audio_receive.cc`, `audio_states.cc` — ranks 1/2/3/6, 9,608 bytes / 31 functions combined) is now even more clearly the single best next lever in this table — still worth doing as one coherent sweep rather than file-by-file, per session 13's original note, untouched since. `application_state.cc` (rank 7) is also a natural pairing with this session's `state_machine.cc` work — `application_state__6005b8dc`/`application_state__6005b1c0` are both direct callers of `state_machine__600849a4` (`bruce-state-machine.md`), so decompiling it would likely resolve that doc's open thread about the OOBE state/event names.
 
 Regenerate the full per-file remaining-function list anytime with:
 ```python
