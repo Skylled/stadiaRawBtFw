@@ -1,0 +1,160 @@
+// 600769ec  FUN_600769ec  size=350 bytes
+// --- callers ---
+// --- callees ---
+//   601017e8 FUN_601017e8
+//   60101c48 FUN_60101c48
+//   600765a4 FUN_600765a4
+
+
+void FUN_600769ec(void)
+
+{
+  undefined1 *puVar1;
+  undefined4 uVar2;
+  undefined4 *puVar3;
+  int *piVar4;
+  int iVar5;
+  undefined4 uVar6;
+  
+  puVar3 = DAT_60076b54;
+  uVar2 = DAT_60076b50;
+  puVar1 = DAT_60076b4c;
+  *DAT_60076b4c = 0;
+  puVar1[1] = 0;
+  puVar1[2] = 0;
+  puVar1[3] = 0;
+  puVar1[4] = 0xff;
+  puVar1[5] = 0xff;
+  puVar1[6] = 0xff;
+  puVar1[7] = 0xff;
+  puVar1[8] = 0xff;
+  puVar1[9] = 0xff;
+  puVar1[10] = 0xff;
+  puVar1[0xb] = 0xff;
+  puVar1[0xc] = 0;
+  puVar1[0xd] = 0;
+  puVar1[0xe] = 0;
+  puVar1[0xf] = 0;
+  puVar1[0x10] = 0;
+  puVar1[0x11] = 0;
+  puVar1[0x12] = 0;
+  puVar1[0x13] = 0;
+  puVar1[0x14] = 0;
+  puVar1[0x15] = 0;
+  puVar1[0x16] = 0;
+  puVar1[0x17] = 0;
+  puVar1[0x18] = 0;
+  puVar1[0x19] = 0;
+  puVar1[0x1a] = 0;
+  puVar1[0x1b] = 0;
+  puVar1[0x1c] = 0;
+  puVar1[0x1d] = 0;
+  puVar1[0x1e] = 0;
+  puVar1[0x1f] = 0;
+  puVar3[0x16] = 0;
+  puVar1[0x20] = 0;
+  puVar1[0x21] = 0;
+  puVar1[0x22] = 0;
+  puVar1[0x23] = 0;
+  *puVar3 = uVar2;
+  puVar3[1] = puVar1;
+  FUN_601017e8(puVar3 + 2);
+  puVar3 = DAT_60076b5c;
+  puVar1 = DAT_60076b58;
+  *DAT_60076b58 = 0;
+  puVar1[1] = 0;
+  puVar1[2] = 0;
+  puVar1[3] = 0;
+  puVar1[4] = 0xff;
+  puVar1[5] = 0xff;
+  puVar1[6] = 0xff;
+  puVar1[7] = 0xff;
+  puVar1[8] = 0xff;
+  puVar1[9] = 0xff;
+  puVar1[10] = 0xff;
+  puVar1[0xb] = 0xff;
+  puVar1[0xc] = 0;
+  puVar1[0xd] = 0;
+  puVar1[0xe] = 0;
+  puVar1[0xf] = 0;
+  puVar1[0x10] = 0;
+  puVar1[0x11] = 0;
+  puVar1[0x12] = 0;
+  puVar1[0x13] = 0;
+  puVar1[0x14] = 0;
+  puVar1[0x15] = 0;
+  puVar1[0x16] = 0;
+  puVar1[0x17] = 0;
+  puVar1[0x18] = 0;
+  puVar1[0x19] = 0;
+  puVar1[0x1a] = 0;
+  puVar1[0x1b] = 0;
+  puVar1[0x1c] = 0;
+  puVar1[0x1d] = 0;
+  puVar1[0x1e] = 0;
+  puVar1[0x1f] = 0;
+  puVar1[0x20] = 0;
+  puVar3[0x16] = 0;
+  puVar1[0x21] = 0;
+  puVar1[0x22] = 0;
+  puVar1[0x23] = 0;
+  *puVar3 = uVar2;
+  puVar3[1] = puVar1;
+  FUN_601017e8(puVar3 + 2);
+  puVar3 = DAT_60076b64;
+  puVar1 = DAT_60076b60;
+  *DAT_60076b60 = 0;
+  puVar1[1] = 0;
+  puVar1[2] = 0;
+  puVar1[3] = 0;
+  puVar1[4] = 0xff;
+  puVar1[5] = 0xff;
+  puVar1[6] = 0xff;
+  puVar1[7] = 0xff;
+  puVar1[8] = 0xff;
+  puVar1[9] = 0xff;
+  puVar1[10] = 0xff;
+  puVar1[0xb] = 0xff;
+  puVar1[0xc] = 0;
+  puVar1[0xd] = 0;
+  puVar1[0xe] = 0;
+  puVar1[0xf] = 0;
+  puVar1[0x10] = 0;
+  puVar1[0x11] = 0;
+  puVar1[0x12] = 0;
+  puVar1[0x13] = 0;
+  puVar1[0x14] = 0;
+  puVar1[0x15] = 0;
+  puVar1[0x16] = 0;
+  puVar1[0x17] = 0;
+  puVar1[0x18] = 0;
+  puVar1[0x19] = 0;
+  puVar1[0x1a] = 0;
+  puVar1[0x1b] = 0;
+  puVar1[0x1c] = 0;
+  puVar1[0x1d] = 0;
+  puVar1[0x1e] = 0;
+  puVar1[0x1f] = 0;
+  puVar1[0x20] = 0;
+  puVar3[0x16] = 0;
+  puVar1[0x21] = 0;
+  puVar1[0x22] = 0;
+  puVar1[0x23] = 0;
+  piVar4 = DAT_60076b68;
+  *puVar3 = uVar2;
+  puVar3[1] = puVar1;
+  FUN_601017e8(puVar3 + 2);
+  FUN_600765a4(piVar4);
+  uVar2 = DAT_60076b70;
+  iVar5 = DAT_60076b6c;
+  *piVar4 = DAT_60076b6c;
+  uVar6 = DAT_60076b74;
+  piVar4[0x18] = iVar5 + 0x18;
+  piVar4[0x13b] = (int)(piVar4 + 0x13d);
+  piVar4[0x13c] = 0x300;
+  piVar4[0x17] = (int)(piVar4 + 0x108);
+  FUN_60101c48(piVar4,uVar6,uVar2);
+  return;
+}
+
+

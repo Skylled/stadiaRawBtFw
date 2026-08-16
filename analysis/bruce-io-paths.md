@@ -171,9 +171,9 @@ Confirmed `timer__60073bf0`'s `param_1` **is** the board singleton (`0x200064c0`
 
 `0x600ce232`, raw-disassembled (Ghidra had mis-bounded it as a bogus 2-byte "function" — not trusted as-is): the single instruction **`bx lr`**, i.e. a real, literal no-op. **At construction time, `ctx_A` — the object every button-GPIO edge interrupt dispatches through — has a callback that does nothing and returns immediately.**
 
-This is not a one-off artifact: the literal `0x600ce233` (its Thumb-bit address, as stored in a function pointer) appears **34 times** in the image's literal pools, i.e. it's the codebase's generic "unset event handler" default, reused by many unrelated constructors — consistent with a C++ idiom of "default this delegate to a no-op; a real subscriber overwrites it later," not proof the button path is inert by itself.
+This is not a one-off artifact: the literal `0x600ce233` (its Thumb-bit address, as stored in a function pointer) appears **35 times total** in the image (verified by direct byte-scan of `bruce_pvt_a_prod_signed.bin`) — 1 of those is `DAT_60073e08` itself, the single literal-pool slot `timer__60073bf0` loads once and reuses for all four `ctx_A`–`ctx_D` writes (confirmed: reading that address in the raw image gives exactly `0x600ce233`), leaving **34 other, independent occurrences** elsewhere in the image, matching the original count. It's the codebase's generic "unset event handler" default, reused by many unrelated constructors. Spot-checking the surrounding words at each of the 34 supports this: several sites sit directly in code (preceded/followed by Thumb instruction encodings — ordinary function-local literal pools), and one cluster, flash `0x6013e2e8`–`0x6013e9fc`, is a clean repeated table of a dozen `{RAM pointer, 0x600ce233, 0}` triples — the exact same 3-word shape as `ctx_A`–`ctx_D` above, just belonging to a different, not-yet-identified object. None of these other 34 sites have been decompiled to C yet (`analysis/decomp/*.c` has no reference to `FUN_600ce232`/`0x600ce232` outside its own file), so this corroboration is at the raw-byte level, not source level — consistent with a C++ idiom of "default this delegate to a no-op; a real subscriber overwrites it later," not proof the button path is inert by itself.
 
-`xbara__600cbdc8` uses `ctx_A` (`+0x38b8`) as the shared registration context for all 17 button pins, and separately self-registers `ctx_C` (`+0x38d0`) via `FUN_6006efd4(uVar8+0x38d0)` — a related single-object variant of the same registration (`FUN_6006efd4(self)` dereferences `*self` for the pin descriptor and passes `self` as its own context, then calls the same `FUN_60060040`). `ctx_B`/`ctx_D` are untouched anywhere in `xbara__600cbdc8`'s decompiled body; `FUN_6006efd4` is also called from `usb_port_controller_tusb320__6006b3e8` (not yet decompiled), so one or both of `ctx_B`/`ctx_D` may belong to the USB-C port-controller's IRQ line rather than buttons.
+`xbara__600cbdc8` uses `ctx_A` (`+0x38b8`) as the shared registration context for all 17 button pins, and separately self-registers `ctx_C` (`+0x38d0`) via `FUN_6006efd4(uVar8+0x38d0)` — a related single-object variant of the same registration (`FUN_6006efd4(self)` dereferences `*self` for the pin descriptor and passes `self` as its own context, then calls the same `FUN_60060040`). `ctx_B`/`ctx_D` are untouched anywhere in `xbara__600cbdc8`'s decompiled body; `FUN_6006efd4` is also called from `usb_port_controller_tusb320__6006b3e8` (not yet decompiled), so one or both of `ctx_B`/`ctx_D` may belong to the USB-C port-controller's IRQ line rather than buttons. (Verification-pass addendum: `xbara__600cbdc8` also calls `FUN_6006efd4(iVar3)` — i.e. `FUN_6006efd4(ctx_A)` — right after the 17-call block, at `analysis/decomp/xbara__600cbdc8.c` line 237. Since `ctx_A`'s own descriptor field is `board+0x374`, which is already one of the 17 registered button-pin offsets, this self-registration computes the identical table slot and writes the identical value [`ctx_A`] that one of the 17 `FUN_60071624` calls already wrote — a redundant/idempotent double-write, not a conflicting one, so it doesn't change any conclusion above.)
 
 ### What's confirmed vs. still open
 
@@ -182,7 +182,7 @@ This is not a one-off artifact: the literal `0x600ce233` (its Thumb-bit address,
 - All 17 registered button pins share one context object, `board+0x38b8` (RAM `0x20009d78`).
 - That object's callback/arg fields are initialized by `timer__60073bf0` to a literal no-op (`0x600ce232` = `bx lr`) and `0`.
 - No currently-decompiled function (~500 of ~5,000 in the image) writes to `board+0x38b8..0x38e4` other than `timer__60073bf0`'s own initializer (checked by grepping all of `analysis/decomp/*.c` for those offsets) — i.e. no override has been found yet, but ~90% of the image is still undecompiled, so this isn't a negative proof.
-- Direct-literal search for the absolute RAM addresses of all four contexts and their `+4`/`+8` fields across the entire flash image: **zero hits** — if an override exists, it's built via register-relative arithmetic (`base_ptr + 0x38b8`, computed at runtime), not a compiled-in literal, so it's invisible to address-literal grep and needs either a targeted decompile sweep or the Ghidra GUI (typing the singleton as a real struct so its xref engine can trace field-level access) to find.
+- Direct-literal search for the absolute RAM addresses of all four contexts and their `+4`/`+8` fields across the entire flash image: **zero hits for `ctx_A`/`ctx_B`/`ctx_C` and all `+4`/`+8` fields; two hits for the bare `ctx_D` address (`0x20009d9c`)** (re-checked, session-9-verification pass: both sit outside any function's bounds per `bruce_functions.csv` — flash `0x6005c078`, immediately preceded by the literal `0x200064c0` [the board-singleton base itself, suggesting a `{base, end}` bounds pair rather than a callback-table write — `0x20009d9c` is also exactly `ctx_C + 0xc`, i.e. "one past the end of ctx_C", a plausible loop-bound value independent of ctx_D]; and flash `0x6005cbbc`, flanked by an unrelated code pointer and what looks like a string address, with no obvious structural meaning found). Neither looks like a `table[slot]=fn` style store on inspection, but this wasn't confirmed by decompiling whatever function actually contains these words, so it's not a fully closed question. Otherwise: if an override exists, it's built via register-relative arithmetic (`base_ptr + 0x38b8`, computed at runtime), not a compiled-in literal, so it's invisible to address-literal grep and needs either a targeted decompile sweep or the Ghidra GUI (typing the singleton as a real struct so its xref engine can trace field-level access) to find.
 
 **Two live hypotheses, not yet decided between:**
 1. **A real override exists**, most likely a small generic `SetCallback(obj, fn, arg)`-shaped setter (a 2-3 word store, easy to miss in a function-size-ranked sweep), called from whatever starts the input/HID task once it's ready to handle button events — i.e. a sibling of `timer__60073bf0` that actually *runs* the object it constructs, not yet located.
@@ -190,9 +190,108 @@ This is not a one-off artifact: the literal `0x600ce233` (its Thumb-bit address,
 
 **Next step, under either hypothesis:** find `timer__60073bf0`'s sibling that actually **starts/runs** the input/HID task (look for a FreeRTOS task-create call — `xTaskCreate`-shaped, per the `tasks.c` primitives in `bruce-itcm.md` — taking this same `0x200064c0`-rooted object as its parameter). `timer__60073bf0` itself is confirmed pure object construction (straight-line field stores, no loop, no task-create call in its own body). Either the override (hypothesis 1) or the polling loop (hypothesis 2) most likely lives in that task's body. **Report-packing function: still not located** — this is the most direct lead toward it, but it hasn't been reached yet.
 
-## Open / next targets (superseded in part by the session-8 section above — kept for history)
-- ~~**ADC conversion trigger + result read**~~ — narrowed (session 8): confirmed *not* interrupt-driven (see above); still not located.
-- ~~**Button read path**~~ — **the registration+dispatch mechanism is now fully mapped (session 8, see above).** What remains is the callback itself.
-- **Report-packing function**: still unidentified — whatever combines calibrated stick/trigger values + button state into the final 11-byte report ID 3 buffer (`hid_input_target.cc` @ 0x60058aa8 only *transmits* an already-built report).
-- ~~`FUN_6004cdb8` (15.6 KB, near image start)~~ — **decompiled (session 4): this is SHA-512/384 compression, not an event loop.** See `analysis/bruce-crypto.md` — bruce statically links BoringSSL SHA-512 + Ed25519 keygen/ASN.1. `main__60051168` (session 5, this doc) is straight-line init, not a loop either — the real per-frame dispatch loop is still unidentified.
+## InputTask found: creation, Run() loop, sampling, and button bit-packing (session 10)
+
+Followed the session-9 target — "find `timer__60073bf0`'s sibling that starts the input/HID task" — and it turned out to be a **wrong scent to follow literally**: `timer__60073bf0`/`FUN_600748ec` construct the **board singleton** (`0x200064c0`), a different C++ object from the one that actually owns button/ADC sampling. The real task lives in a completely separate object, found instead via the method's suggested shortcut (search for a task-name string): the string **`"InputTask"`** at flash `0x6011b13a` has exactly one xref, from **`main__60051240`** (`src: main.cc`), which is the real task-creation call site. This section documents the whole chain now traced from there: task creation → the task's `Run()` method → per-tick axis sampling → button bit-packing → the still-open final report-send hop.
+
+### Task creation — confirmed FreeRTOS `xTaskCreateStatic`
+
+`main__60051240` (flash `0x60051240`, newly decompiled this session), near its end:
+```c
+uVar6 = FUN_60076400();               // uVar6 = DAT_60076404 = 0x200108a8 (the InputTask object, RAM)
+FUN_6010177a(uVar6, DAT_600515a0, 0xd); // DAT_600515a0 = "InputTask" string; priority = 0xd = 13
+```
+- `FUN_60076400` (4 bytes) is a trivial getter: `return DAT_60076404;` — `DAT_60076404` is a flash literal whose value is `0x200108a8`, a RAM address. **This is the InputTask singleton object pointer**, distinct from the board singleton `0x200064c0`.
+- `FUN_6010177a` (32 bytes) wraps its call in a scheduler-suspend/yield bracket (`thunk_EXT_FUN_0000713c` .. `FUN_600cc178(...)` .. `thunk_EXT_FUN_0000728c`) — this same wrapper is called from ~10 other subsystems (`system_tasks__60058574`, `gatt_manager_task__60080cdc`, `usb_host_worker__6006525c`, `usb_audio_receive/send`, `synapse_audio_processor`, `receiver__6007f540`) — i.e. it's the codebase's **generic `CreateAndRegisterTask(obj, name, priority)` helper**.
+- `FUN_600cc178` (66 bytes), given `(obj, name, priority)`: reads a **task-descriptor sub-object** at `obj+0x5c` (stack size in words at `+0xd0`, checked `>= 0x800` bytes; static stack buffer pointer at `+0xcc`), and calls:
+  ```c
+  tasks__600ca1f8(DAT_600cc1bc /*shared entry trampoline, see below*/, name, stackWords,
+                   obj /*pvParameters*/, priority, stackBuffer, taskDescriptor /*=TCB buffer*/);
+  ```
+  storing the resulting handle at `obj+0x58`.
+- **`tasks__600ca1f8`** (`src: tasks.c`, 124 bytes) is **confirmed `xTaskCreateStatic`**: it `configASSERT`s `puxStackBuffer != NULL` and `pxTaskBuffer != NULL` at embedded line numbers **599 and 600**, which are the exact line numbers of those two asserts in upstream FreeRTOS `tasks.c`'s `xTaskCreateStatic()`. On success it calls `FUN_600ca0fc` (`prvInitialiseNewTask`-shaped: 5 params + handle-out + TCB, matches the real signature) then `FUN_600c9fd8` (`prvAddNewTaskToReadyList`-shaped: one arg, the TCB). This is about as close to byte-proof as static RE gets without symbols.
+- **`DAT_600cc1bc` = `0x60101761`** (thumb) is the *same* task-entry function pointer passed for every caller of this generic helper — i.e. every "Task"-wrapped C++ object in this firmware (InputTask, GattManagerTask, UsbHostWorker, the audio-receive/send tasks, SynapseAudioProcessor, Receiver, SystemTasks) shares one FreeRTOS entry point:
+  ```c
+  // FUN_60101760 @ 0x60101760 — the generic task-entry trampoline
+  void FUN_60101760(int *param_1)   // param_1 = pvParameters = the C++ "Task" object
+  {
+    (**(code **)(*param_1 + 8))();   // call object->vtable[2]() — the virtual Run() method
+    FUN_60101832(param_1 + 1);       // post-Run cleanup/notify
+    do { tasks__600ca5cc(0); } while (true); // defensive self-delete loop if Run() ever returns
+  }
+  ```
+  This confirms the codebase's task model: a generic `Task` base class with a virtual `Run()` at vtable slot `+8` (3rd vtable entry after the Itanium ABI's implicit slots), and FreeRTOS just calls it once through this one shared trampoline.
+
+### The InputTask object and its `Run()` method
+
+`FUN_600769ec` (350 bytes) is the InputTask constructor's tail (three BLE/GATT-address-shaped sub-structures get zeroed/registered via `FUN_601017e8`, then): `*piVar4 = DAT_60076b6c;` where `piVar4 = DAT_60076b68 = 0x200108a8` — **this stores the object's vtable pointer**, confirmed by reading the vtable at its literal value **`0x6010a088`** directly out of the flash image:
+
+| vtable slot | value | meaning |
+|---|---|---|
+| `+0x00` | `0x600763e9` | flash fn (input_task.cc address range) — likely dtor/GetName |
+| `+0x04` | `0x600dac53` | flash fn |
+| **`+0x08`** | `0x2acd` (**ITCM** address, thumb) → flash `0x600432e8` | **`FUN_600432e8` = `Run()`, confirmed below** |
+| `+0x0c` | `0x24bd` (ITCM) → flash `0x60042cd8` | small helper, ends up calling `xEventGroupSetBits(evtgrp, 1)` — looks like a public `Notify()`/`RequestSample()` method |
+| `+0x10` | `0xffffffa0` | not a pointer — Itanium-ABI secondary-vtable "offset-to-top" (-0x60), i.e. this is a **multiple-inheritance vtable group**, not one flat table |
+| `+0x14` | `0x0` | RTTI ptr (null) |
+| `+0x18` | `0x2521` (ITCM) → flash `0x60042d3c` | near-identical twin of the `+0x0c` helper — the secondary base's equivalent slot |
+| `+0x24..+0x2c` | `0x6007694d`/`0x600dacf7`/`0x600dad0f` | further flash fns, not chased this session |
+
+Slot `+0x08` resolving to an **ITCM address** (post-boot-copy RAM `0x2acc`, source flash `0x600432e8` per the established `flash = itcm + 0x6004081c` mapping) explains why no direct `BL` caller was ever found for it in earlier sessions — **it's purely virtual-dispatched**, never called by a literal branch anywhere in the image (confirmed: zero literal hits for its thumb address across the whole flash).
+
+### `FUN_600432e8` — InputTask's `Run()` method, confirmed
+
+```
+src attribution: PTR_s_input_task_cc_600435dc = "input_task.cc" (embedded string, cited directly in the body)
+```
+Body, read in full (750 bytes):
+1. Checks a calibration-load flag (`func_0x6004c224`); if it failed, logs **`"Failed to load calibration from K..."`** at `input_task.cc` line `0xdd` = 221.
+2. Registers 3 `{obj, fn}` callback pairs via `func_0x6004c37c`/`6004c13c`/`6004c194` (not chased further this session).
+3. **Starts the periodic HID-poll software timer**: `uVar7 = *(param_1 + 0x3a4); FUN_60048248(uVar7, 1, now_ms, 0, 10);` — `FUN_60048248` is `thunk_EXT_FUN_00007a2c`'s resolved flash target (already confirmed in `bruce-itcm.md` as a FreeRTOS timer/queue command-send front-end); **command code `1` = `tmrCOMMAND_START`** in upstream FreeRTOS `timers.c` — this starts the same timer whose *period* is set elsewhere (see `input_task__60076438` below) from the **`HidPollMs`** config key (default 16 ms if unset — `"FAILED to get poll period setting for "` log, already catalogued in this doc's string list).
+4. **Main loop**: `xEventGroupWaitBits(evtgrp = *(param_1+0x78), bits=0xF, clearOnExit=true, waitForAll=false, ticksToWait=portMAX_DELAY)` via `FUN_6004703c` (already resolved in `bruce-itcm.md` as the `xEventGroupWaitBits`-shaped helper) — blocks until any of 4 event bits fires, then dispatches:
+   - **bit 0 (`0x1`)**: sets a "config dirty" flag.
+   - **bit 1 (`0x2`) — the periodic poll tick.** Calls `FUN_60043028` (see next section) to sample+calibrate the analog axes; if it reports a change, calls `FUN_60049522` (button-combo/long-press detector — compares old vs. new 17-byte snapshots of the sample state and dispatches numbered events like `3`/`0xf`/`4`/`5`/`9` to an app-state-machine handler object at `param_1+0x244`, matching strings elsewhere in the image such as `"Y button held; enter setup mode."`/`"WAKE_REASON: Button press"`); otherwise, if fully idle (all 4 stick/trigger-center fields `== 0x800` and all digital fields zero), toggles an idle/dim flag via `param_1+0x418`.
+   - **bit 2 (`0x4`)**: re-checks/re-logs the calibration-load failure.
+   - **bit 3 (`0x8`)**: calls **`func_0x6004c0cc(param_1, &flag)`** — this is a `LDR PC,[PC]` veneer (flash `0x6004c0cc`, ITCM `0xb8b0`, part of a small run of ITCM→flash call veneers at `0x6004c0b0`–`0x6004c0fc`) whose literal target is **`0x600dad26` = `FUN_600dad26`**, the InputTask command-queue handler (below).
+
+This confirms hypothesis 2 from session 9 for the **analog axes**: they're sampled on a plain periodic timer tick, not via GPIO interrupt. (Whether digital buttons are populated the same way, via the same-region leaf calls not yet fully chased, or independently via the session-8/9 GPIO-IRQ path, is **still open** — see below.)
+
+### `FUN_60043028` — calibrated axis sampling (confirmed)
+
+Called from `Run()`'s bit-1 branch. Reads/updates 4 stick fields (`param_1+0x224/+0x228/+0x22c/+0x230`, checked against `0x800` = center) and 2 trigger fields (`+0x234/+0x238`) — **exactly the 6 analog channels** already flagged as LX/LY/RX/RY/L2/R2 candidates in the session-5 ADC bring-up survey. Uses `FUN_600492ee`, a binary-search-plus-linear-interpolation routine over a lookup table (matches `input_calibration.cc`'s described calibration-curve role exactly). If the sample changed, calls `FUN_60042d44` (next section) and `FUN_60049522` (combo detector, above).
+
+### `FUN_60042d44` — digital button/D-pad bit-packing (confirmed, matches report layout bit-for-bit)
+
+```c
+// 3-byte packed value from 19 individual boolean fields at param_1+0x210..+0x222:
+local_2c = CONCAT12(
+    /* byte A, 3 bits */  b(0x21d) | b(0x21a)<<1 | b(0x21b)<<2,
+    CONCAT11(
+      /* byte B_hi */ b(0x221) | b(0x220)<<1 | b(0x21f)<<2 | b(0x21e)<<3 | b(0x222)<<4 | b(0x218)<<5 | b(0x219)<<6 | (param_1+0x21c)<<7,
+      /* byte B_lo */ b(0x210) | b(0x211)<<1 | b(0x212)<<2 | b(0x213)<<3 | b(0x216)<<4 | b(0x217)<<5 | b(0x214)<<6 | (param_1+0x215)<<7));
+*(DAT_60042e58 + ring_index*8)     = timestamp;   // param_2
+*(DAT_60042e58 + ring_index*8 + 4) = local_2c;
+ring_index = (ring_index + 1) & 0xf;              // 16-slot ring, IRQ-disable-guarded
+```
+**Byte A (3 bits) structurally matches the report's D-pad hat nibble** (needs exactly 3 raw bits to encode 0–7); **bytes B_hi/B_lo (16 bits) structurally match the report's 15-button-plus-pad bitfield** (bytes 2–3 of report ID 3). This is a strong, bit-count-exact match to the HID report layout documented earlier in this file — but note it writes into a **16-slot timestamped ring buffer** (`DAT_60042e58`/`DAT_60042e54`, IRQ-safe), not directly into a final wire-format buffer. No consumer of this ring buffer was located this session (see "Still open" below) — so this is confirmed as *part of* the report-assembly pipeline, not proven to be its final stage.
+
+### `FUN_600dad26` — InputTask's command-queue handler (confirmed, corrects a session-9 gap)
+
+Reached from `Run()`'s bit-3 branch (via the `0x6004c0cc` veneer above). A `while(xQueueGenericReceive(*(param_1+0xec), &cmd, 0) == 1)` loop (uses the already-confirmed `thunk_EXT_FUN_00006d2c` = `xQueueGenericReceive`), dispatching on a command byte:
+- **`2`** ("(re)configure"): stops the current handler object at `param_1+0x240` (calls its vtable`+0xc`), installs a new handler pointer; if non-null, calls **`input_task__600764fc`** (re-reads the **`HidPollMs`** config key via `keys__60066070`/`key_value_store__600cb598`, falling back to `0x10`=16 on failure) → **`input_task__60076438`** (computes the derived timer-period value and calls `thunk_EXT_FUN_00007a2c(timer_handle=+0x3a4, cmd=4, period_ms, 0, 10)` — **command `4` = `tmrCOMMAND_CHANGE_PERIOD`**, confirming `+0x3a4` is indeed the poll timer and this is `xTimerChangePeriod`), then **Start()s the new handler** (`vtable+0xc`, arg = `param_1+0x60`).
+- **`3`/`4`**: set/clear an enable flag at `param_1+0x248`.
+
+This resolves the session-9 open question about who drives `input_task__600764fc`/`60076438` — it's this command handler, itself reached from the InputTask `Run()` loop, not from the GPIO-IRQ dispatch chain investigated in sessions 8/9.
+
+### Still open
+
+1. **Exact digital-button source.** `FUN_60043028` (the per-tick sampler) visibly updates only the 6 analog fields; the 19 boolean fields consumed by `FUN_60042d44` weren't traced to their write site this session (candidates: an un-chased leaf call inside `FUN_60043028`, or the session-8/9 GPIO-IRQ path after all, writing into the *InputTask* object rather than the *board* object the earlier sessions were looking at — these are two different singletons, which may be why the override was never found by literal-searching board-relative offsets).
+2. **The final report-assembly + send call.** `hid_input_target__60058aa8` (`src: hid_input_target.cc`, previously documented) is confirmed to take `(uint16_t *report_words, uint length)` and transmit via a queue-send + hardware doorbell. Its only two callers found are trivial 1-line pass-through stubs, **`FUN_600df4b6`** (flash `0x600df4b6`) and **`FUN_60058b7a`** (flash `0x60058b7a`) — both call it with what the decompiler shows as zero arguments (almost certainly a decompiler artifact losing pass-through register args, the same class of bug already seen elsewhere in this codebase, e.g. `FUN_60060040`'s dropped arguments in session 9). **Neither stub's own caller was found** — no literal reference to either stub's address exists anywhere in the flash image, and Ghidra's xref engine reports no references either, meaning they're reached via a mechanism invisible to both literal search and Ghidra's default analysis (likely a PC-relative `ADR`-computed pointer, or a vtable slot on an object not yet typed by Ghidra). **This is the most direct remaining lead on the report-packing function** — whoever calls one of these two stubs, with the assembled report buffer in r0, *is* (or immediately follows) the producer this project has been looking for since session 3. Best next steps: type the InputTask object as a real Ghidra struct so its xref engine can trace field-level access to the still-unidentified `+0x244` "app state machine handler" vtable (dispatched from `FUN_60049522`) and the `+0x240`/`+0x60` handler installed by `FUN_600dad26`'s command `2` path — one of those handler objects' vtables plausibly contains one of the two stubs.
+3. Whether `FUN_60049522`'s `+0x244` handler dispatch ultimately reaches the report send indirectly (e.g. a state-machine transition that triggers a send) is unconfirmed — plausible given it's fed directly from the same per-tick sample-changed path, but not traced.
+
+## Open / next targets (superseded in part by the session-8/10 sections above — kept for history)
+- ~~**ADC conversion trigger + result read**~~ — **found, session 10**: `FUN_60043028`, driven by a plain periodic FreeRTOS software-timer tick (the `HidPollMs`-configured poll timer at InputTask object `+0x3a4`), not an interrupt. See "InputTask found" section above.
+- ~~**Button read path**~~ — **the registration+dispatch mechanism is fully mapped (session 8)**; the *periodic task that consumes it* is now also found (session 10, `FUN_600432e8`), but the exact write site for the 19 digital-button boolean fields is still open (see "Still open" #1 above) — it may turn out to be the session 8/9 GPIO-IRQ path after all, just landing on the InputTask object rather than the board object those sessions were inspecting.
+- **Report-packing function**: **narrowed, not yet closed (session 10)** — found the button/D-pad bit-packer (`FUN_60042d44`, bit-for-bit matches the report's hat-nibble + 15-button-bitfield layout) and confirmed `hid_input_target__60058aa8`'s real `(report_words, length)` signature, but the function that assembles the full 11-byte buffer and calls it is still unidentified; narrowed to two candidate pass-through stubs (`FUN_600df4b6`, `FUN_60058b7a`) whose own callers aren't found by either literal search or Ghidra xrefs. See "Still open" #2 above.
+- ~~`FUN_6004cdb8` (15.6 KB, near image start)~~ — **decompiled (session 4): this is SHA-512/384 compression, not an event loop.** See `analysis/bruce-crypto.md` — bruce statically links BoringSSL SHA-512 + Ed25519 keygen/ASN.1. `main__60051168` (session 5, this doc) is straight-line init, not a loop either. **Found, session 10:** the real per-tick input dispatch loop is `FUN_600432e8` (InputTask's `Run()` method, virtual-dispatched, started from `main__60051240`'s `xTaskCreateStatic` call) — see above. (A generic firmware-wide "main loop" doesn't really exist; each FreeRTOS task, including this one, has its own.)
 - ~~Map ITCM blob~~ — **done, `analysis/bruce-itcm.md`** (session 5, parallel thread).
