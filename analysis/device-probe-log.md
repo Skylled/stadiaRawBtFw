@@ -11,11 +11,22 @@ in Claude memory `stadia-hardware-baseline` / `stadia-flashing-protocol`.
   `sdphost`, `blhost`, `nxpdevscan`, `nxpfuses`, plus `python3` + `pyusb`/`libusb`.
 - All probes below are **read-only** (no flash writes). Nothing was programmed/erased.
 
-## Controllers under test
-| Tag    | Notes                                                        | Serial (normal mode) |
-|--------|--------------------------------------------------------------|----------------------|
-| Black  | Primary unit, all work so far.                               | 9B260YCAC6SBVQ       |
-| (TBD)  | 3 more available, incl. one from the **earliest commercial batch** — check whether it differs. | — |
+## Controllers under test — per-unit fingerprints (normal mode `0x18D1:0x9400`)
+Serial from the USB device descriptor; FW build from vendor control request `bRequest 0x81`
+(**`bmRequestType 0xA1` = class/interface, IN, 4 B little-endian** = firmware build number;
+the vendor-recipient forms `0xC1`/`0xC0` return the `0xDEADDEAD` stub). `bcdDevice 0x0100`,
+Manufacturer "Google LLC", Product "Stadia Controller rev. A" on all four.
+
+| Tag | Notes | Serial | FW build (0x81) | image |
+|-----|-------|--------|-----------------|-------|
+| Black | primary; full HAB workup + tamper A/B | `9B260YCAC6SBVQ` | 337784 | bruce (BT) |
+| Founder | earliest commercial batch | `99100YCAC296Y5` | 337784 | bruce (BT) |
+| Premiere | Premiere Edition | `9A050YCAC2KB6R` | 337784 | bruce (BT) |
+| Wasabi | 4th unit | `99170YCAC56LWF` | 337784 | bruce (BT) |
+
+The **serial is the only real per-unit differentiator** (each unique; all share the middle
+segment `YCAC`). Firmware build (337784, bruce/BT), `bcdDevice`, and HAB state are identical
+across all four — the fleet is uniform in security posture and firmware.
 
 ## USB / boot-mode state machine (observed on Black)
 | Mode | VID:PID | Product string | How to enter | Secure state |
@@ -31,6 +42,12 @@ Notes:
   **Options+Assistant+A+Y**. (Earlier confusion: Menu-held → `0x946B`, mistaken for SDP.)
 - Clean exit from any bootloader: `blhost … reset` (reboots to normal FW), or unplug +
   hold **Stadia** button ~10 s.
+- **The controller is battery-backed: unplugging USB does NOT power-cycle the MCU.** A
+  bootloader/SDP state therefore *persists across a USB replug* (the chip keeps running on
+  battery), and LED stays off with no button held. To truly return to normal firmware you must
+  force a hardware reset — hold the **Stadia** button ~10 s (or `blhost reset` after loading a
+  flashloader). This explains a unit found still in SDP on a plain replug, and the mid-transition
+  "limbo" (device vanished from USB) seen when a chord was pressed from within `0x946B`.
 
 ---
 
