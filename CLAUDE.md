@@ -19,6 +19,8 @@ NXP **i.MX RT106x** (Cortex-M7), execute-in-place from a 16 MB Winbond **W25Q128
   - `firmware-map.md` — top-level structural map; `bruce` (BT) vs `gotham` (Wi-Fi, a full embedded WebRTC cloud-streaming client).
   - `bruce-ghidra.md` — Ghidra workspace details, function/module map, re-run recipes.
   - `bruce-io-paths.md` — decompiled HID input/output + rumble + input-subsystem findings; **the current working document**.
+  - `bruce-crypto.md` — the embedded BoringSSL crypto stack (SHA-512, Curve25519/Ed25519 field+point arithmetic, the generic `EVP_PKEY_ASN1_METHOD` registry) — traced bottom-up from the largest functions in the image.
+  - `bruce-itcm.md` — the boot-time ITCM copy (`Reset_Handler`'s `memcpy(0x0, 0x6004081c, 0xbdf8)`) and resolved `thunk_EXT_FUN_0000xxxx` HAL primitives.
   - `ghidra_scripts/` — headless GhidraScripts (Java) + `decode_hid_descriptor.py`.
   - `ghidra/` — the Ghidra project **and generated CSV/TXT outputs**. The project database (`*.gpr`, `*.rep/`) and `*.log` are **git-ignored** (regenerable); the `bruce_*.csv`/`.txt` outputs are committed.
   - `decomp/` — decompiled C for functions of interest (committed).
@@ -48,19 +50,21 @@ Then run scripts against the existing project without re-analyzing (`-process ..
 ```
 Open the GUI with `JAVA_HOME=… /opt/homebrew/opt/ghidra/libexec/ghidraRun` and open the `analysis/ghidra` project. The scripts hardcode output paths under `/Users/kyle/Repos/stadiaRawBtFw/analysis/`; adjust if the repo moves.
 
-Custom scripts: `SeedCortexM` (parse the Cortex-M vector table before analysis), `DumpMap` (function/string CSVs), `AnnotateFromFilenames` (attribute functions to source files via leaked `__FILE__` strings — the core navigability trick), `FindRef` (xrefs to an address), `Decompile` (dump C + callers/callees).
+Custom scripts: `SeedCortexM` (parse the Cortex-M vector table before analysis), `DumpMap` (function/string CSVs), `AnnotateFromFilenames` (attribute functions to source files via leaked `__FILE__` strings — the core navigability trick), `FindRef` (xrefs to an address), `Decompile` (dump C + callers/callees), `MapItcmAddr` (map an ITCM address 0x0000xxxx to its flash address per `bruce-itcm.md` — accepts bare offsets or `thunk_EXT_FUN_0000xxxx` names).
 
 ## Conventions & gotchas
 - **Never commit the Ghidra DB** (it's ~23 MB and regenerable) — the `analysis/.gitignore` handles `*.gpr`, `*.rep/`, `*.log`. Do commit the scripts, `.md` writeups, CSV/TXT outputs, and `decomp/*.c`.
 - Commit messages end with the `Co-Authored-By: Claude Opus 4.8` trailer (see git log for the pattern). Work on `firmware-re`; don't commit to `main`.
 - **`getImageBase()` is 0** for a raw `BinaryLoader` import — use `getMinAddress()` for the load address (this bit `SeedCortexM` once).
 - Function attribution comes from leaked `__FILE__` strings, so a function's *file* is reliable but the file's *purpose* may not be — verify by reading. Known trap: **`keys.cc` is a typed config key-value store, not gamepad buttons.**
-- Pervasive `thunk_EXT_FUN_0000xxxx` calls target low addresses (0x0000xxxx) **not present in the static flash image** — these are hot HAL/RTOS routines (I2C, queues) copied into tightly-coupled memory at boot. Recovering them means finding the boot-time memcpy of a flash blob into the 0x0 region.
+- Pervasive `thunk_EXT_FUN_0000xxxx` calls target low addresses (0x0000xxxx) — these are hot HAL/RTOS routines (I2C, queues, memcpy/memset, FreeRTOS task-yield) copied into ITCM at boot. **Resolved (session 5, `analysis/bruce-itcm.md`):** `Reset_Handler` copies flash `0x6004081c`–`0x6004c614` to ITCM `0x0`–`0xbdf8`, so `flash_addr = itcm_addr + 0x6004081c` — the bytes are already in the static image at that flash offset, no overlay needed. Use `MapItcmAddr.java` then `Decompile.java` on the resulting flash address to resolve any given thunk; 10 of 155 done so far.
 - The HID report descriptor is embedded at flash **0x60103BA0**; `analysis/ghidra_scripts/decode_hid_descriptor.py` decodes it.
 
 ## Current status & next targets
-The BT firmware's gamepad I/O is largely mapped: HID report format (input ID 3 / rumble output ID 5), the input-subsystem constructor, calibration, and the rumble/haptics path — all in `analysis/bruce-io-paths.md`. Open threads, in rough priority:
-1. Trace the per-field **sampler callbacks** (`0x600d…` function pointers installed by `timer__60073bf0`) that read raw button GPIOs and stick/trigger ADC values.
-2. Decompile `FUN_6004cdb8` (15.6 KB, near image start) — likely the main event/dispatch loop.
-3. Map the **ITCM blob** to resolve the `thunk_EXT_FUN_0000xxxx` HAL primitives.
-4. Longer term: apply the same workflow to the `gotham` Wi-Fi firmware (the cloud-streaming stack).
+The BT firmware's gamepad I/O is largely mapped: HID report format (input ID 3 / rumble output ID 5), the input-subsystem constructor, calibration, and the rumble/haptics path — all in `analysis/bruce-io-paths.md`. Session 4/5 mapped a second major subsystem: bruce statically links a substantial chunk of BoringSSL (SHA-512, Curve25519/Ed25519, generic EVP/ASN.1 registry — `analysis/bruce-crypto.md`) and the ITCM boot-copy blob is now mapped, resolving several `thunk_EXT_FUN_0000xxxx` HAL primitives (`analysis/bruce-itcm.md`). Open threads, in rough priority:
+1. Find the runtime **button/ADC read path**. Two false leads now closed (`analysis/bruce-io-paths.md`): the `0x600d…` pointers in `timer__60073bf0` are haptics-timer glue, and the `obj+0x36e4`/`obj+0x3684` sub-objects passed to `FUN_600717a0` turned out to be the *encrypted-flash calibration-blob* store, not HID field descriptors. Real progress: found the ADC1/ADC2 bring-up (`board.cc`/`xbara.h`, confirmed MMIO bases 0x400C4000/0x400C8000) and 8 registered ADC channels including the 6 stick/trigger candidates — but still no runtime conversion-trigger/result-read call found. Also found `io_pin.cc` registers GPIO **interrupts** on some pins, hinting buttons may be edge-IRQ-driven rather than polled — next step is decompiling the ISR (`FUN_600532f0`) and the NVIC vector table.
+2. **Report-packing function** — still unidentified: whatever combines calibrated stick/trigger + button state into the final 11-byte report ID 3 buffer (`hid_input_target.cc` only transmits an already-built report).
+3. Find the real **main event/dispatch loop** — the "biggest unread function" heuristic that flagged `FUN_6004cdb8` was a dead end (it's SHA-512 compression, not a dispatcher; see `analysis/bruce-crypto.md` for why). Fresh candidates from a re-sorted size survey are noted in `analysis/bruce-ghidra.md`.
+4. ~~Map the ITCM blob~~ — done (session 5): boot copy is `memcpy(0x0, 0x6004081c, 0xbdf8)`; 10 of 155 veneer targets resolved so far, rest are mechanical via `MapItcmAddr.java`.
+5. Find what (if anything) actually calls into the Ed25519/EVP crypto stack at runtime — every traced call path currently dead-ends 1-2 hops up with no further caller found (`analysis/bruce-crypto.md`); worth another look once more of the BT pairing / OTA-update code is mapped.
+6. Longer term: apply the same workflow to the `gotham` Wi-Fi firmware (the cloud-streaming stack).
