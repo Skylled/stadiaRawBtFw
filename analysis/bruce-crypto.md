@@ -1,6 +1,95 @@
-# Bruce — embedded BoringSSL crypto (session 4)
+# Bruce — embedded BoringSSL crypto (session 4; `bcm.c` correction + BIGNUM/EC map added session 9)
 
 Decompiled C for every function cited here is in `analysis/decomp/`.
+
+## Session 9: `bcm.c` is BoringSSL's BIGNUM + EC library, *not* a Broadcom BT chip driver
+
+`bruce-ghidra.md` and `bruce-decompile-status.md` both characterized the 52-function, 11,548-byte `bcm.c`-attributed block as "the Broadcom BT chip HCI/patchram driver" — a reasonable-looking guess from the filename alone, made before anyone had actually decompiled a single one of its functions. All 52 are now decompiled (`analysis/decomp/bcm__*.c`) and read. **The guess was wrong, in exactly the way CLAUDE.md's `keys.cc` gotcha warns about**: `bcm.c` is a bare filename with no path, and BoringSSL happens to have a real source file at that exact bare name — `crypto/fipsmodule/bcm.c`, the "**B**oring**C**rypto **M**odule": a single translation unit that `#include`s dozens of individual algorithm-implementation files (`bn_*.c`, `ec.c`, `ec_key.c`, parts of `evp_enc.c`, etc.) so the whole FIPS-140 validation boundary compiles/link as one object. Every `__FILE__`-based debug/error string baked into any of those algorithms by the preprocessor therefore reads literally `"bcm.c"`, regardless of which original algorithm file the code came from — the same bare-filename collision that made `keys.cc` (a typed config store) look like gamepad-button code.
+
+**Evidence it's BoringSSL BIGNUM/EC, not a radio driver:**
+1. **The single leaked string is bare `"bcm.c"`** at flash `0x6012867d` (`analysis/ghidra/bruce_strings.txt`), cross-referenced from all 52 functions — no path component, consistent with a `#include`-aggregated FIPS module file rather than a normal source tree layout.
+2. **Every function's error path is OpenSSL/BoringSSL's `ERR_put_error(lib, func, reason, file, line)` idiom**, called through `FUN_600e0552(lib, 0, func_or_reason, DAT_xxxx, line, ...)` with a literal 5-int-plus-varargs shape — and the `lib` codes split cleanly by cluster: the raw-bignum functions all pass `lib=3` (`ERR_LIB_BN`), while the EC/EVP cluster passes `0xf`/`0x1e`/`4` — internally consistent with which BoringSSL sub-library each function actually belongs to, not arbitrary.
+3. **Struct shapes are exact matches for known BoringSSL types**: a 20-byte alloc-and-zero pattern (`bcm__6008b384`) matches `struct bignum_st {BN_ULONG *d; int top; int dmax; int neg; int flags;}` exactly (5×4 bytes on this 32-bit target); point-format parsing checks the byte values `0x02`/`0x03`/`0x04` (`bcm__6008e910`) — the exact SEC1 compressed/uncompressed EC point-octet tags; a curve-group cache (`bcm__6008d7ac`) loops over exactly **4** built-in entries, matching BoringSSL's actual built-in curve count (P-224/P-256/P-384/P-521).
+4. **Direct call edges to/from other already-attributed BoringSSL source files**: `bcm__6008ccb4`/`bcm__6008cfd4`/`bcm__6008db50`/`bcm__6008e910`/`bcm__600ea868` are called from `ec_asn1__60091580` (`ec_asn1.c`); `bcm__6008c728` is called from `pem_lib__60085f2c` (`pem_lib.c`); `bcm__600ea868`/`bcm__600ebf76` call `ex_data__600919d4` (`ex_data.c`, BoringSSL's generic `CRYPTO_EX_DATA` object-constructor mechanism used by `RSA_new`/`EC_KEY_new`-style functions). All three are already-confirmed BoringSSL files, not Bluetooth code.
+5. **Zero HCI/UART/patchram vocabulary anywhere in the 52 functions** — no baud-rate constants, no H4 packet-type bytes, no firmware-hex patch buffers, no UART MMIO register access. Contrast with the real, confirmed Broadcom chip-transport code, which does show exactly that vocabulary: `hcisu_h4_send_msg_now` (`0x60096e38`, `bruce-bta-stack.md`) — a real Broadcom-adjacent function, just a different, unattributed address range from this one, not a duplicate of it.
+
+Net: **`bcm.c` is BoringSSL's generic multi-precision-integer (BIGNUM) library plus its generic short-Weierstrass EC_GROUP/EC_POINT/EC_KEY layer**, with a small EVP block-cipher-padding cluster mixed in (consistent with "bcm.c" being one aggregated translation unit spanning several logical BoringSSL subsystems, not one coherent module by original design). This corrects `bruce-ghidra.md`'s module-mass table and `bruce-decompile-status.md`'s file-list description (both updated to point here); the real Broadcom BT chip/HCI layer is the material documented separately in `bruce-bta-stack.md`.
+
+### Function map (all 52 decompiled; confidence noted per row — "high" = multiple independent shape/spec matches, "medium" = single strong shape match, name not spec-verified)
+
+**BIGNUM core** (allocation, word-array arithmetic primitives):
+
+| Address | Bytes | Identification | Confidence |
+|---|---:|---|---|
+| `0x6008b384` | 48 | `BN_new`-shaped: alloc+zero the 20-byte `bignum_st`, set `flags=1` (`BN_FLG_MALLOCED`) | high |
+| `0x6008b570` | 150 | `BN_CTX_get`-shaped: pool-based BIGNUM allocator from a `BN_CTX`, grows the pool via the fn above | high |
+| `0x6008b50c` | 50 | `BN_CTX_new`-shaped: alloc+zero a 24-byte `BN_CTX` | medium |
+| `0x6008b43c` | 118 | `bn_wexpand`-shaped: grow `d` to ≥N words (realloc+copy+free), respects a static-data flag bit | high |
+| `0x6008b4b8` | 78 | `bn_resize_words`-shaped: extend/truncate `top`, zero-fill new words via `bn_wexpand` | medium |
+| `0x6008b3d4` | 100 | `bn_set_words`-shaped: raw word-array copy-out into a caller buffer | medium |
+| `0x6008b60c` | 152 | `bn_usub`-shaped: unsigned word-array subtract-with-borrow | high |
+| `0x6008b6a8` | 138 | `bn_mul_add_words`-shaped: schoolbook long-multiplication carry-propagate inner loop | high |
+| `0x6008b738` | 94 | `bn_sqr`-shaped: squares a BIGNUM via the multiply-accumulate loop above | medium |
+| `0x6008b970` | 124 | BN copy/normalize helper — computes and caches a derived 8-byte value (bit-length/word-count pair) | medium |
+| `0x6008b9f0` | 44 | signed add/sub sign-check dispatcher (checks both operands' `neg` flag before combining) | medium |
+| `0x6008ba20` | 120 | Montgomery/modular-multiply dispatcher — squares if both operands are the same pointer, else multiplies; huge fan-in from the modexp functions below | high |
+| `0x6008bae0` | 172 | `BN_lshift`-shaped: word+bit left shift | high |
+| `0x6008bb90` | 72 | word-array copy/shift helper, sibling of `BN_lshift` | medium |
+| `0x6008bbdc` | 800 | `BN_div`-shaped: Knuth Algorithm-D long division, 64-bit quotient-digit refinement via a 2-word/1-word divide primitive (`FUN_6004c814`) | high |
+| `0x6008bf44` | 398 | binary-GCD core (bit-parity conditional-subtract loop) — feeds `BN_gcd`/modular-inverse machinery | medium |
+| `0x6008b79c` | 398 | `BN_mod_inverse`-shaped: extended binary-GCD/Lehmer-style modular inverse | medium |
+| `0x6008c5fc` | 290 | Kronecker/Jacobi-symbol computation (binary-GCD-style loop with running sign flip) — feeds the `BN_mod_sqrt` non-residue search below | medium |
+
+**Modular exponentiation:**
+
+| Address | Bytes | Identification | Confidence |
+|---|---:|---|---|
+| `0x6008c0d8` | 628 | `BN_mod_exp`-shaped: sliding-window modexp, stack power-table (up to 32 entries), square-and-multiply main loop reading exponent bits via a `BN_is_bit_set`-shaped callee | high |
+| `0x6008c334` | 706 | constant-time windowed modexp (`BN_mod_exp_mont_consttime`-shaped): heap-allocated flat power table + fixed-width table-gather via the raw-word-copy helper, i.e. the constant-time-access variant | high |
+
+**EC — `EC_GROUP`/`EC_POINT`/`EC_KEY`, generic short-Weierstrass layer:**
+
+| Address | Bytes | Identification | Confidence |
+|---|---:|---|---|
+| `0x6008d7ac` | 642 | `EC_GROUP_new_by_curve_name`-shaped: mutex-guarded cache of exactly 4 built-in curve groups (matches BoringSSL's real built-in-curve count: P-224/256/384/521) | high |
+| `0x6008cbfc` | 126 | `EC_GROUP_new`-shaped: allocs a 344-byte (`0x158`) `EC_GROUP`, calls the method's `group_init` vtable slot | medium |
+| `0x6008cb7c` | 66 | group/field-method rebind helper (swaps method vtable ptr + per-method extra-data block, re-inits) | medium |
+| `0x6008ccb4` | 40 | method-dispatch trampoline (group-method vtable slot `+0x1c`); direct caller is already-attributed `ec_asn1__60091580` | high |
+| `0x6008ac40` | 62 | `BN_MONT_CTX_new`-shaped: allocs an 88-byte Montgomery-context struct | medium |
+| `0x6008cf98` | 54 | Montgomery-context computation helper (`BN_MONT_CTX_set`-shaped) | medium |
+| `0x6008cfd4` | 100 | wraps the two above — installs/caches a field's Montgomery context; caller is `ec_asn1__60091580` | medium |
+| `0x6008d120` | 258 | `ec_GFp_simple_group_set_curve`-shaped: installs p/a/b curve parameters into an `EC_GROUP`, detects the `a=-3` fast-path (flag consistent with the same flag read by `0x6008d6f8`/`0x6008e700` below) | high |
+| `0x6008d228` | 122 | `ec_GFp_mont_group_set_curve`-shaped: `BN_CTX_new` + Montgomery-context-for-field + calls the fn above — matches BoringSSL's real two-layer `ec_GFp_mont_group_set_curve`→`ec_GFp_simple_group_set_curve` call structure | high |
+| `0x6008db50` | 216 | `EC_GROUP_set_generator`-shaped: installs generator point + order + cofactor | medium |
+| `0x6008d2a8` | 82 | `EC_POINT_new`-shaped: allocs a 208-byte (`0xd0`) point struct, calls method init | medium |
+| `0x6008d300` | 76 | `EC_POINT_copy`-shaped (copies a 68-byte precomp/extra block) | medium |
+| `0x6008d6b8` | 58 | small point-init-or-reinit dispatcher, sibling of `EC_POINT_new` | medium |
+| `0x6008ce70` | 66 | field-element encode helper: BIGNUM → group's internal (Montgomery) field representation via a method vtable slot | medium |
+| `0x6008d6f8` | 292 | Jacobian→affine coordinate recovery: field inversion via a Fermat's-little-theorem exponentiation chain, calling the group's `field_mul`/`field_sqr` method-vtable slots directly, branching on the `a=-3` flag | medium |
+| `0x6008d730` | 118 | `EC_POINT_get_affine_coordinates_GFp`-shaped: wraps the coordinate recovery above + `EC_POINT_copy` | medium |
+| `0x6008da3c` | 52 | method-match check + `EC_POINT_set_to_infinity`-shaped | medium |
+| `0x6008da74` | 56 | `EC_POINT_copy`-shaped (alternate/simpler path) | medium |
+| `0x6008dab0` | 82 | `EC_POINT_dup`-shaped | medium |
+| `0x6008db08` | 300 | `EC_POINT_cmp`-shaped: method-match guard + point-equality compare, returns `-1` on mismatch | high |
+| `0x6008e164` | 248 | `BN_rand`-shaped: builds an N-bit random BIGNUM honoring the classic `top`∈{-1,0,1} / `bottom`(force-odd) constraints — used for random EC scalar generation | high |
+| `0x6008e264` | 1160 | `BN_mod_sqrt`-shaped: Tonelli-Shanks modular square root (quadratic-residue search, ~80-iteration bound, using the Kronecker/Jacobi helper above) — the single biggest function in the file | high |
+| `0x6008e700` | 524 | `EC_POINT_set_compressed_coordinates_GFp`-shaped: evaluates `y²=x³+ax+b` (with the `a=-3` fast path), calls `BN_mod_sqrt`, fixes the sign/parity bit | high |
+| `0x6008e910` | 326 | `EC_POINT_oct2point`-shaped: parses a SEC1 octet string (`0x02`/`0x03` compressed, `0x04` uncompressed — byte-exact match), dispatches to the compressed/uncompressed path | high |
+| `0x6008eb24` | 560 | `EC_KEY_check_key`-shaped: point/key consistency check via three chained multiply-and-compare steps | medium |
+| `0x600ea868` | 134 | small `CRYPTO_EX_DATA`-backed object constructor (calls already-attributed `ex_data__600919d4`) | medium |
+| `0x600ebf76` | 156 | larger (152-byte) `CRYPTO_EX_DATA`-backed object constructor — `EC_KEY_new`-shaped by size/field layout | medium |
+
+**EVP block-cipher padding/init cluster** (smaller, distinct sub-group — PEM private-key decryption, not EC math):
+
+| Address | Bytes | Identification | Confidence |
+|---|---:|---|---|
+| `0x6008c728` | 194 | PKCS#7 de-padding (validates trailing pad bytes, copies unpadded plaintext) — `EVP_DecryptFinal_ex`-shaped; **caller is `pem_lib__60085f2c`** (PEM decode of an encrypted key), tying this cluster to PEM private-key decryption | medium |
+| `0x6008c7f0` | 64 | cipher-method vtable getter/dispatch (`EVP_CIPHER_CTX`-shaped) | medium |
+| `0x6008c834` | 276 | `EVP_CipherInit_ex`-shaped: cipher-mode switch (cases 0-5 matching the classic ECB/CBC/CFB/OFB/CTR/stream-mode enum), key/IV setup | medium |
+| `0x6008cce0` | 146 | point-coordinate byte-reversal serializer (little-endian BIGNUM limbs → big-endian octets) feeding `EC_POINT_point2oct` below | medium |
+| `0x6008d5e0` | 212 | `EC_POINT_point2oct`-shaped: handles SEC1 point formats 2 (compressed) and 4 (uncompressed) exactly, computes output length, packs X (and Y) coordinates, sets the compressed-format parity byte from Y's LSB | high |
+
+**Bottom line for the "find what calls the EC crypto stack" open thread (item 5 in CLAUDE.md's status list)**: this block is the generic *library* layer (BIGNUM + EC math), not a call site — it doesn't resolve who invokes it. But it does strengthen the P-256 lead from `bruce-bta-stack.md` (SMP's ECDH keypair-gen chain `FUN_600c0f34`→`FUN_600c1030`→`FUN_600c8798`, and the P-256/P-192 field-reduction pair at `0x600c8fd8`/`0x600c8b24`): those BTA-block functions almost certainly call down into (or duplicate/inline) primitives from *this* generic EC layer, or a curve-specialized sibling of it. Worth checking direct call edges between the two blocks next session.
 
 ## Confirmed: a full SHA-512 + Ed25519 stack is compiled in
 

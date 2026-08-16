@@ -389,6 +389,8 @@ Two gaps keep this from being a *fully* closed, single unbroken chain:
 
 ## Session 12 — GATT server engine mapped in more depth; the final transmit-trigger wire is still not closed
 
+*Cross-reference: the ~21 GATT-server-engine functions decompiled this session are now also cataloged in `analysis/bruce-bta-stack.md` — one (`FUN_600aee8c`) genuinely falls inside that doc's `0x600921b8`–`0x600c9cc4` Broadcom BTA/BTE block and was folded into its function table; the other ~20 (the `gatt_server.cc`/`gatt_server.h`/`adapter.cc` cluster at `0x6005dxxx`–`0x600d8xxx`) sit outside that block and are recorded there in a dedicated "adjacent-but-distinct" section instead.*
+
 Followed both session-11 leads. **Neither closes the gap.** This session adds substantial new, byte-confirmed mapping of the generic GATT server engine, and rules out one specific hypothesis, but the exact runtime call into `object(0x2000385c)+0x114` (and any caller of `FUN_60058b68`) remains unfound after three dedicated sessions (10, 11, 12) of steadily narrowing search.
 
 ### Lead 1 — `FUN_60058b68`'s callers: still zero, and it is *not* a slot in `FUN_600813cc`'s table

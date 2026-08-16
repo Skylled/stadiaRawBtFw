@@ -28,7 +28,7 @@ HL=/opt/homebrew/opt/ghidra/libexec/support/analyzeHeadless
 ### Module mass (attributed functions per source file, top)
 | Functions | Source file | Subsystem |
 |---|---|---|
-| 52 | `bcm.c` | Broadcom BT chip driver (HCI/patchram) — biggest module |
+| 52 | `bcm.c` | **Not** a Broadcom BT chip driver — see correction in `bruce-crypto.md`: this is BoringSSL's `crypto/fipsmodule/bcm.c` ("BoringCrypto Module") aggregate file, i.e. BIGNUM + generic EC_GROUP/EC_POINT/EC_KEY code (biggest module by function count) |
 | 19 | `tasks.c` | FreeRTOS scheduler |
 | 19 | `keys.cc` | button/key input handling |
 | 16 | `adapter.cc` | Bluetooth adapter/controller logic |

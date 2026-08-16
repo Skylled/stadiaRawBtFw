@@ -4,6 +4,8 @@ Data-driven status doc for the "decompile all of `bruce` to source-reconstructio
 
 **Snapshot: 2026-08-15 23:46 EDT (session 8 regeneration).** This is a full refresh of every table in the doc, built on top of two sessions of work (session 6 continued, session 7 twice) that ran between this doc's original session-6 build and now: `analysis/decomp/` grew from 146 files (session 6 baseline) to **546** at the moment this snapshot was taken — more than 3.7x. Only one row of the previous version (§3b run #1) had been kept manually up to date in the interim; every other number below was stale until this pass. `analysis/decomp/` was under active, ongoing expansion by a concurrent session while this doc was being rebuilt (confirmed growing from 534 → 546 files mid-session) — as with the original session-6 snapshot, treat every count below as a lower bound as of the snapshot time, not a hard current total. Re-run before trusting exact numbers for planning. The census (`bruce_functions.csv`, 4,995 rows) and attribution table (`bruce_srcmap.csv`, 448 rows) are unchanged from session 6 — all growth this round is in `analysis/decomp/`.
 
+**Session 9 patch (targeted, not a full regeneration):** all 52 `bcm.c` functions are now decompiled (`analysis/decomp/bcm__*.c`, 11,548 bytes) — the numbers below have been hand-corrected wherever they mention `bcm.c` specifically (§1 top-line Decompiled/overlap counts, §2's `bcm.c` row, §3a). **`bcm.c` also turned out to be misidentified** — it was called "the Broadcom BT chip HCI/patchram driver" purely from the filename; actually reading the code shows it's BoringSSL's `crypto/fipsmodule/bcm.c` ("BoringCrypto Module") aggregate file — BIGNUM + generic EC_GROUP/EC_POINT/EC_KEY code, with a small EVP block-cipher-padding cluster. Full evidence, corrected description, and a per-function map are in `bruce-crypto.md`'s new session-9 section; this doc's job is just the byte/function accounting. No other number in this doc has been re-verified this session — everything not about `bcm.c` should still be treated as a session-8-snapshot lower bound per the paragraph above, likely stale given how much concurrent decompile work the session-8 note already flagged as in-flight.
+
 The other major input new this session: `analysis/bruce-bta-stack.md`, which identifies §3b's run #1 (the 204 KB block at `0x600921b8`–`0x600c9cc4`) as the statically-linked Broadcom BTA/BTE Bluetooth stack, with 319 of its 1,076 functions now decompiled via a string-table cross-reference method (not the `__FILE__`-leak method the rest of this doc's "Attributed" numbers rest on). That block is no longer *unidentified* — see the new §1a and the rewritten §3b run #1 for how this doc represents that distinction without polluting the formal "Attributed" join.
 
 ## 1. Top-line stats
@@ -12,18 +14,20 @@ The other major input new this session: `analysis/bruce-bta-stack.md`, which ide
 |---|---:|---:|---:|---:|
 | **Total functions (census)** | 4,995 | 100% | 660,570 | 100% |
 | **Attributed** (leaked `__FILE__` → 139 src files) | 448 | 8.97% | 97,450 | 14.75% |
-| **Decompiled** (`analysis/decomp/*.c`, matched to a census address) | 439 | 8.79% | 145,891 | 22.09% |
+| **Decompiled** (`analysis/decomp/*.c`, matched to a census address) | 491 | 9.83% | 157,439 | 23.83% |
 | **Attributed ∪ Decompiled** (understood in *some* way) | 851 | 17.04% | 233,509 | **35.35%** |
 | **Totally unknown** (no attribution, no decompile) | 4,144 | 82.96% | 427,061 | **64.65%** |
 
 Size-weighted (bytes) is still the more honest progress metric than function-count, for the same reason as before (a handful of huge functions dominate the byte total disproportionately to their count). **Bottom line: ~35% of the binary's code by size is now understood in some way, up from ~22% at the session-6 snapshot — real progress, but 65% (427 KB across 4,144 functions) is still completely unmapped.**
 
+(Session 9 note: "Decompiled" rows above are hand-bumped by exactly `bcm.c`'s 52 functions/11,548 bytes over the session-8 snapshot — `439→491` funcs, `145,891→157,439` bytes. The "Attributed ∪ Decompiled" union is **unchanged** by this, and that's expected, not an error: `bcm.c`'s 52 functions were already inside "Attributed" before this session, so decompiling them moves them from the attributed-only bucket into the attributed-and-decompiled overlap bucket without growing the union. It's a real quality upgrade — "we know the filename" to "we've read the code and know what it does" — just not one that shows up in the top-line coverage percentage.)
+
 Notes on the numbers:
 - **CLAUDE.md / project memory says "5,137 functions"** — `bruce_functions.csv` still has only 4,995 data rows, unchanged from session 6 (no re-import happened this round). Same ~142-function discrepancy as before; still not chased further here.
 - **`bruce_functions.csv`'s `name` column is still stale for all 448 attributed addresses** — same gotcha as session 6, unchanged. Always join on `address`.
 - Of the 546 files currently in `analysis/decomp/`, **439 map onto an address in the 4,995-function census; 107 do not** (up from 66 at the session-6 snapshot, proportionally about the same ~20% share) — these are the tiny (2–364 byte) `Decompile.java`-carved-out ITCM-thunk/veneer-style functions described in `bruce-itcm.md`. They total 10,848 bytes of real decompiled code that stays outside the 4,995/660,570 baseline for the same consistency reason as before.
-- Of the 439 in-census decompiled functions, only **36 are also formally attributed** to a source file (up from 34) — the other **403 are decompiled-but-unattributed**. The overwhelming majority of that 403 — **319 of them** — are inside the newly-identified BTA/BTE Bluetooth-stack block (§1a below); the remaining 84 are the pre-existing crypto-stack/I/O-path decompiles from session 6 plus scattered small wins elsewhere (see §3b's per-range deltas).
-- **Growth attribution**: decompiled-in-census bytes grew from 57,558 (session 6) to 145,891 this session, +88,333 bytes. **97.2% of that growth (+85,873 bytes) came from the BTA/BTE stack block alone** — i.e. essentially all of two sessions' worth of decompile work went into one module. Outside that block, growth was real but modest and scattered (see the per-range deltas in §3b, e.g. run #10 going from 3→25 decompiled functions).
+- Of the 491 in-census decompiled functions (session-9-updated count), **88 are also formally attributed** to a source file — session-8 snapshot had 36; session 9 added exactly `bcm.c`'s 52 (all of which were already attributed) on top, all in one file. The other **403 are decompiled-but-unattributed** (unchanged from session 8 — the session-9 work was entirely inside the already-attributed `bcm.c`, so it doesn't move this figure). The overwhelming majority of that 403 — **319 of them** — are inside the newly-identified BTA/BTE Bluetooth-stack block (§1a below); the remaining 84 are the pre-existing crypto-stack/I/O-path decompiles from session 6 plus scattered small wins elsewhere (see §3b's per-range deltas).
+- **Growth attribution**: decompiled-in-census bytes grew from 57,558 (session 6) to 145,891 at the session-8 snapshot, +88,333 bytes. **97.2% of that growth (+85,873 bytes) came from the BTA/BTE stack block alone** — i.e. essentially all of two sessions' worth of decompile work went into one module. Outside that block, growth was real but modest and scattered (see the per-range deltas in §3b, e.g. run #10 going from 3→25 decompiled functions). Session 9 added a further +11,548 bytes, all from `bcm.c` (see the session-9 patch note at the top of this doc) — not reflected in the 97.2%/session-8 figures above, which are left as their original snapshot.
 
 ### 1a. Module-identified-but-not-formally-attributed (informational — not folded into "Attributed" above)
 
@@ -51,7 +55,7 @@ That 757/111,914 is a subset of §1's "Totally unknown" row. Netting it out give
 
 | Src file | Attributed funcs | Decompiled funcs | Total bytes | Decompiled bytes | Remaining bytes |
 |---|---:|---:|---:|---:|---:|
-| `bcm.c` | 52 | 0 | 11548 | 0 | 11548 |
+| `bcm.c` | 52 | 52 | 11548 | 11548 | 0 |
 | `timer.h` | 9 | 2 | 4016 | 2600 | 1416 |
 | `tasn_dec.c` | 7 | 0 | 3856 | 0 | 3856 |
 | `state_machine.cc` | 11 | 0 | 3332 | 0 | 3332 |
@@ -191,7 +195,7 @@ That 757/111,914 is a subset of §1's "Totally unknown" row. Netting it out give
 | `init.cc` | 1 | 0 | 22 | 0 | 22 |
 | `exit.c` | 1 | 0 | 16 | 0 | 16 |
 
-Files fully decompiled already (0 remaining bytes): `sleep_driver.cc`, `haptics.cc`, `mimxrt10xx_flash_memory.cc`, `haptics_cluster.cc`, `input_task.cc`, `io_pin.cc`, `adc.h`, `switch_pro_controller.cc`, `board.cc`, `hid_input_target.cc`, `evp.c` — still 11 of 139 (unchanged list from session 6; `heap_5_improved.c` moved from 0/4 to 2/4 but isn't fully done).
+Files fully decompiled already (0 remaining bytes): `sleep_driver.cc`, `haptics.cc`, `mimxrt10xx_flash_memory.cc`, `haptics_cluster.cc`, `input_task.cc`, `io_pin.cc`, `adc.h`, `switch_pro_controller.cc`, `board.cc`, `hid_input_target.cc`, `evp.c` — 11 of 139 as of the session-6/8 snapshot; **session 9 adds `bcm.c` as a 12th** (all 52 functions decompiled, see the session-9 patch note at the top of this doc — and note `bcm.c` is BoringSSL BIGNUM/EC code, not the Broadcom BT driver the name suggests, per `bruce-crypto.md`). `heap_5_improved.c` moved from 0/4 to 2/4 at the session-8 snapshot but isn't fully done.
 
 ## 3. Prioritized gap list
 
@@ -201,18 +205,17 @@ Unchanged from the session-6 list — no session-7/8 work touched these files (a
 
 | Rank | Src file | Remaining funcs | Remaining bytes | Already decompiled |
 |---:|---|---:|---:|---:|
-| 1 | `bcm.c` | 52 | 11548 | 0/52 |
-| 2 | `tasn_dec.c` | 7 | 3856 | 0/7 |
-| 3 | `state_machine.cc` | 11 | 3332 | 0/11 |
-| 4 | `adapter.cc` | 16 | 3216 | 0/16 |
-| 5 | `keys.cc` | 17 | 3016 | 2/19 |
-| 6 | `usb_host_audio_topology.cc` | 8 | 2876 | 0/8 |
-| 7 | `audio_states.cc` | 6 | 2392 | 0/6 |
-| 8 | `usb_host_audio.cc` | 9 | 2346 | 0/9 |
-| 9 | `device_info.cc` | 7 | 2300 | 0/7 |
-| 10 | `remote_device_db.cc` | 4 | 2070 | 0/4 |
+| 1 | `tasn_dec.c` | 7 | 3856 | 0/7 |
+| 2 | `state_machine.cc` | 11 | 3332 | 0/11 |
+| 3 | `adapter.cc` | 16 | 3216 | 0/16 |
+| 4 | `keys.cc` | 17 | 3016 | 2/19 |
+| 5 | `usb_host_audio_topology.cc` | 8 | 2876 | 0/8 |
+| 6 | `audio_states.cc` | 6 | 2392 | 0/6 |
+| 7 | `usb_host_audio.cc` | 9 | 2346 | 0/9 |
+| 8 | `device_info.cc` | 7 | 2300 | 0/7 |
+| 9 | `remote_device_db.cc` | 4 | 2070 | 0/4 |
 
-`bcm.c` (Broadcom BT chip HCI/patchram driver, the single biggest module in the whole attributed set at 52 functions / 11,548 bytes, **still 0 decompiled**) remains the single highest-value target in the entire *formally attributed* set — bigger than the next two combined. Biggest remaining functions there: `bcm__6008e264` (1160B), `bcm__6008bbdc` (800B), `bcm__6008c334` (706B), `bcm__6008d7ac` (642B), `bcm__6008c0d8` (628B). Note this is a different Bluetooth-stack layer than §1a's BTA/BTE block — `bcm.c` is the host-side chip-bringup/patchram-load driver (attributed via leaked `__FILE__` string), while §1a is the Broadcom-internal BTA/BTE protocol stack proper (identified via its own internal trace-string table). They're neighbors in the architecture, not duplicates.
+`bcm.c` **is now fully decompiled (52/52 functions, session 9)** and drops off this "remaining" ranking entirely — it's no longer a cheap-win target, it's done. It also turned out **not** to be a Broadcom BT chip HCI/patchram driver as previously assumed from the filename: it's BoringSSL's `crypto/fipsmodule/bcm.c` ("BoringCrypto Module") aggregate file — BIGNUM + generic EC_GROUP/EC_POINT/EC_KEY code plus a small EVP cipher-padding cluster. Full per-function map and evidence in `bruce-crypto.md`'s new session-9 section. (The real Broadcom BT chip/HCI transport layer is unrelated to this block — it's the material in `bruce-bta-stack.md`, e.g. `hcisu_h4_send_msg_now`.) `tasn_dec.c` is now the top remaining cheap-win target.
 
 Runner-up `tasn_dec.c` (ASN.1 DER decode, BoringSSL) top functions: `tasn_dec__6008fa18` (1410B), `tasn_dec__6008f794` (640B), `tasn_dec__6008ffc0` (514B).
 
@@ -261,15 +264,17 @@ Of **4,995 total functions** (the current census — see the 5,137-vs-4,995 disc
 | | Functions | Bytes |
 |---|---:|---:|
 | Attributed to a source file | 448 | 97,450 |
-| Decompiled (in census) | 439 | 145,891 |
-| — of which both attributed AND decompiled | 36 | — |
+| Decompiled (in census) | 491 | 157,439 |
+| — of which both attributed AND decompiled | 88 | — |
 | — of which in the identified-but-not-formally-attributed BTA/BTE stack (§1a) | 319 | 92,535 |
 | **Understood in some way (union)** | **851 (17.0%)** | **233,509 (35.4%)** |
 | **Completely unknown — no attribution, no decompile, no module ID** | 4,144 (83.0%), or **3,387 (67.8%) excluding BTA-identified** | 427,061 (64.7%), or **315,147 (47.7%) excluding BTA-identified** |
 
+(Session 9 hand-patch: the "Decompiled"/"both attributed AND decompiled" rows above are bumped by `bcm.c`'s 52 functions/11,548 bytes, all now decompiled — see the session-9 patch note at the top of this doc. The union/unknown rows are unchanged, as expected, since `bcm.c` was already inside "Attributed" — see the §1 note for why that's not a bug.)
+
 **Compared to the session-6 snapshot: union coverage nearly doubled by function count (9.9% → 17.0%) and grew by more than half again by byte-weight (22.0% → 35.4%).** Almost all of that gain — 97.2% of the raw byte growth — came from one place: two sessions of concentrated work decompiling the newly-identified BTA/BTE Bluetooth stack (§1a). That's a real, meaningful move in the project's actual goal, not a bookkeeping artifact — the BTA/BTE stack is genuinely one of the largest coherent subsystems in the image, on par with or larger than the crypto stack (`bruce-crypto.md`) that dominated the session-4/5 numbers.
 
-**3,387 functions and ~315 KB of code — still nearly half the binary by size — remain truly unidentified with no attribution, no decompile, and no module ID of any kind.** That's the real remaining scope of the "full decompile to source-reconstruction quality" goal, now that the low-hanging "is this even a known module" question has been answered for the single biggest block. The single best next lever by size is finishing §1a/§3b-run-#1 (757 functions / 111,914 bytes still to decompile, but already identified — cheap in the sense that no more detective work is needed, just `Decompile.java` + read, same as §3a); the cheapest *fresh-territory* wins are still §3a's top 10 files (already-attributed, just need `Decompile.java` runs — largest is `bcm.c` at 11.5 KB / 52 functions, still untouched); and run #2 (330 KB, mixed ITCM-thunk mechanical work plus a real pocket of SMP state-handler code per `bruce-bta-stack.md`) is worth a closer look before the next full-doc regeneration.
+**3,387 functions and ~315 KB of code — still nearly half the binary by size — remain truly unidentified with no attribution, no decompile, and no module ID of any kind.** That's the real remaining scope of the "full decompile to source-reconstruction quality" goal, now that the low-hanging "is this even a known module" question has been answered for the single biggest block. The single best next lever by size is finishing §1a/§3b-run-#1 (757 functions / 111,914 bytes still to decompile, but already identified — cheap in the sense that no more detective work is needed, just `Decompile.java` + read, same as §3a); `bcm.c` (formerly the top §3a entry) is now **fully decompiled** (session 9) and turned out to be BoringSSL BIGNUM/EC code, not a Broadcom BT driver — see `bruce-crypto.md`; the next cheapest *fresh-territory* win is `tasn_dec.c` (§3a); and run #2 (330 KB, mixed ITCM-thunk mechanical work plus a real pocket of SMP state-handler code per `bruce-bta-stack.md`) is worth a closer look before the next full-doc regeneration.
 
 ## Methodology (for regenerating this doc)
 
