@@ -1,18 +1,19 @@
 // 600b9e28  FUN_600b9e28  size=902 bytes
 // --- callers ---
+//   600a9f10 FUN_600a9f10
 //   600bb15c FUN_600bb15c
 // --- callees ---
-//   600bc880 FUN_600bc880
-//   600aa340 FUN_600aa340
-//   600b7800 FUN_600b7800
 //   600ba1c4 FUN_600ba1c4
-//   600f7d88 FUN_600f7d88
+//   6006dfa4 FUN_6006dfa4
+//   600b7800 FUN_600b7800
 //   6006ddd8 FUN_6006ddd8
 //   600bcc30 FUN_600bcc30
-//   600bcbe0 FUN_600bcbe0
-//   600b5e00 FUN_600b5e00
-//   6006dfa4 FUN_6006dfa4
+//   600bc880 FUN_600bc880
 //   600f7ca0 FUN_600f7ca0
+//   600b5e00 FUN_600b5e00
+//   600bcbe0 FUN_600bcbe0
+//   600aa340 FUN_600aa340
+//   600f7d88 FUN_600f7d88
 
 
 void FUN_600b9e28(int param_1)

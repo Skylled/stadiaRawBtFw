@@ -205,7 +205,7 @@ Comparing the full address-sorted function list in `bruce_functions.csv` against
 
 | # | Start | End | Span (B) | Code bytes | Funcs | Already decompiled | Density | Largest function in range |
 |---:|---|---|---:|---:|---:|---:|---:|---|
-| 1 | `0x600921b8` | `0x600c9cc4` | 228108 | 204449 | 1076 | 69 | 89.6% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |
+| 1 | `0x600921b8` | `0x600c9cc4` | 228108 | 204449 | 1076 | 327 | 89.6% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |
 | 2 | `0x600ecb72` | `0x6013d4e4` | 330098 | 95117 | 1006 | 1 | 28.8% | `FUN_601054dc` (2546B @ `601054dc`) |
 | 3 | `0x600df286` | `0x600ea868` | 46562 | 44326 | 316 | 7 | 95.2% | `FUN_600e398a` (6270B @ `600e398a`) |
 | 4 | `0x600cc6e4` | `0x600d4560` | 32380 | 24998 | 304 | 1 | 77.2% | `FUN_600ccfb4` (1568B @ `600ccfb4`) |

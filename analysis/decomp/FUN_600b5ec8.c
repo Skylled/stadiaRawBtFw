@@ -2,17 +2,17 @@
 // --- callers ---
 //   600b5e00 FUN_600b5e00
 // --- callees ---
-//   600bc00c FUN_600bc00c
 //   600aa3cc FUN_600aa3cc
-//   600f8de8 FUN_600f8de8
+//   600aa340 FUN_600aa340
+//   600bc00c FUN_600bc00c
+//   6013cf90 thunk_EXT_FUN_0000b5ba
+//   600a4c5c FUN_600a4c5c
 //   6006ddd8 FUN_6006ddd8
+//   600f0552 FUN_600f0552
+//   600a3424 FUN_600a3424
 //   600f83f2 FUN_600f83f2
 //   600f8d34 FUN_600f8d34
-//   600aa340 FUN_600aa340
-//   600f0552 FUN_600f0552
-//   600a4c5c FUN_600a4c5c
-//   6013cf90 thunk_EXT_FUN_0000b5ba
-//   600a3424 FUN_600a3424
+//   600f8de8 FUN_600f8de8
 
 
 void FUN_600b5ec8(undefined2 *param_1,undefined2 param_2,int param_3)

@@ -2,24 +2,24 @@
 // --- callers ---
 //   600b5e00 FUN_600b5e00
 // --- callees ---
-//   600bc1f8 FUN_600bc1f8
-//   600b720c FUN_600b720c
-//   600bc00c FUN_600bc00c
-//   600f8f7a FUN_600f8f7a
-//   600f9906 FUN_600f9906
-//   600b90d8 FUN_600b90d8
+//   600bc2a0 FUN_600bc2a0
+//   600f9db4 FUN_600f9db4
 //   600f9462 FUN_600f9462
 //   600fa018 FUN_600fa018
-//   600f8664 FUN_600f8664
-//   600aa3cc FUN_600aa3cc
-//   600b731c FUN_600b731c
-//   600bc2a0 FUN_600bc2a0
-//   600f9df0 FUN_600f9df0
-//   600aa340 FUN_600aa340
-//   600b9408 FUN_600b9408
 //   6006ddd8 FUN_6006ddd8
+//   600b731c FUN_600b731c
+//   600f8f7a FUN_600f8f7a
+//   600b9408 FUN_600b9408
+//   600bc00c FUN_600bc00c
 //   600f85a8 FUN_600f85a8
-//   600f9db4 FUN_600f9db4
+//   600f8664 FUN_600f8664
+//   600aa340 FUN_600aa340
+//   600f9df0 FUN_600f9df0
+//   600aa3cc FUN_600aa3cc
+//   600b720c FUN_600b720c
+//   600f9906 FUN_600f9906
+//   600bc1f8 FUN_600bc1f8
+//   600b90d8 FUN_600b90d8
 
 
 void FUN_600b6900(ushort *param_1,undefined2 param_2,short *param_3)
