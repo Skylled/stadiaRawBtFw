@@ -253,7 +253,7 @@ All five share the crypto stack's uniform `FUN_600e0552` (`ERR_put_error`-shaped
 | `bio__60084c90` | 46 | `bio.c` | `BIO_ctrl` | Dispatches control commands (`cmd`, `larg`, `parg`) to `method->ctrl` vtable slot. |
 | `ex_data__600919d4` | 160 | `ex_data.c` | `CRYPTO_free_ex_data` / `CRYPTO_cleanup_all_ex_data` | Thread-safe invocation of per-class `free_func` callbacks and reclamation of `CRYPTO_EX_DATA` vector. |
 | `buf__60090ef4` | 44 | `buf.c` | `BUF_MEM_new` | Allocates a 12-byte `BUF_MEM` expandable memory buffer (`length=0, data=NULL, max=0`). |
-| `buf__60090f24` | 78 | `buf.c` | `BUF_MEM_grow` | Reallocates `BUF_MEM` buffer with $4/3$ exponential growth factor and 4-byte alignment; returns 1 on success, 0 on failure. |
+| `buf__60090f24` | 78 | `buf.c` | `BUF_MEM_reserve` | Ensures capacity `>= len`: fast-returns `1` if `max >= len`, else reallocs (`$4/3$` factor, 4-byte aligned) and sets `data`/`max` only. Returns bool `1`/`0`. *(Corrected from `BUF_MEM_grow` — it never writes `length` and never memsets, which is what defines `grow`.)* |
 
 ### Detailed Function Breakdowns:
 
@@ -279,7 +279,7 @@ All five share the crypto stack's uniform `FUN_600e0552` (`ERR_put_error`-shaped
 - **`bio__60084bec` (`BIO_new`, 80B):**
   - **Signature:** `BIO * BIO_new(const BIO_METHOD *method)`
   - Allocates 44-byte (`0x2C`) `struct bio_st` via `OPENSSL_malloc(0x2C)` (`FUN_600e092c`). On allocation failure: `ERR_put_error(ERR_LIB_BIO=0x11, 0, ERR_R_MALLOC_FAILURE=0x41, "bio.c", line=0x4B=75)`.
-  - Clears remaining 40 bytes. Initializes fields: `bio->method = method`, `bio->references = 1`, `bio->init = 1`, `bio->shutdown = 1`.
+  - Clears remaining 40 bytes. Initializes fields: `bio->method = method`, `bio->references = 1` (offset `+8`), `bio->shutdown = 1` (offset `+0x18`). **`bio->init` (offset `+4`) is left 0** — corrected: an earlier draft wrongly claimed `init = 1`, but only two fields are stored as `1` here, and `BIO_read`/`BIO_ctrl` below test `init` at `+4` (it is set later by the method's create/ctrl path, not by `BIO_new`).
   - If `method->create != NULL` (offset `+0x1C`), invokes `method->create(bio)`. If creation fails (returns 0), frees `bio` via `thunk_EXT_FUN_0000ac5e` and returns `NULL`.
   - **Caller:** `gotham__60067d14`.
 - **`bio__60084c40` (`BIO_read`, 74B):**
@@ -320,9 +320,9 @@ All five share the crypto stack's uniform `FUN_600e0552` (`ERR_put_error`-shaped
   - On failure: reports `ERR_put_error(ERR_LIB_BUF=7, 0, ERR_R_MALLOC_FAILURE=0x41, "buf.c", line=0x48=72)` and returns `NULL`.
   - Initializes fields: `ret->length = 0`, `ret->data = NULL`, `ret->max = 0`.
   - **Caller:** `pem_lib__600861c0`.
-- **`buf__60090f24` (`BUF_MEM_grow`, 78B):**
-  - **Signature:** `int BUF_MEM_grow(BUF_MEM *str, size_t len)`
-  - If current capacity `str->max >= len`, returns `1` (`kSuccess`).
+- **`buf__60090f24` (`BUF_MEM_reserve`, 78B):** *(Corrected from `BUF_MEM_grow`. This function only reserves capacity — it does **not** write `str->length` (`+0`) and does **not** memset new space, the two behaviors that define `BUF_MEM_grow`. `grow` also returns `size_t len`, not the boolean this returns.)*
+  - **Signature:** `int BUF_MEM_reserve(BUF_MEM *str, size_t len)`
+  - If current capacity `str->max >= len`, returns `1` (`kSuccess`) — the reserve fast-path.
   - Enforces integer overflow boundary: checks `len < 0xFFFFFFFD`.
   - Calculates geometric growth capacity:
     ```c
@@ -346,7 +346,7 @@ All five share the crypto stack's uniform `FUN_600e0552` (`ERR_put_error`-shaped
     - Acquires ex_data / obj mutex `CRYPTO_MUTEX` at `0x20003C74` via `FUN_600e0c82`.
     - If dynamic object hash table `*0x2002013C != NULL`: searches LHASH table via `FUN_600edbf4` with comparator callbacks `0x600EDC45` / `0x600EDC4D`.
     - Releases mutex via `FUN_600e0c94`. If match found, returns dynamic `ASN1_OBJECT *`.
-  - **Error Path:** On unknown NID, calls `ERR_put_error(ERR_LIB_ASN1=8, 0, ASN1_R_UNKNOWN_NID=100, "obj.c", line=0x16B=363)` via `FUN_600e0552` and returns `NULL`.
+  - **Error Path:** On unknown NID, calls `ERR_put_error(ERR_LIB_OBJ=8, 0, OBJ_R_UNKNOWN_NID=100, "obj.c", line=0x16B=363)` via `FUN_600e0552` and returns `NULL`. *(Corrected: lib code 8 is `ERR_LIB_OBJ`, not `ERR_LIB_ASN1` — `ERR_LIB_ASN1` is 12, as used correctly elsewhere in this doc; reason 100 is `OBJ_R_UNKNOWN_NID`.)*
   - **Callers:** `FUN_600edc68`, `FUN_600e0d54`, `FUN_600ecabe`.
 
 #### 2. ASN.1 ANY DEFINED BY Template Resolution (`tasn_utl.c`):
@@ -354,13 +354,13 @@ All five share the crypto stack's uniform `FUN_600e0552` (`ERR_put_error`-shaped
   - **Signature:** `const ASN1_TEMPLATE * asn1_do_adb(ASN1_VALUE **pval, const ASN1_TEMPLATE *tt, int nullerr)` in `crypto/asn1/tasn_utl.c`.
   - **Template Flag Check:** If `(tt->flags & ASN1_TFLG_ADB_MASK = 0x300) == 0`, returns `tt` unchanged.
   - **Selector Extraction:** Reads `ASN1_ADB` descriptor pointer from `tt->item` (`param_2[4]`). Reads selector field at offset `adb->offset` from `*pval`.
-  - If selector value is 0: returns default template `adb->default_tt` (offset `+0x18`).
+  - If the selector field pointer is `NULL` (`*sfld == NULL`, before any value is computed): returns `adb->null_tt` (offset `+0x18`). *(Corrected: offset `+0x18` is `null_tt`, not `default_tt`.)*
   - **Type Resolution:**
     - If `tt->flags & ASN1_TFLG_ADB_OID`: extracts NID via `OBJ_obj2nid` (`FUN_60091b94`).
     - Otherwise: extracts integer tag via `ASN1_INTEGER_get` (`FUN_600ec514`).
     - Iterates `adb->tbl` (count `adb->tblcount` at `+0x10`, entry stride 24 bytes):
       - If `tbl[i].value == selector`: returns matching `&tbl[i].tt` (offset `+4`).
-    - Fallback: returns `adb->null_tt` (offset `+0x14`).
+    - Fallback (no table entry matched the selector): returns `adb->default_tt` (offset `+0x14`). *(Corrected: offset `+0x14` is `default_tt`, not `null_tt`.)*
   - **Error Handling:** If resulting template is `NULL` and `nullerr != 0`, calls `ERR_put_error(ERR_LIB_ASN1=12, 0, ASN1_R_UNSUPPORTED_ANY_DEFINED_BY_TYPE=0xBA, "tasn_utl.c", line=0x115=277)` via `FUN_600e0552`.
   - **Callers:** `tasn_dec__6008fa18`, `FUN_600902e4`, `FUN_60090940`.
 

@@ -706,7 +706,7 @@ Called directly from `advertiser__60081234` during BLE pairing and discovery adv
 | `timers__600cacb8` | 82 | `timers.c` | **`xTimerCreateTimerTask` / daemon bring-up.** Spawns `"Tmr Svc"` daemon task at priority 31 (`0x1F`). |
 | `timers__600cad24` | 104 | `timers.c` | **`xTimerCreateStatic` / `prvInitialiseNewTimer`.** Initializes `Timer_t` descriptor structure. |
 | `timers__600cae18` | 22 | `timers.c` | **`xTimerGetPeriod`.** Returns timer period in ticks from `Timer_t->xTimerPeriodInTicks` (`+0x18`). |
-| `timers__600cad94` | 114 | `timers.c` | **`prvProcessExpiredTimer` / timer wheel sweep.** Dispatches timer callbacks, handles auto-reload and overflow list swap. |
+| `timers__600cad94` | 114 | `timers.c` | **`prvSwitchTimerLists` / tick-overflow list sweep.** Drains the current timer list (dispatch callback, auto-reload or post overflow command), then swaps `pxCurrentTimerList`/`pxOverflowTimerList`. *(Corrected from `prvProcessExpiredTimer`, which handles a single timer with no loop/swap.)* |
 | `timers__600cae38` | 38 | `timers.c` | **`xTimerIsTimerActive`.** Thread-safe critical section query checking if timer is in an active list (`+0x14`). |
 
 ### `timers__600cacb8` (82B) — `xTimerCreateTimerTask`
@@ -727,8 +727,8 @@ Initializes static `Timer_t` control block (`param_6`):
 - `+0x2c` (byte): `ucStatus = 1` (static allocation flag)
 - Asserts `param_6 != NULL` (at `timers.c:330`, `0x14a`) and `period > 0` (at `timers.c:360`, `0x168`).
 
-### `timers__600cad94` (114B) — `prvProcessExpiredTimer`
-Processes timer list head entries until list is exhausted:
+### `timers__600cad94` (114B) — `prvSwitchTimerLists`
+Processes timer list head entries until list is exhausted (this is the tick-counter-overflow handler `prvSwitchTimerLists`, not the single-timer `prvProcessExpiredTimer`):
 1. Reads head item from active timer list `*pxCurrentTimerList` (`DAT_600cae08 = 0x20027734`).
 2. Extracts timer object `uVar7` (`Timer_t`) and scheduled expiry tick `uVar8`.
 3. Unlinks item from active list via `thunk_EXT_FUN_0000b344(uVar7 + 4)` (`uxListRemove`).
@@ -1006,7 +1006,7 @@ Parameters (`param_1` = `HardwareTimer` descriptor struct):
 | `timer__600511c8` | 108 | `timer.h` | **Generic Timer Constructor & Assertion Wrapper.** Initializes timer fields, asserts non-zero period and successful handle creation, invokes post-init callback. |
 | `timer__60074658` | 538 | `timer.h`, `board.cc` | **Board Diagnostic Health Supervisor Callback.** Probes accessory detector (TS3A227E), audio codec (WM8904), battery gauge (BQ2742X), USB-C controller (TUSB320), USB device, and haptics. Spawns 1000ms periodic supervision timer and triggers bug report on fault. |
 | `timer__6007fb34` | 164 | `timer.h` | **`Timer` Constructor with Structured CHECK Assertion.** Validates non-zero period and non-null timer handle with structured assertion formatting (`0x4C`, `0x4F`). |
-| `timer__6005afd8` | 298 | `timer.h` | **Application State Supervisor Construction (Dual Timers).** Allocates and arms periodic supervision timer and 30,000ms (30-second) inactivity/shutdown watchdog timer. |
+| `timer__6005afd8` | 298 | `timer.h` | **Application State Supervisor Construction (Dual Timers).** Allocates and arms a periodic supervision timer and a 30,000 ms (30 s) **`"BLE Connect timeout"`** connection-establishment timeout (see detail below — this is a BLE connect timeout, *not* an inactivity/shutdown watchdog). |
 | `timer__60082ff4` | 116 | `timer.h` | **`"BleDbWriteTmr"` 2000ms Flash Writeback Debounce Timer.** Cancels pending writes and arms 2-second debounce timer before serializing bonded BLE device database to flash. |
 | `timer__600721e8` | 108 | `timer.h` | **Haptic Watchdog Timer Constructor Helper.** Initializes `Timer` object for haptic pulse watchdog (`5000ms` one-shot) with `timer.h` line 76/79 assertions. |
 
@@ -1171,7 +1171,7 @@ Parameters (`param_1` = `HardwareTimer` descriptor struct):
 | Function | Bytes | Source File | Role |
 |---|---:|---|---|
 | `heap_5_improved__600cc6a0` | 50 | `heap_5_improved.c` | **`xPortGetLargestFreeBlockSize` / Heap Stats Inspector.** Suspends scheduler, traverses free block list to compute largest contiguous free block, resumes scheduler. |
-| `heap_5_improved__600521b8` | 254 | `heap_5_improved.c` | **`vPortDefineHeapRegions` Multi-Region Initializer.** Probes hardware configuration, validates ascending region layout, initializes 8-byte aligned free blocks and end sentinels. |
+| `heap_5_improved__600521b8` | ~52 (+ tail-branch body) | `heap_5_improved.c` | **`vPortDefineHeapRegions` — hardware-profile HeapRegion selector.** Reads an SoC config register to pick a `HeapRegion_t` table, then `b.w 0x600cc71c` tail-branches to the multi-region init (validates ascending layout, initializes 8-byte-aligned free blocks + end sentinels). *(Ghidra's 254B size for this addr is a boundary artifact — see detail note.)* |
 
 ### `heap_5_improved__600cc6a0` (50B) — `xPortGetLargestFreeBlockSize`
 - **Validation:** Asserts `pxEnd != NULL` (heap initialized) at line `0xDD` (221) of `heap_5_improved.c` (`DAT_600cc6dc`).
@@ -1190,9 +1190,10 @@ Parameters (`param_1` = `HardwareTimer` descriptor struct):
   5. Returns `max_size` (size in bytes of largest contiguous allocatable block).
 - **Caller:** `stats__60051b50` (`stats.cc`) — used in diagnostic memory statistics dumps to evaluate heap fragmentation headroom.
 
-### `heap_5_improved__600521b8` (254B) — `vPortDefineHeapRegions`
+### `heap_5_improved__600521b8` — `vPortDefineHeapRegions` (profile selector, ~52B + tail-branch)
+> **Size/framing corrected (sessions 24–28 adversarial audit).** Ghidra reports this function as 254 bytes, but that extent is a boundary artifact: it *overlaps four other census functions* (`0x60052200`, `0x60052230`, `0x60052254` = `heap_support.c`, `0x60052294`). The real function at `0x600521b8` is only ~52 bytes — it performs the hardware-profile read below, then ends in a `b.w 0x600cc71c` tail-branch. The multi-region init body described afterward physically lives at that branch target (`0x600cc71c`), which Ghidra inlined into this decompilation; the `configASSERT`s and the `*DAT_600cc804 = 0x80000000` xBlockAllocatedBit store are at `0x600cc71c`–`0x600cc770`, **not** within `[0x600521b8, +0x100)`. (Same failure class as the known `FUN_601054dc` boundary corruption.)
 - **Hardware Profile Detection:**
-  - Evaluates system memory / shadow fuse configuration at `*(int *)(DAT_600521ec + 0x260)` (`DAT_600521ec = 0x400D8000` is the NXP i.MX RT On-Chip OTP Controller / OCOTP peripheral base; `+0x260` is `OCOTP_CFG3`/`OCOTP_MEM3` register `0x400D8260`):
+  - Reads an SoC configuration register at `*(int *)(DAT_600521ec + 0x260)` (`DAT_600521ec = 0x400D8000` = the i.MX RT106x **CCM_ANALOG / ANATOP** analog-clock/PMU block base — **not** OCOTP; the real OCOTP base is `0x401F4000`, as used correctly in the `bee.cc` section above and confirmed by on-device probing in `device-probe-log.md`. `+0x260` reads `0x400D8260` within the ANATOP block):
     - If flash/RAM configuration matches `0x6C0000` (7MB partition boundary) or `DAT_600521f0` (`0x006C0001`), and `FUN_600d4698() == 0`: selects alternate `HeapRegion_t` region table `DAT_600521F8` (`0x20003024`) / `DAT_600521F4` (`0x2000303C`).
     - Otherwise selects standard multi-region table `DAT_600521FC` (`0x20003054`).
 - **Validation & Region Initialization (`configASSERT` via `FUN_601016a2`):**

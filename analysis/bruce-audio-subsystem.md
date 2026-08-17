@@ -144,7 +144,7 @@ The Stadia firmware features a unified pattern playback engine driving both the 
 | Function | Bytes | Source File | Role |
 |---|---:|---|---|
 | `pattern_player__6007f8e4` (`0x6007f9c8`) | 308 | `pattern_player.cc` | **Pattern playback dispatcher.** Manages multi-channel pattern slots, priority arbitration, transition blending, and hardware timer dispatch. |
-| `FUN_6007f7a0` (`0x6007f7ec`) | 184 | `gotham_patterns.cc` | **Pattern step sequencer & keyframe evaluator.** Iterates 30 pattern slots, interpolates steps, formats state, and drives PWM/haptics. |
+| `FUN_6007f7a0` (`0x6007f7ec`) | 184 | *(unattributed)* | **`UxPatternLog` diagnostic-RPC handler.** Serializes the 30-slot pattern table (name + `time_ms` per slot) into an RPC reply. **NOT** a sequencer — no keyframe interpolation, no PWM/haptic driving *(corrected, sessions 24–28 audit)*. |
 
 ### `pattern_player__6007f8e4` (308B) — Pattern Playback Dispatcher
 Called across system state machines: `application_state.cc` (`0x6005b794`, `0x6005b8dc`), `FUN_6005ac84`, `FUN_6005af04`, `FUN_600ce26a`.
@@ -158,13 +158,15 @@ Called across system state machines: `application_state.cc` (`0x6005b794`, `0x60
    - If idle: stops stale pattern timer via `FUN_600dee28`, then sets the periodic pattern drive period via bus transaction `thunk_EXT_FUN_00007a2c(*(param_1 + 0x58), 4, 1, 0, 10)`.
    - On period configuration failure, logs `"Set period failed"` (`DAT_6007fa34`) and verifies timer state via `FUN_600dee00`, logging `" Timer start failed"` (`DAT_6007fa38`) on error.
 
-### `FUN_6007f7a0` (`0x6007f7ec`, 184B) — Gotham Pattern Step Sequencer
-Iterates across **30 distinct pattern channels/slots** (`0x1e` slots in circular array `DAT_6007f85c`).
+### `FUN_6007f7a0` (`0x6007f7ec`, 184B) — `UxPatternLog` diagnostic-RPC handler
+> **Corrected (sessions 24–28 adversarial audit).** An earlier draft described this as a "Gotham pattern step sequencer" that "interpolates steps and drives PWM/haptics." That was a hallucination — the function is *unattributed* (no `__FILE__` string), and the behavioral identity was invented past the evidence. It is actually the handler for the **`"UxPatternLog"` diagnostic RPC command**, proven by the RPC dispatch-table entry at flash `0x6013cebc` (name ptr → `"UxPatternLog"` @ `0x60103b87`, common trampoline `0x600ce31b`, handler `0x6007f7a1` = this function + Thumb bit). It is already listed as `UxPatternLog` in `bruce-log-buffer.md` (line 179).
 
-**Sequencing & Interpolation:**
-- Evaluates keyframe step timing via `FUN_60050c18(pattern_id, 0, step_pos + base, len - step_pos, delta_time)`.
-- Updates keyframe progress via `FUN_601019da(slot, result, step_pos, 0x7d)`.
-- Dispatches formatted keyframe frame data to hardware drivers (LED PWM and haptic motors) via `FUN_6010138c(dev, slot)`.
+**What it actually does** (a read-only serializer, no hardware effects):
+- Iterates the 30-slot pattern table (`DAT_6007f85c`), fetching each slot's pattern name via a vtable call (fallbacks `"[None]"` / `"[unnamed-pattern]"`).
+- Appends a `"pattern"` and a `"time_ms"` key/value pair per slot via `FUN_600cc450` (the same key-value append the bug-report builder uses).
+- Formats numeric values with `FUN_60050c18` (a `vsnprintf`-style string formatter — used identically in `types__6005da44`).
+- Streams the assembled record out via `FUN_6010138c` (the generic RPC-reply build+send wrapper).
+- There is **no keyframe interpolation and no PWM/LED/haptic driving** here. The real pattern sequencer is the sibling `pattern_player__6007f8e4` documented above.
 
 ### Named Pattern Catalog (`gotham_patterns.cc`):
 Confirmed from string tables (`0x6011fe3b`–`0x601200bc`):
