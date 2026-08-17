@@ -654,7 +654,7 @@ Configures on-the-fly encryption/decryption for a specified BEE memory region:
    - Prepares region structure via `FUN_600ce95c`.
    - Programs BEE peripheral registers at base `0x403ec000` via `FUN_60052378(0x403ec000, param_2, region_cfg)`.
    - Synchronizes BEE status via `thunk_EXT_FUN_00008996()`.
-   - Sets control bits `*BEE_CTRL |= 0x11` (BEE enable), programs key/lock configuration via `FUN_600ce96e`, and re-synchronizes hardware state.
+   - Asserts control bits `*BEE_CTRL |= 0x11` (BEE key access / enable), programs key/lock configuration via `FUN_600ce96e`, re-synchronizes hardware state, and clears access bits via `*BEE_CTRL &= ~0x11` (`0xffffffee`).
 
 ---
 
@@ -699,12 +699,12 @@ Called directly from `advertiser__60081234` during BLE pairing and discovery adv
 
 ## Wave 2: `timers.c` — FreeRTOS Software Timer Daemon Task & Timer Core
 
-`timers.c` (5 functions, 344 bytes) contains the core FreeRTOS software timer subsystem implementation, including daemon task creation, timer control block (TCB) initialization, timer list expiry processing, period querying, and active-state queries.
+`timers.c` (5 functions, 360 bytes) contains the core FreeRTOS software timer subsystem implementation, including daemon task creation, timer control block (TCB) initialization, timer list expiry processing, period querying, and active-state queries.
 
 | Function | Bytes | Source File | FreeRTOS API / Role |
 |---|---:|---|---|
 | `timers__600cacb8` | 82 | `timers.c` | **`xTimerCreateTimerTask` / daemon bring-up.** Spawns `"Tmr Svc"` daemon task at priority 31 (`0x1F`). |
-| `timers__600cad24` | 88 | `timers.c` | **`xTimerCreateStatic` / `prvInitialiseNewTimer`.** Initializes `Timer_t` descriptor structure. |
+| `timers__600cad24` | 104 | `timers.c` | **`xTimerCreateStatic` / `prvInitialiseNewTimer`.** Initializes `Timer_t` descriptor structure. |
 | `timers__600cae18` | 22 | `timers.c` | **`xTimerGetPeriod`.** Returns timer period in ticks from `Timer_t->xTimerPeriodInTicks` (`+0x18`). |
 | `timers__600cad94` | 114 | `timers.c` | **`prvProcessExpiredTimer` / timer wheel sweep.** Dispatches timer callbacks, handles auto-reload and overflow list swap. |
 | `timers__600cae38` | 38 | `timers.c` | **`xTimerIsTimerActive`.** Thread-safe critical section query checking if timer is in an active list (`+0x14`). |
@@ -716,7 +716,7 @@ Called directly from `advertiser__60081234` during BLE pairing and discovery adv
 - Spawns daemon task via `tasks__600ca1f8` (`xTaskCreateStatic`). Stores task handle at `*DAT_600cad18` (`xTimerTaskHandle`).
 - If task creation fails, triggers `"timers.c:271: FreeRTOS CHECK failed"` (`DAT_600cad20` / `0x10f`).
 
-### `timers__600cad24` (88B) — `xTimerCreateStatic`
+### `timers__600cad24` (104B) — `xTimerCreateStatic`
 Initializes static `Timer_t` control block (`param_6`):
 - `+0x00`: `pcTimerName` (`param_1`)
 - `+0x04`: `xTimerListItem` (`ListItem_t`, initialized via `FUN_601007b6`)
@@ -778,7 +778,7 @@ Processes timer list head entries until list is exhausted:
 
 ## Wave 2: `private_heap.cc` — Isolated Memory Heap Pool with Block Checksums
 
-`private_heap.cc` (3 functions, 278 bytes) implements an isolated memory heap allocator featuring 16-byte (`0x10`) block headers with cryptographic/integrity checksumming on every chunk header, preventing heap corruption and buffer overflow tampering.
+`private_heap.cc` (3 functions, 292 bytes) implements an isolated memory heap allocator featuring 16-byte (`0x10`) block headers with cryptographic/integrity checksumming on every chunk header, preventing heap corruption and buffer overflow tampering.
 
 ```
 +-------------------+-------------------+-------------------+-------------------+
@@ -793,7 +793,7 @@ Processes timer list head entries until list is exhausted:
 |---|---:|---|---|
 | `private_heap__60083534` | 42 | `private_heap.cc` | **`GetNextBlock`.** Advances to next block header and validates header checksum. |
 | `private_heap__60083568` | 56 | `private_heap.cc` | **`ValidateBlockHeader`.** Validates chunk state (`0x10` free, `0x01` in-use) and checksum. |
-| `private_heap__600835ac` | 180 | `private_heap.cc` | **`private_heap_free`.** Frees memory block, coalesces adjacent free chunks, and updates checksums. |
+| `private_heap__600835ac` | 194 | `private_heap.cc` | **`private_heap_free`.** Frees memory block, coalesces adjacent free chunks, and updates checksums. |
 
 ### Block Header Fields & Constants:
 - `prev_size` (`+0x00`): size of preceding chunk (-1 if first chunk).
@@ -810,7 +810,7 @@ Processes timer list head entries until list is exhausted:
 - Checks `header->state == 0x10` or `header->state == 0x01`. If invalid, asserts `"private_heap.cc:60: Invalid header state (neither free nor in use) at %p"` (`DAT_600835a0`).
 - Checks `header->checksum == FUN_600dfd6a(param_1)`. If mismatch, asserts `"private_heap.cc:63: Corrupted heap: checksum is invalid at %p"` (`DAT_600835a8`).
 
-### `private_heap__600835ac` (180B) — `private_heap_free` & Coalescing
+### `private_heap__600835ac` (194B) — `private_heap_free` & Coalescing
 1. Computes header address: `header = param_1 - 0x10`. Validates via `private_heap__60083568(header)`.
 2. Sets state to free: `header->state = 0x10`. Updates `header->checksum = FUN_600dfd6a(header)`.
 3. **Coalesce with Previous Block:**
@@ -919,9 +919,9 @@ Parameters:
 
 ## Wave 2: `power_rpcs.cc` — Power Management & Wakelock RPC Query Handlers
 
-`power_rpcs__6005e020` (260 bytes) implements the protobuf RPC query handler for inspecting system wakelock status, power state, and component lock holders over the control interface.
+`power_rpcs__6005e020` (228 bytes) implements the protobuf RPC query handler for inspecting system wakelock status, power state, and component lock holders over the control interface.
 
-### `power_rpcs__6005e020` (260B) — `GetWakelockStatus` RPC Handler
+### `power_rpcs__6005e020` (228B) — `GetWakelockStatus` RPC Handler
 - Reads wakelock manager state from singleton `DAT_6005e104 = 0x2001fa38`:
   - `+0x158` (char): wakelock enabled flag (`1` = `"enabled"`, `0` = `"disabled"`).
   - `+0x150` (uint32): wakelock expiry timeout in milliseconds.
@@ -976,9 +976,9 @@ Parameters (`param_1` = `HardwareTimer` descriptor struct):
 - `param_1[10]`: output tick frequency in Hz
 
 **Hardware Register Configuration:**
-1. **Clock Controller Module (CCM):** Programs `CCM_CCGR1` (`0x400FC01C`, `DAT_60061b54`):
-   - Sets GPT clock gating: `*CCM_CCGR1 = (*CCM_CCGR1 & ~0x40) | ((param_1[6] & 1) << 6)`.
-   - Sets sub-clock bits: `*CCM_CCGR1 = (*CCM_CCGR1 & ~0x3F) | (param_1[7] & 0x3F)`.
+1. **Clock Controller Module (CCM):** Programs `CCM_CSCMR1` (Clock Source Multiplexer Register 1 at `0x400FC01C`, `DAT_60061b54`):
+   - Sets `PERCLK_CLK_SEL` (bit 6): `*CCM_CSCMR1 = (*CCM_CSCMR1 & ~0x40) | ((param_1[6] & 1) << 6)` (0 = IPG clock, 1 = OSC clock).
+   - Sets `PERCLK_PODF` prescaler divider (bits 5:0): `*CCM_CSCMR1 = (*CCM_CSCMR1 & ~0x3F) | (param_1[7] & 0x3F)`.
 2. **Singleton Registration & Multi-Init Guards:**
    - For GPT1 (`0x401EC000`): checks `*DAT_60061b5c` (`0x2001bdac`). If already set and != `param_1`, logs `"hardware_timer.cc:41: Multiple initializations of GPT1"` (`DAT_60061b60`).
    - For GPT2 (`0x401F0000`): checks `*DAT_60061b6c` (`0x2001bdb0`). If duplicate, logs `"hardware_timer.cc:45: Multiple initializations of GPT2"` (`DAT_60061b70`).
@@ -994,5 +994,256 @@ Parameters (`param_1` = `HardwareTimer` descriptor struct):
    - Computes effective timer frequency:
      $$f_{\text{timer}} = \frac{f_{\text{src}}}{\text{param\_1}[7] + 1}$$
    - Stores frequency at `param_1[10]` and marks `param_1[8] = 1`.
+
+---
+
+## Wave 3: `timer.h` & `board.cc` — FreeRTOS Software Timer Infrastructure & Board Diagnostic Supervision
+
+`timer.h` (6 functions, 1,228 bytes across `timer.h` and `board.cc`) provides C++ RAII / helper wrappers for FreeRTOS software timer creation, initialization assertion checks (`timer.h:76`, `timer.h:79`), timeout handling, and board-level periodic health monitoring.
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `timer__600511c8` | 108 | `timer.h` | **Generic Timer Constructor & Assertion Wrapper.** Initializes timer fields, asserts non-zero period and successful handle creation, invokes post-init callback. |
+| `timer__60074658` | 538 | `timer.h`, `board.cc` | **Board Diagnostic Health Supervisor Callback.** Probes accessory detector (TS3A227E), audio codec (WM8904), battery gauge (BQ2742X), USB-C controller (TUSB320), USB device, and haptics. Spawns 1000ms periodic supervision timer and triggers bug report on fault. |
+| `timer__6007fb34` | 164 | `timer.h` | **`Timer` Constructor with Structured CHECK Assertion.** Validates non-zero period and non-null timer handle with structured assertion formatting (`0x4C`, `0x4F`). |
+| `timer__6005afd8` | 298 | `timer.h` | **Application State Supervisor Construction (Dual Timers).** Allocates and arms periodic supervision timer and 30,000ms (30-second) inactivity/shutdown watchdog timer. |
+| `timer__60082ff4` | 116 | `timer.h` | **`"BleDbWriteTmr"` 2000ms Flash Writeback Debounce Timer.** Cancels pending writes and arms 2-second debounce timer before serializing bonded BLE device database to flash. |
+| `timer__600721e8` | 108 | `timer.h` | **Haptic Watchdog Timer Constructor Helper.** Initializes `Timer` object for haptic pulse watchdog (`5000ms` one-shot) with `timer.h` line 76/79 assertions. |
+
+### `timer__600511c8` (108B) — Generic Timer Constructor & Assertion Wrapper
+- **Signature:** `void timer__600511c8(Timer *this, const char *pcTimerName, TickType_t xTimerPeriodInTicks, uint32_t arg1, uint32_t arg2, UBaseType_t uxAutoReload, void *pContext)`
+- **Object Layout:**
+  - `this[0]` (`+0x00`): Context / user callback pointer (`param_7`)
+  - `this[1]` (`+0x04`): `TimerHandle_t` (returned from `timers__600cad24`)
+  - `this[2]` (`+0x08`): User parameter 1 (`param_4`)
+  - `this[3]` (`+0x0C`): User parameter 2 (`param_5`)
+  - `this[4..]` (`+0x10`): `StaticTimer_t` storage buffer passed to `xTimerCreateStatic`
+- **Assertion & Creation Logic:**
+  1. If `xTimerPeriodInTicks == 0`: builds structured assertion via `FUN_600ce2a0(stack_buf, "CHECK_failed", "timer.h", 0x4C)` (line 76) and panics via `FUN_60101740`.
+  2. Calls `timers__600cad24(pcTimerName, xTimerPeriodInTicks, uxAutoReload, this, timer_callback_thunk, &this[4])` (`xTimerCreateStatic`).
+  3. If returned handle is `NULL` (`0`): builds structured assertion at line `0x4F` (line 79) and panics.
+  4. Dispatches post-init indirect call `(*UNRECOVERED_JUMPTABLE)(this)`.
+- **Callers:** `FUN_600761d4`, `FUN_60080a78`, `FUN_6005d694`, `FUN_60080278`, `FUN_6005cd20`, `FUN_600765a4`.
+
+### `timer__60074658` (538B) — Board Diagnostic Health Supervisor
+- **Context:** Executed from board management thread / periodic timer callback (`FUN_600cbd68`).
+- **Execution Flow & Component Diagnostic Sweep:**
+  1. **Uptime Stamp & State Sync:** Reads high-resolution timestamp `FUN_600d7d1c()`, issues `DataMemoryBarrier`, and stores to `*(param_1 + 0xE38)`. Queries component state via `FUN_600d6e14(0x14)` and `FUN_600d72ec(0x14, &local_b1)`.
+  2. **Accessory Detection:** Checks TI TS3A227E headset detector at `param_1 + 0x433C` via `accessory_detect_ts3a227e__6006816c`. Asserts status via `board__60071580(status, DAT_60074878)`.
+  3. **I2C Bus Health:** Probes I2C bus 3 at `param_1 + 0x433C` via `i2c_device__6006820c(..., 3)`.
+  4. **Audio Codec Health:** Queries Wolfson/Cirrus WM8904 audio codec at `param_1 + 0x432C` via `sound_codec_wm8904__6006b630`.
+  5. **Audio Pipeline & Subsystems:** Probes I2S audio driver at `param_1 + 0x3A68` (`FUN_60061e98`), accessory subsystem at `param_1 + 0x431C` (`FUN_600d9414`), and power rail helper at `param_1 + 0x4364` (`FUN_600686e4`).
+  6. **Battery Gauge (BQ2742X):** Queries battery gauge status via `battery_gauge_bq2742X__60068cb4(param_1 + 0x4348, 1)`. On failure, logs diagnostic record `FUN_6010165c(0x28, DAT_60074894, 0x14B, DAT_60074890)` and checks battery mutex.
+  7. **Haptics Cluster:** Probes haptic actuator drivers at `param_1 + 0x6B10` via `haptics_cluster__6006581c`.
+  8. **USB & Type-C Subsystem:** Initializes USB device core at `param_1 + 0x3DE8` (`usb_device__60060f28`), USB OTG PHY at `param_1 + 0x39C0` (`FUN_600d4ec8`), and TI TUSB320 Type-C Port Controller at `param_1 + 0x3F04` (`usb_port_controller_tusb320__6006b2e8`, `6006b3e8`).
+  9. **Supervision Periodic Timer:** If timer not yet initialized (`*DAT_600748BC & 1 == 0`), allocates 1000ms periodic timer via `timers__600cad24(..., 1000, 1, ...)` and registers handle in subsystem registry (`FUN_60101c48`).
+  10. **Gotham Framework & Fault Trigger:** Queries `gotham__600679d4()`. If any composite error flag is non-zero (`uVar13 != 0 || cVar5 != 0 || iVar6 != 0`), immediately captures system dump via `trigger_bug_report__6005d714(DAT_600748E8, 0)`.
+
+### `timer__6007fb34` (164B) — `Timer` Constructor with Structured CHECK Assertion
+- Initializer for standard `Timer` instance with comprehensive diagnostic message formatting.
+- Populates `this[0] = context`, `this[2] = period_arg`, `this[3] = timer_id`.
+- Validates period non-zero: formats `"CHECK failed"` at `timer.h:76` (`0x4C`) via `FUN_600d37ac` and panics via `FUN_60101740`.
+- Creates static timer via `timers__600cad24(pcName, period, autoReload, this, PTR_LAB_600dedee_1_6007fbe0, &this[4])`.
+- Validates handle: formats `"CHECK failed"` at `timer.h:79` (`0x4F`) on `NULL` handle.
+- Returns `this` pointer. Called by `FUN_6007fbe4`.
+
+### `timer__6005afd8` (298B) — Application State Supervisor Construction (Dual Timers)
+- Instantiates state-machine supervision object (`param_1`) with two embedded FreeRTOS software timers:
+  - **Timer 1 (Supervision / State Periodic Timer):**
+    - Embedded at offset `param_1 + 0x22` (control block at `+0x22`, handle at `+0x23`, callback context at `+0x24`, static buffer at `+0x26`).
+    - Period: `DAT_6005b134` (configurable), one-shot mode (`autoReload = 0`).
+    - Creates timer via `timers__600cad24(DAT_6005b138, DAT_6005b134, 0, param_1 + 0x22, DAT_6005b14C, param_1 + 0x26)`.
+    - Asserts at `timer.h:79` on failure.
+  - **Timer 2 (Inactivity / Sleep Watchdog Timer):**
+    - Embedded at offset `param_1 + 0x32` (control block at `+0x32`, handle at `+0x33`, static buffer at `+0x36`).
+    - Period: **`30,000` ms (30 seconds)**.
+    - Callback: `PTR_LAB_6005ab5c_1_6005b144`.
+    - Creates timer via `timers__600cad24(DAT_6005b148, 30000, 0, param_1 + 0x32, DAT_6005b14C, param_1 + 0x36)`.
+    - Asserts at `timer.h:79` on failure.
+- Initializes object metadata: flags at `param_1 + 0x47 = 1`, `param_1 + 0x62 = 1`, context pointer `param_1[0x46] = param_2`.
+- Direct caller: `FUN_6005bc74`.
+
+### `timer__60082ff4` (116B) — `"BleDbWriteTmr"` 2000ms Debounce Timer
+- Implements the delayed flash commit timer for bonded Bluetooth peer security records in `remote_device_db.cc`.
+- Cancels any existing pending writeback timer via `FUN_60074ec8()`.
+- Programs FreeRTOS one-shot timer:
+  - Name: `"BleDbWriteTmr"` (`PTR_s_BleDbWriteTmr_60083074`)
+  - Period: **`2000` ms (2.0 seconds)**
+  - Auto-Reload: `0` (one-shot)
+  - Callback: `PTR_LAB_600dfc56_1_60083070` (serializes bonded device records to flash)
+  - Creates timer via `timers__600cad24("BleDbWriteTmr", 2000, 0, storage, callback, buffer)`.
+- Validates handle: asserts at `timer.h:79` (`0x4F`) via `FUN_600d37ac` / `FUN_60101740` on failure.
+- Prevents excessive flash wear during rapid BLE connection parameter or key exchange updates by deferring write until 2 seconds of inactivity.
+
+### `timer__600721e8` (108B) — Haptic Watchdog Timer Constructor Helper
+- Companion helper called from `FUN_60072260` to configure the 5-second haptic safety watchdog timer.
+- Populates `this[0] = context`, `this[2] = period`, `this[3] = id`.
+- Checks `period != 0` (asserts `timer.h:76`).
+- Creates static timer with callback `PTR_LAB_600d9aa0_1_6007225c` via `timers__600cad24`.
+- Validates handle non-null (asserts `timer.h:79`).
+
+---
+
+## Wave 3: `queue.c` — FreeRTOS Queue, Recursive Mutex & ISR Synchronisation Primitives
+
+`queue.c` (6 functions, 450 bytes) constitutes the core FreeRTOS Queue and Mutex management implementation in the firmware, handling static queue creation, recursive mutex acquisition/release, thread-to-ISR and ISR-to-thread message passing with Cortex-M priority masking (`BASEPRI`).
+
+| Function | Bytes | FreeRTOS API Equivalent | Role |
+|---|---:|---|---|
+| `queue__600c9de4` | 128 | `xQueueGenericCreateStatic` | **Static Queue Initializer.** Validates capacity, item size, and static buffer pointers; sets up `QueueDefinition` header and calls `xQueueReset`. |
+| `queue__600c9e6c` | 54 | `xQueueGiveMutexRecursive` | **Recursive Mutex Release.** Verifies current task is mutex holder, decrements recursive count, and releases queue when count reaches zero. |
+| `queue__600c9eac` | 60 | `xQueueTakeMutexRecursive` | **Recursive Mutex Acquisition.** Increments call count if already held by current task; otherwise calls `xQueueGenericReceive` to block-wait. |
+| `queue__600c9ef0` | 154 | `xQueueReceiveFromISR` | **ISR Queue Receive with Priority Masking.** Sets Cortex-M `BASEPRI` to `0x50`, extracts queue item, unblocks pending sender tasks (`xTasksWaitingToSend`), and evaluates `pxHigherPriorityTaskWoken`. |
+| `queue__600c9f94` | 22 | `uxQueueMessagesWaitingFromISR` | **Lockless ISR Message Count Query.** Atomic 32-bit read of `pxQueue->uxMessagesWaiting` for interrupt handlers. |
+| `queue__600477e4` | 32 | `uxQueueMessagesWaiting` | **Thread-Safe Message Count Query.** Reads `pxQueue->uxMessagesWaiting` enclosed in `taskENTER_CRITICAL()` / `taskEXIT_CRITICAL()`. |
+
+### `queue__600c9de4` (128B) — `xQueueGenericCreateStatic`
+- **Parameters:** `(uxQueueLength, uxItemSize, pucQueueStorage, pxStaticQueue, ucQueueType)`
+- **Assertions (`configASSERT` via `FUN_601016a2`):**
+  - Line `0x132` (306): `configASSERT(uxQueueLength > 0)`
+  - Line `0x136` (310): `configASSERT(pxStaticQueue != NULL)`
+  - Lines `0x13A`/`0x13B` (314/315): `configASSERT((pucQueueStorage != NULL && uxItemSize != 0) || (pucQueueStorage == NULL && uxItemSize == 0))`
+- **Structure Initialization (`QueueDefinition` / `StaticQueue_t`):**
+  - If `uxItemSize == 0`: sets `pucQueueStorage = (int8_t *)pxStaticQueue` (dummy pointer for semaphores/mutexes).
+  - `pxStaticQueue->pcHead = pucQueueStorage` (`*param_4 = param_3`)
+  - `pxStaticQueue->uxLength = uxQueueLength` (`param_4[0xF] = param_1`)
+  - `pxStaticQueue->uxItemSize = uxItemSize` (`param_4[0x10] = param_2`)
+  - `pxStaticQueue->ucStaticallyAllocated = 1` (`*(param_4 + 0x46) = 1`)
+  - `pxStaticQueue->ucQueueType = ucQueueType` (`*(param_4 + 0x13) = param_5`)
+  - Resets queue state via `thunk_EXT_FUN_000069a0(pxStaticQueue)` (`prvInitialiseNewQueue` / `xQueueReset`).
+- **Callers:** `FUN_600587fc`, `FUN_6005bc74`, `gatt_manager_task__60080b24`, `FUN_601007bc`, `receiver__6007f540`, `FUN_600cac50`, `FUN_60062e28`, `FUN_601017fc`, `FUN_600650dc`, `FUN_600765a4`.
+
+### `queue__600c9e6c` (54B) — `xQueueGiveMutexRecursive`
+- **Validation:** `configASSERT(pxMutex != NULL)` at line `0x243` (579).
+- **Execution:**
+  1. Reads mutex holder handle from `*(int *)(param_1 + 4)` (`pxMutex->pxMutexHolder`).
+  2. Queries current task handle via `FUN_600ca9dc()` (`xTaskGetCurrentTaskHandle()`).
+  3. If current task holds the mutex:
+     - Decrements recursive depth: `pxMutex->u.uxRecursiveCallCount--` (`*(int *)(param_1 + 0xC) -= 1`).
+     - If count reaches 0: calls `thunk_EXT_FUN_00006a74(param_1, 0, 0)` (`xQueueGenericSend(pxMutex, NULL, 0, queueSEND_TO_BACK)`).
+     - Returns `pdPASS` (`1`).
+  4. Else returns `pdFAIL` (`0`).
+- **Caller:** `FUN_600d16ae`.
+
+### `queue__600c9eac` (60B) — `xQueueTakeMutexRecursive`
+- **Validation:** `configASSERT(pxMutex != NULL)` at line `0x27A` (634).
+- **Execution:**
+  1. Compares `pxMutex->pxMutexHolder` against `xTaskGetCurrentTaskHandle()`.
+  2. If already held by calling task: increments `pxMutex->u.uxRecursiveCallCount++` and returns `pdPASS` (`1`).
+  3. If not held: calls `thunk_EXT_FUN_00006e5c(param_1, xTicksToWait)` (`xQueueGenericReceive`).
+     - If acquired (`iVar1 != 0`): sets `pxMutex->u.uxRecursiveCallCount = 1` and returns `pdPASS`.
+     - Else returns `pdFAIL` (`0`).
+- **Caller:** `FUN_600d1692`.
+
+### `queue__600c9ef0` (154B) — `xQueueReceiveFromISR`
+- **Validation:**
+  - Line `0x6DC` (1756): `configASSERT(pxQueue != NULL)`
+  - Line `0x6DD` (1757): `configASSERT(!(pvBuffer == NULL && pxQueue->uxItemSize != 0))`
+- **Interrupt Masking & Critical Section:**
+  1. Reads current privilege mode; saves active `BASEPRI` priority level.
+  2. Masks interrupts up to max syscall priority by setting `BASEPRI = 0x50` (`configMAX_SYSCALL_INTERRUPT_PRIORITY` = priority level 5).
+  3. Executes memory/instruction barriers: `ISB(0xF)`, `DSB(0xF)`.
+- **Queue Reception & Event Unblocking:**
+  1. Checks `uxMessagesWaiting = pxQueue->uxMessagesWaiting` (`*(int *)(param_1 + 0x38)`).
+  2. If empty (`0`): restores `BASEPRI` and returns `pdFALSE` (`0`).
+  3. If message present:
+     - Copies payload out via `thunk_EXT_FUN_0000b3e2(pxQueue, pvBuffer)` (`prvCopyDataFromQueue`).
+     - Decrements message count: `pxQueue->uxMessagesWaiting--`.
+     - Checks receive lock `cRxLock` (`*(char *)(param_1 + 0x44)`):
+       - If `cRxLock == queueUNLOCKED` (`-1`):
+         - Checks if tasks are waiting on space (`pxQueue->xTasksWaitingToSend.uxNumberOfItems != 0` at `param_1 + 0x10`).
+         - If non-empty, unblocks highest-priority waiting task via `thunk_EXT_FUN_00007564(param_1 + 0x10)` (`xTaskRemoveFromEventList`).
+         - If unblocked task priority > current task: sets `*pxHigherPriorityTaskWoken = pdTRUE` (`1`).
+       - If queue locked (`cRxLock != -1`): increments lock counter `pxQueue->cRxLock++`.
+     - Restores original `BASEPRI` priority and returns `pdTRUE` (`1`).
+- **Caller:** `FUN_600cc000`.
+
+### `queue__600c9f94` (22B) & `queue__600477e4` (32B) — `uxQueueMessagesWaiting` Variants
+- **`queue__600c9f94` (ISR context):** Asserts `pxQueue != NULL` at line `0x78D` (1933). Returns `pxQueue->uxMessagesWaiting` (`*(param_1 + 0x38)`) directly without locking, safe under Cortex-M single-word atomic load.
+- **`queue__600477e4` (Task context):** Asserts `pxQueue != NULL` at line `0x76B` (1899). Wraps the read in `taskENTER_CRITICAL()` (`FUN_60048580`) and `taskEXIT_CRITICAL()` (`FUN_600485c8`).
+
+---
+
+## Wave 3: `heap_5_improved.c` — FreeRTOS Multi-Region Heap Allocator (`Heap_5`)
+
+`heap_5_improved.c` (2 functions, 304 bytes) implements the multi-region dynamic memory allocator (`Heap_5`) customized with heap bounds validation, memory fragmentation telemetry, and hardware memory configuration detection.
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `heap_5_improved__600cc6a0` | 50 | `heap_5_improved.c` | **`xPortGetLargestFreeBlockSize` / Heap Stats Inspector.** Suspends scheduler, traverses free block list to compute largest contiguous free block, resumes scheduler. |
+| `heap_5_improved__600521b8` | 254 | `heap_5_improved.c` | **`vPortDefineHeapRegions` Multi-Region Initializer.** Probes hardware configuration, validates ascending region layout, initializes 8-byte aligned free blocks and end sentinels. |
+
+### `heap_5_improved__600cc6a0` (50B) — `xPortGetLargestFreeBlockSize`
+- **Validation:** Asserts `pxEnd != NULL` (heap initialized) at line `0xDD` (221).
+- **Execution Flow:**
+  1. Suspends FreeRTOS task scheduler via `thunk_EXT_FUN_0000713c` (`vTaskSuspendAll()`).
+  2. Obtains head of free block list `xStart` (`DAT_600cc6e0`).
+  3. Iterates linked list of `BlockLink_t` nodes:
+     ```c
+     while (pxBlock = pxBlock->pxNextFreeBlock, pxBlock != NULL) {
+         if (max_size < pxBlock->xBlockSize) {
+             max_size = pxBlock->xBlockSize;
+         }
+     }
+     ```
+  4. Resumes scheduler via `thunk_EXT_FUN_0000728c` (`xTaskResumeAll()`).
+  5. Returns `max_size` (size in bytes of largest contiguous allocatable block).
+- **Caller:** `stats__60051b50` (`stats.cc`) — used in diagnostic memory statistics dumps to evaluate heap fragmentation headroom.
+
+### `heap_5_improved__600521b8` (254B) — `vPortDefineHeapRegions`
+- **Hardware Profile Detection:**
+  - Evaluates system memory config at `*(int *)(DAT_600521ec + 0x260)`:
+    - If flash/RAM configuration matches `0x6C0000` (7MB partition boundary) or `DAT_600521f0`, and `FUN_600d4698() == 0`: selects alternate `HeapRegion_t` region table `DAT_600521F8` / `DAT_600521F4`.
+    - Otherwise selects standard multi-region table `DAT_600521FC`.
+- **Validation & Region Initialization (`configASSERT` via `FUN_601016a2`):**
+  - Line `0x2AA` (682): `configASSERT(pxEnd == NULL)` (verifies heap regions are defined only once at boot).
+  - Loops over `HeapRegion_t pxHeapRegions[]` until `xSizeInBytes == 0`:
+    1. **8-Byte Alignment:** Aligns `pucStartAddress` upward: `pucStartAddress = (pucStartAddress + 7) & ~7`.
+    2. Adjusts region size for alignment loss.
+    3. Line `0x2CB` (715) & `0x2CE` (718): Asserts regions are sorted in strictly ascending physical memory order (`pucStartAddress > pxPreviousEndAddress`).
+    4. **Block Setup:**
+       - Installs sentinel node at region end: `pxEnd = (pucStartAddress + xSizeInBytes - 8) & ~7`.
+       - Links previous region's sentinel to current region's start block.
+       - Initializes free block header with size and marks next pointer.
+       - Accumulates total free heap capacity: `xTotalHeapSize += xBlockSize`.
+- **Global Heap Metrics Initialization:**
+  - `*DAT_600cc7f4 = xTotalHeapSize` (`xFreeBytesRemaining`)
+  - `*DAT_600cc7f8 = xTotalHeapSize` (`xMinimumEverFreeBytesRemaining`)
+  - `*DAT_600cc7fc = xTotalHeapSize` (`xLargestFreeBlockAllocatedEver`)
+  - `*DAT_600cc800 = pxHeapRegions` (stores active regions descriptor pointer)
+  - `*DAT_600cc804 = 0x80000000` (`xBlockAllocatedBit`, MSB flag used to mark allocated blocks)
+  - Line `0x2F9` (761): Asserts `xTotalHeapSize > 0`.
+- **Caller:** `FUN_600cdb74` (early system initialization / FreeRTOS kernel startup).
+
+---
+
+## Wave 3: `xbara.h` — NXP i.MX RT Crossbar Switch (XBARA1) Signal Routing Driver
+
+`xbara__60060170` (74 bytes) provides the low-level signal routing primitive for the on-chip Crossbar Switch (XBARA1 at `0x403B0000`) peripheral on the NXP i.MX RT1050/1060 MCU.
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `xbara__60060170` | 74 | `xbara.h` | **`XBARA_SetSignalsConnection`.** Connects internal hardware trigger sources (GPT timers, PWMs, GPIOs) to destination peripherals (ADC ETC, DMA, DAC). |
+
+### `xbara__60060170` (74B) — `XBARA_SetSignalsConnection`
+- **Signature:** `void xbara__60060170(XBARA_Type *base, uint8_t input_signal, uint16_t output_index, uint32_t arg4)`
+- **Peripheral Base:** `DAT_600601a0 = 0x403B0000` (XBARA1 Peripheral Base Address).
+- **Register Architecture:**
+  - The i.MX RT XBARA peripheral features 30 16-bit Signal Select registers (`XBARA_SEL0` through `XBARA_SEL29`, memory offsets `0x00` through `0x3A`):
+    - Each 16-bit register configures **two** output channels:
+      - Low byte (bits 7:0): `SEL(2*n)` selects input signal for Output `2*n`.
+      - High byte (bits 15:8): `SEL(2*n + 1)` selects input signal for Output `2*n + 1`.
+- **Register Programming Logic:**
+  1. Validates base pointer: if `*param_1 != 0`, calls `FUN_601016a2` asserting line `0x17` (23) of `xbara.h`.
+  2. Computes register byte offset: `reg_offset = output_index & 0xFE`.
+  3. Computes bit shift within 16-bit register: `bit_shift = (output_index & 1) << 3` (0 for even output index, 8 for odd output index).
+  4. Performs read-modify-write on target `XBARA_SELx` register:
+     ```c
+     uint16_t *p_sel = (uint16_t *)(0x403B0000 + (output_index & 0xFE));
+     *p_sel = (*p_sel & ~(0xFF << bit_shift)) | ((uint16_t)input_signal << bit_shift);
+     ```
+- **System Role:** Called by `FUN_600d49fc` during boot-time hardware interconnect configuration to wire timer compare output pulses (e.g. GPT1 / PIT) to ADC External Trigger Control (ADC_ETC) inputs for synchronized analog stick sampling without CPU intervention.
+
+
 
 

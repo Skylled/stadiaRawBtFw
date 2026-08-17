@@ -2,7 +2,7 @@
 
 Data-driven status doc for the "decompile all of `bruce` to source-reconstruction quality" effort. Regenerate the numbers here whenever `bruce_functions.csv`, `bruce_srcmap.csv`, or `analysis/decomp/` change materially — don't hand-edit stale tables into new prose, just re-run the join described in [Methodology](#methodology) below.
 
-**Snapshot: 2026-08-17 (full regeneration, session 24 / Wave 1).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a single `analysis/decomp/` directory listing taken at the conclusion of Wave 1 (1203 decomp files, 1063 in-census). Decompiled census functions grew from 1,006 to **1063** (+57 functions, +8,268 bytes), and fully decompiled attributed source files grew from 67 to **80 of 139**.
+**Snapshot: 2026-08-17 (full regeneration, session 24 / Wave 1).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a single `analysis/decomp/` directory listing taken at the conclusion of Wave 1 (1219 decomp files, 1079 in-census). Decompiled census functions grew from 1,006 to **1079** (+73 functions, +10,500 bytes), and fully decompiled attributed source files grew from 67 to **80 of 139**.
 
 ## 1. Top-line stats
 
@@ -10,7 +10,7 @@ Data-driven status doc for the "decompile all of `bruce` to source-reconstructio
 |---|---:|---:|---:|---:|
 | **Total functions (census)** | 4,995 | 100% | 660,570 | 100% |
 | **Attributed** (leaked `__FILE__` → 139 src files) | 448 | 8.97% | 97,450 | 14.75% |
-| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 1,063 | 21.28% | 299,231 | 45.30% |
+| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 1,079 | 21.60% | 301,463 | 45.64% |
 | **Attributed ∪ Decompiled** (understood in *some* way) | 1,126 | 22.54% | 306,091 | **46.34%** |
 | **Totally unknown** (no attribution, no decompile) | 3,869 | 77.46% | 354,479 | **53.66%** |
 
@@ -39,7 +39,7 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 | Src file | Attributed funcs | Decompiled funcs | Total bytes | Decompiled bytes | Remaining bytes |
 |---|---:|---:|---:|---:|---:|
 | `bcm.c` | 52 | 52 | 11548 | 11548 | 0 |
-| `timer.h` | 9 | 3 | 4016 | 2684 | 1332 |
+| `timer.h` | 9 | 9 | 4016 | 4016 | 0 |
 | `tasn_dec.c` | 7 | 7 | 3856 | 3856 | 0 |
 | `state_machine.cc` | 11 | 11 | 3332 | 3332 | 0 |
 | `keys.cc` | 19 | 19 | 3296 | 3296 | 0 |
@@ -56,10 +56,10 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 | `application_state.cc` | 6 | 6 | 1956 | 1956 | 0 |
 | `firmware_image_upload.cc` | 1 | 1 | 1714 | 1714 | 0 |
 | `ec_asn1.c` | 5 | 5 | 1630 | 1630 | 0 |
-| `queue.c` | 12 | 6 | 1540 | 1090 | 450 |
+| `queue.c` | 12 | 12 | 1540 | 1540 | 0 |
 | `usb_host_hid.cc` | 3 | 3 | 1468 | 1468 | 0 |
 | `pem_lib.c` | 3 | 3 | 1458 | 1458 | 0 |
-| `xbara.h` | 2 | 1 | 1246 | 1172 | 74 |
+| `xbara.h` | 2 | 2 | 1246 | 1246 | 0 |
 | `main.cc` | 2 | 2 | 1128 | 1128 | 0 |
 | `http_flash_writer.cc` | 4 | 4 | 1116 | 1116 | 0 |
 | `synapse_audio_processor.cc` | 2 | 2 | 1060 | 1060 | 0 |
@@ -73,7 +73,7 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 | `flash_lut.cc` | 3 | 3 | 706 | 706 | 0 |
 | `headphone_state_machine.cc` | 5 | 5 | 672 | 672 | 0 |
 | `bug_report.cc` | 4 | 4 | 660 | 660 | 0 |
-| `heap_5_improved.c` | 4 | 2 | 650 | 346 | 304 |
+| `heap_5_improved.c` | 4 | 4 | 650 | 650 | 0 |
 | `usb_device.cc` | 5 | 5 | 578 | 578 | 0 |
 | `led_driver_lp5562.cc` | 3 | 3 | 548 | 548 | 0 |
 | `usb_device_audio.cc` | 3 | 3 | 540 | 540 | 0 |
@@ -147,7 +147,7 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 | `wakelock.cc` | 1 | 0 | 132 | 0 | 132 |
 | `util.cc` | 1 | 0 | 132 | 0 | 132 |
 | `gotham_16mb_mimxrt10xx_mpu.cc` | 1 | 0 | 132 | 0 | 132 |
-| `adapter.h` | 2 | 1 | 132 | 60 | 72 |
+| `adapter.h` | 2 | 2 | 132 | 132 | 0 |
 | `flash_memory.h` | 1 | 0 | 130 | 0 | 130 |
 | `event_groups.c` | 2 | 0 | 128 | 0 | 128 |
 | `buffer.h` | 1 | 1 | 128 | 128 | 0 |
@@ -222,8 +222,8 @@ Of **4,995 total functions** (the current census):
 | | Functions | Bytes |
 |---|---:|---:|
 | Attributed to a source file | 448 | 97,450 |
-| Decompiled (in census) | 1,063 | 299,231 |
-| — of which both attributed AND decompiled | 385 | 90,590 |
+| Decompiled (in census) | 1,079 | 301,463 |
+| — of which both attributed AND decompiled | 401 | 92,822 |
 | — of which in the identified-but-not-formally-attributed BTA/BTE stack (§1a) | 490 | 148,991 |
 | **Understood in some way (union)** | **1,126 (22.5%)** | **306,091 (46.3%)** |
 | **Completely unknown — no attribution, no decompile, no module ID** | 3,869 (77.5%), or **3,283 (65.7%) excluding BTA-identified** | 354,479 (53.7%), or **299,021 (45.3%) excluding BTA-identified** |
