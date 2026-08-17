@@ -1470,6 +1470,29 @@ Decompiled and documented 15 functions (1,588 bytes across `0x600a35e4`–`0x600
 | `0x600a4b1c` | 148 | BTM / Security | **`btm_sec_check_security_req`** — Evaluates security requirements for connection: checks security bitmask `entry+0x2a & 0x10`, required flags `entry+0x54`, link state `entry+0x57`, and device record index `entry+0x5a`. | 3 callers / 0 callees |
 | `0x600a4bb8` | 158 | BTM / Security | **`btm_sec_execute_procedure`** — Security procedure executor: evaluates security requirement via `0x600a4b1c`; if required, invokes security callback `btm_sec_cb+0x1134` with event 9, and updates security flags `entry+0x59 |= 4`, `entry+0x2a &= 0xffcf`. | 2 callers / 2 callees |
 
+## Session 36 (Wave 6) — BTM Security Link Keys, Event Masks, Remote Name Security & Service Lookups (15 functions, 1,808 bytes)
+
+Decompiled and documented 15 functions (1,808 bytes across `0x600a5670`–`0x600a7ee8`): security bonding cancellation, security event mask configuration, remote name request handling for security, encryption collision queuing, link-key requests/replies, security-disconnect handling, and the 14-entry security service record lookup engine:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600a5670` | 156 | BTM / Security | **`btm_sec_bond_cancel_complete`** — Security bonding cancel complete handler: clears device required security flags `entry+0x54 = 0`, stops security timer via `FUN_600a8108(0)`, and notifies bond callback `btm_sec_cb+0x1130` with status 0. | 3 callers / 2 callees |
+| `0x600a5714` |  70 | BTM / Security | **`btm_sec_bond_cancel_cback`** — Bond cancel completion callback dispatcher: delegates to `0x600a5670()` on success or invokes callback `btm_sec_cb+0x1130` with error code 10. | 1 caller / 1 callee |
+| `0x600a5840` |  54 | BTM / Security | **`btm_sec_dev_init`** — Security device defaults initializer: sets mode `*(btm_sec_cb + 0x1174) = param_1`, resets default BD_ADDR filter `DAT_600a587c` with `0xff`, and sets collision timeout `*(btm_sec_cb + 0x116c) = 5000` ms. | 1 caller / 1 callee |
+| `0x600a5880` |  94 | BTM / Security | **`btm_sec_set_service`** — Security event mask and mode configuration: if mode 3, calls `btsnd_hcic_write_auth_enable(1)` (`0x600b3790`) and `btsnd_hcic_write_encr_mode(1)` (`0x600b3804`); else configures event masks via `btsnd_hcic_set_event_mask` (`0x600b30ac`), `btsnd_hcic_ble_set_evt_mask` (`0x600b0824`), and `btsnd_hcic_set_event_mask_page_2` (`0x600b3138`). | 1 caller / 5 callees |
+| `0x600a58f0` | 110 | BTM / Security | **`btm_sec_clr_temp_auth_service`** — Clears temporary authentication flags: looks up record via `FUN_6009ff18(param_1)`, notifies callback `btm_sec_cb+0x112c`, and resets temporary authentication state `entry+0x50 = 0`, `entry+0xf4 = 0`. | 2 callers / 1 callee |
+| `0x600a5964` | 102 | BTM / Security | **`btm_sec_start_get_name`** — Initiates remote name request for security bonding: invokes `FUN_600bb44c` / `FUN_600bc480`; on success, sets state bit `btm_sec_cb+0x118d |= 4`, starts security timer `FUN_600a8108(2)`, and returns 1. | 4 callers / 4 callees |
+| `0x600a6598` |  86 | BTM / Security | **`btm_sec_rmt_name_failed`** — Remote name request failure handler: reverses 6-byte BD_ADDR into stack frame, invokes security callback `btm_sec_cb+0x1134` with event 5. | 1 caller / 0 callees |
+| `0x600a6720` | 190 | BTM / Security | **`btm_sec_queue_encrypt`** — Encryption collision queue manager: checks timestamp via GKI tick timer `FUN_6006e154()`, retrieves device record via `0x600a80b4` or `0x6009feb8`, stores pending record pointer into `btm_sec_cb+0x114c`, arms 2-second timer `FUN_600aa340(timer, 0xd, 2)`. | 2 callers / 4 callees |
+| `0x600a6aa4` | 116 | BTM / Security | **`btm_sec_link_key_notification`** — Link key change notification dispatcher: looks up device record via `FUN_6009feb8(param_1)` and invokes registered callback `btm_sec_cb+0x1aac` (`(*cback)(bd_addr, param_2, param_3)`). | 1 caller / 1 callee |
+| `0x600a6cf8` | 114 | BTM / Security | **`btm_sec_encrypt_timeout`** — Encryption queue timeout handler: pops pending record `btm_sec_cb+0x114c`, executes `0x600a5964`; on failure cancels timer via `FUN_600a8108(0)` and notifies callback `btm_sec_cb+0x1128` with status 7. | 0 callers / 2 callees |
+| `0x600a7268` | 154 | BTM / Security | **`BTM_SecDisconnect`** — Security-layer link disconnect: looks up device record via `FUN_6009feb8(param_1)`; if not found, sends `btsnd_hcic_disconnect` (`0x600b218c`, established appendix); else delegates to `FUN_600f1ce4` or defers via `btm_sec_cb+0x118d |= 4`. | 5 callers / 4 callees |
+| `0x600a7634` | 144 | BTM / Security | **`btm_sec_link_key_req`** — Handles HCI Link Key Request event (`param_1` = BD_ADDR): finds device record via `FUN_600f1746`; checks authorization callback `btm_sec_cb+0x1124`; if valid sends `btsnd_hcic_link_key_req_reply` (`0x600b23d0`, established appendix), else sends `btsnd_hcic_link_key_neg_reply` (`0x600b2474`, established appendix). | 1 caller / 5 callees |
+| `0x600a7df8` | 138 | BTM / Security | **`btm_sec_find_serv_rec`** — Searches 14 security service records (stride 0x14, `+0xe & 0x80 != 0`) for matching PSM / service ID `param_2`. | 1 caller / 0 callees |
+| `0x600a7e8c` |  86 | BTM / Security | **`btm_sec_find_next_serv_rec`** — Searches for next matching security service record with identical PSM `param_1+0xc` after `param_1`. | 1 caller / 0 callees |
+| `0x600a7ee8` | 194 | BTM / Security | **`btm_sec_find_serv_rec_by_handle`** — Searches 14 service records matching PSM `param_2`, MX channel `param_3`, and server/client channel `param_4`. | 1 caller / 0 callees |
+
+
 
 
 
