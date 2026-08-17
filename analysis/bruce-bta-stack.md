@@ -1374,3 +1374,29 @@ This cluster implements the Broadcom BTE stack's central initialization sequence
 | `0x600a07b0` |  80 | BTM / Complete | **`btm_ble_read_white_list_size_complete`** — Stores whitelist size at `btm_cb+0x9c5`, calls `FUN_600b1d74(0,1,1)`, and advances to `0x600a0228`. | 1 caller / 2 callees |
 | `0x600a0804` | 186 | BTM / Complete | **`btm_read_local_version_complete`** — Parses Read Local Version complete: HCI Version (`param_1[1]`), HCI Revision (`param_1[2..3]`), LMP Version (`param_1[4]`), Manufacturer ID (`param_1[5..6]`), LMP Subversion (`param_1[7..8]`). If HCI Version < 2, advances to `0x600a0300`; else advances to `0x600a02d8(0)`. | 1 caller / 2 callees |
 
+## Session 32 (Wave 2) — BTM Feature Query FSM, Local Name, BD_ADDR & Device Class Management (18 functions, 1,382 bytes)
+
+Decompiled and documented 18 functions (1,382 bytes across `0x600a0cac`–`0x600a1354`): the feature-dependent query continuation state machine, feature completion handlers, and local device configuration APIs (Name, BD_ADDR, Version, Class of Device, HCI handle accessor):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600a0cac` | 180 | BTM / Query FSM | **`btm_feature_query_fsm`** — Central feature-dependent query continuation dispatcher. Evaluates pending query mask `btm_cb+0x88e`: bit 2 -> `btsnd_hcic_write_simple_pairing_mode(1)` (`0x600b3c00`, HCI `0x0c56`); bit 4 -> `btsnd_hcic_ble_write_host_supported` (`0x600b1640`, HCI `0x0c6d`); bit 0x20 -> `btsnd_hcic_write_secure_conns_support(1)` (`0x600b4dcc`, HCI `0x0c7a`); bit 1 -> `0x600a031c(1)` (extended features); if all complete and LE enabled (`+0x81b & 2`), transitions to `0x600a020c` (whitelist size query), else completes init via `FUN_600a0bc4` / callback `btm_cb+0xd4`. | 5 callers / 6 callees |
+| `0x600a0d68` | 154 | BTM / Query FSM | **`btm_feature_query_init`** — Populates feature query state bitmask `btm_cb+0x88e` from controller feature bits (`+0x817`/`+0x819`): sets bit 2 (SSP support), bit 4 (LE controller support), bit 8 (simultaneous LE/BR/EDR), and bit 1 (extended features present). | 1 caller / 0 callees |
+| `0x600a0e08` | 122 | BTM / Complete | **`btm_read_local_features_complete`** — Cancels timer `FUN_600aa3cc(0x200221d4)`, stores 8-byte feature mask into `btm_cb+0x123..+0x12a`; if bit 0x80 of byte 7 is set and extended features enabled (`+0x1ad & 0x40`), reads ext features page 1 via `0x600a031c(1)`, else advances to `FUN_600f1786(0)`. | 1 caller / 3 callees |
+| `0x600a0f7c` |  82 | BTM / Complete | **`btm_read_local_supported_cmds_complete`** — Cancels timer `FUN_600aa3cc(0x200221d4)`, stores 64 bytes of supported command bitmask into `btm_cb+0x19f`, advances to `0x600a0300` (`btsnd_hcic_read_local_features`). | 1 caller / 2 callees |
+| `0x600a0fd4` |  96 | BTM / Complete | **`btm_write_simple_pairing_mode_complete`** — Clears bit 2 in `btm_cb+0x88e`, sets bit 0x20 (Secure Connections) if `+0x824 & 1`, and advances via `0x600a0cac`. | 1 caller / 1 callee |
+| `0x600a1038` |  96 | BTM / Complete | **`btm_ble_write_host_supported_complete`** — Clears bit 4 (and bit 8 if set) in `btm_cb+0x88e`, advances via `0x600a0cac`. | 1 caller / 1 callee |
+| `0x600a109c` |  64 | BTM / Complete | **`btm_write_secure_conns_support_complete`** — Clears bit 0x20 in `btm_cb+0x88e`, advances via `0x600a0cac`. | 1 caller / 1 callee |
+| `0x600a10e0` | 110 | BTM / Config | **`BTM_SetLocalDeviceName`** — Validates string length ($\le 0xF8 = 248$), copies to `btm_cb.local_name` (`DAT_600a1150`), and transmits HCI Write Local Name via `FUN_600b34ac` (`btsnd_hcic_write_name`, HCI `0x0c13`). | 2 callers / 3 callees |
+| `0x600a1154` |  28 | BTM / Config | **`BTM_GetLocalDeviceName`** — Returns pointer to local device name string buffer (`DAT_600a1170`) into `*param_1`. | 1 caller / 0 callees |
+| `0x600a1174` |  72 | BTM / Config | **`btm_notify_device_name_change`** — Formats 6-byte BD_ADDR + 4-byte param into an 8-byte stack frame and invokes registered callback `btm_cb+0xd4` with event `0x10`. | 2 callers / 1 callee |
+| `0x600a11c0` |  80 | BTM / Complete | **`btm_read_local_name_complete`** — Cancels timer `0x200221d4`, clears `btm_cb+0x738`, and if callback was registered, invokes it passing pointer to received name string `param_1 + 1` (or NULL on failure). | 1 caller / 1 callee |
+| `0x600a1218` |  26 | BTM / Config | **`BTM_GetLocalDeviceAddr`** — Copies local BD_ADDR (6 bytes from `DAT_600a1234`) to caller's destination buffer `param_1` using `thunk_EXT_FUN_0000b572` (memcpy). | 2 callers / 1 callee |
+| `0x600a1238` |  30 | BTM / Config | **`BTM_ReadLocalDeviceAddr`** — Invokes caller's callback `param_1` with pointer to local BD_ADDR (`DAT_600a1258`). | 1 caller / 0 callees |
+| `0x600a125c` |  66 | BTM / Complete | **`btm_read_local_bdaddr_complete`** — Handles HCI Read BD_ADDR complete: copies reversed 6-byte BD_ADDR from `param_1 + 1` into local BD_ADDR buffer `DAT_600a12a0`. | 1 caller / 0 callees |
+| `0x600a12a4` |  56 | BTM / Config | **`BTM_ReadLocalVersion`** — Copies local version parameters from `btm_cb+0x806..+0x80e` (HCI Version, Revision, LMP Version, Manufacturer ID, LMP Subversion) into caller's struct `param_1`. | 1 caller / 0 callees |
+| `0x600a12e0` |  88 | BTM / Config | **`BTM_SetDeviceClass`** — Validates 3-byte Class of Device parameter against current local CoD (`DAT_600a1338`); if changed, updates local record and sends HCI Write Class of Device via `FUN_600b3878` (`btsnd_hcic_write_dev_class`, HCI `0x0c24`). | 3 callers / 3 callees |
+| `0x600a1340` |  16 | BTM / Config | **`BTM_ReadDeviceClass`** — Returns local 24-bit Class of Device value (`DAT_600a1350`). | 1 caller / 0 callees |
+| `0x600a1354` |  16 | BTM / Config | **`BTM_GetHciHandle`** — Returns HCI handle table pointer / base handle (`DAT_600a1364`). | 6 callers / 0 callees |
+
+

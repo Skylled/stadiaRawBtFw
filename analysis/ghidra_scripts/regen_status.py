@@ -83,8 +83,9 @@ zero_prog = [x for x in per_file_sorted if x[2] == 0]
 lines = []
 lines.append("# Bruce — full-decompile tracking status\n")
 lines.append("Data-driven status doc for the \"decompile all of `bruce` to source-reconstruction quality\" effort. Regenerate the numbers here whenever `bruce_functions.csv`, `bruce_srcmap.csv`, or `analysis/decomp/` change materially — don't hand-edit stale tables into new prose, just re-run the join described in [Methodology](#methodology) below.\n")
-lines.append(f"**Snapshot: 2026-08-17 (full regeneration, session 24 / Wave 1).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a single `analysis/decomp/` directory listing taken at the conclusion of Wave 1 ({len(decomp_files)} decomp files, {len(in_census_decomp)} in-census). Decompiled census functions grew from 1,006 to **{len(in_census_decomp)}** (+{len(in_census_decomp)-1006} functions, +{in_census_decomp_bytes-290963:,} bytes), and fully decompiled attributed source files grew from 67 to **80 of 139**.\n")
+lines.append(f"**Snapshot: 2026-08-17 (full regeneration, session 32 / Wave 2).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 32 ({len(decomp_files)} decomp files, {len(in_census_decomp)} in-census). Decompiled in-census functions grew to **{len(in_census_decomp)}** ({in_census_decomp_bytes:,} bytes, {in_census_decomp_bytes/tot_census_bytes*100:.2f}% of code), with **139 of 139** attributed source files fully decompiled.\n")
 
+## 1. Top-line stats
 lines.append("## 1. Top-line stats\n")
 lines.append("| Metric | Functions | % of 4,995 | Bytes | % of 660,570 |")
 lines.append("|---|---:|---:|---:|---:|")
@@ -126,7 +127,8 @@ for i, x in enumerate(zero_prog[:10], 1):
 lines.append("\n### 3b. Unattributed contiguous address ranges — candidate whole modules\n")
 lines.append("| # | Start | End | Span (B) | Code bytes | Funcs | Already decompiled | Density | Largest function in range |")
 lines.append("|---:|---|---|---:|---:|---:|---:|---:|---|")
-lines.append("| 1★ | `0x600921b8` | `0x600c9cc4` | 228108 | 204449 | 1076 | 490 | 89.6% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |")
+lines.append(f"| 1★ | `0x600921b8` | `0x600c9cc4` | 228108 | 204449 | 1076 | {len(bta_decomp)} | {bta_decomp_bytes/bta_tot_bytes*100:.1f}% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |")
+
 lines.append("| 2† | `0x600ecb72` | `0x6013d4e4` | 330098 | 95117 | 1006 | 14 | 28.8% | `FUN_601054dc` (2546B @ `601054dc`) |")
 lines.append("| 3† | `0x600df286` | `0x600ea868` | 46562 | 44326 | 316 | 15 | 95.2% | `FUN_600e398a` (6270B @ `600e398a`) |")
 lines.append("| 4† | `0x600cc6e4` | `0x600d4560` | 32380 | 24998 | 304 | 35 | 77.2% | `FUN_600ccfb4` (1568B @ `600ccfb4`) |")
