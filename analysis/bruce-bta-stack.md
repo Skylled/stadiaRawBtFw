@@ -833,7 +833,7 @@ With this wave, **SEVEN major Broadcom BTA/BTE subsystems are now 100% fully dec
 4. **SDP Service Discovery Protocol** (`0x600bd000`–`0x600c0000`): **36 / 36 functions (100.0%)** — 11,772 / 11,772 bytes
 5. **BTU Task & GATT Core Helpers** (`0x600a9000`–`0x600ab000`): **34 / 34 functions (100.0%)** — 5,444 / 5,444 bytes
 6. **SMP Security Manager Protocol** (`0x600c0000`–`0x600c2600`): **71 / 71 functions (100.0%)** — 8,742 / 8,742 bytes
-7. **EC Crypto, Jacobian Point Arithmetic & BTA Tail** (`0x600c7000`–`0x600c9cc4`): **31 / 31 functions (100.0%)** — 10,980 / 10,980 bytes
+7. **EC Crypto, Field Arithmetic & BTA Tail** (`0x600c7000`–`0x600c9cc4`): **31 / 31 functions (100.0%)** — 10,980 / 10,980 bytes
 
 ---
 
@@ -871,30 +871,30 @@ With this wave, **SEVEN major Broadcom BTA/BTE subsystems are now 100% fully dec
 
 #### 4. SMP Security Manager Protocol State Machine & LE Secure Connections
 The full SMP Security Manager Protocol (`0x600c0000`–`0x600c2600`, 71 functions) is now 100% decompiled. It includes:
-- Command PDU Builders: Pairing Request (`0x600c0114`), Confirm (`0x600c01b8`), Random (`0x600c03d8`), Failed (`0x600c0434`), Encryption Info / LTK (`0x600c04c4`), Master ID (`0x600c0524`), Identity Info / IRK (`0x600c0558`), Identity Address (`0x600c0578`), Signing Info / CSRK (`0x600c05e4`), Security Request (`0x600c0640`), SC Public Key (`0x600c0698`), SC DHKey Check (`0x600c073c`).
-- Cryptographic Toolbox: AES-CMAC confirmation calculation `f4` (`0x600c0e14`), key generation `f5` (`0x600c0e7c`), check value generation `f6` (`0x600c1204`), and 6-digit numeric comparison passkey computation (`0x600c0cb4`, modulo 1,000,000 / `DAT_600c0dac = 999999`).
+- SMP Application / BTM Interface API & State Routers: `SMP_Pair` (`0x600c0578`), `SMP_SecurityGrant` (`0x600c05e4`), `SMP_PasskeyReply` (`0x600c0640`), `SMP_ConfirmReply` (`0x600c0698`), `SMP_NumericComparisonReply` (`0x600c073c`), `smp_proc_pairing_req` (`0x600c0114`), `smp_proc_pairing_confirm` (`0x600c01b8`), `smp_proc_rand` (`0x600c03d8`), and `smp_check_pairing_in_progress` (`0x600c0434`). (Note: Low-level wire PDU serializers are located in the `0x600faaxx` / `0x600f06xx` library cluster).
+- Cryptographic Toolbox: AES-CMAC confirmation calculation `f4` (`0x600c0e14`), key generation `f5` (`0x600c0e7c`), check value generation `f6` (`0x600c1204`), and 6-digit numeric comparison passkey computation (`0x600c0cb4`, bounded by `DAT_600c0dac = 999999` / `0xF423F`).
+- FCR Frame Check Sequence: `0x600b72cc` (`l2cu_crc16` / `l2c_fcr_calc_fcs`) and `0x600b72f0` (`l2cu_check_crc16` / `l2c_fcr_check_fcs`) implement the 16-bit CRC table lookup (`0x60117ad0`, polynomial `0xA001`) for L2CAP ERTM/FCR frame validation.
 
-#### 5. Jacobian Projective Coordinate EC Point Arithmetic
-`FUN_600c89e0` (106B), `FUN_600c8a54` (110B), and `FUN_600c8acc` (80B) implement Jacobian coordinate point arithmetic (\(X, Y, Z\) where \(x = X/Z^2, y = Y/Z^3\)) for NIST P-256 / P-192 curve scalar multiplication, feeding SMP LE Secure Connections ECDH:
-- `FUN_600c8acc` (`ec_point_affine_to_jacobian`): Converts 2D affine point \((x, y)\) to 3D Jacobian point \((X, Y, 1)\).
-- `FUN_600c89e0` (`ec_point_double_jacobian`): Computes Jacobian point doubling (\(2P\)) in \(\mathbb{F}_p\).
-- `FUN_600c8a54` (`ec_point_add_jacobian`): Computes Jacobian point addition (\(P + Q\)) in \(\mathbb{F}_p\).
-
----
+#### 5. Finite Field Modular Arithmetic Primitives for EC Cryptography
+`FUN_600c89e0` (106B), `FUN_600c8a54` (110B), and `FUN_600c8acc` (80B) implement multi-precision finite field modular arithmetic in $\mathbb{F}_p$ supporting NIST P-256 ($p_{256}$, 8 words = 32 bytes) and NIST P-192 ($p_{192}$, 6 words = 24 bytes) prime moduli:
+- `FUN_600c89e0` (`ec_field_double_mod_p`): Modular field element doubling ($r = (2a) \pmod p$).
+- `FUN_600c8a54` (`ec_field_add_mod_p`): Modular field element addition ($r = (a + b) \pmod p$).
+- `FUN_600c8acc` (`ec_field_sub_mod_p`): Modular field element subtraction ($r = (a - b) \pmod p$).
+These primitives underpin the higher-level Jacobian projective coordinate point scalar multiplication routines (`0x600fffbc`, `0x600ffe42`) used by SMP LE Secure Connections ECDH key agreement.
 
 ### Complete Table of 142 Functions Decompiled in Session 29 (Wave 1)
 
 | Address | Bytes | Subsystem / Range | Name / Verified Role | Callers / Callees |
 |---|---:|---|---|---|
-| `0x600a9308` | 164 | BTU / HCI Queue | **`btu_hcif_send_cmd`** — Enqueues HCI command buffer to transport queue; manages HCI command credit tracking. | 2 callers / 3 callees |
-| `0x600a93b0` | 136 | BTU / HCI Queue | **`btu_hcif_cmd_timeout`** — Command credit timeout handler; flushes pending command buffer on timeout. | 1 caller / 3 callees |
-| `0x600a9e74` | 92 | BTU / HCI Queue | **`btu_hcif_ack_event`** — HCI Command Complete / Status credit acknowledgement processor. | 2 callers / 0 callees |
+| `0x600a9308` | 164 | BTU / HCI Event | **`btu_hcif_conn_comp_evt`** — HCI Connection Complete / LE Enhanced Connection Complete event parser; routes to BTM link connect (`0x600a6d70`) and L2CAP `l2c_link_hci_conn_comp` (`0x600b89b8`). | 1 caller / 2 callees |
+| `0x600a93b0` | 136 | BTU / HCI Event | **`btu_hcif_conn_req_evt`** — HCI Connection Request event parser; parses BD_ADDR and Class of Device / link type; routes to connection evaluation (`0x600a5540`) or rejects/accepts via HCI (`0x600b22a8`). | 1 caller / 2 callees |
+| `0x600a9e74` | 92 | BTU / HCI Queue | **`btu_hcif_ack_event`** — HCI Command Complete / Status credit acknowledgement processor. | 1 caller / 1 callee |
 | `0x600a9ed8` | 36 | BTU / HCI Queue | **`btu_hcif_reset`** — Clears BTU HCI command queue state and resets credit counters. | 1 caller / 0 callees |
-| `0x600aa4c4` | 38 | BTU / Timer | **`btu_stop_quick_timer`** — Cancels active BTU quick timer node. | 3 callers / 0 callees |
-| `0x600aa534` | 114 | GATT Server | **`gatt_init_database`** — Initializes primary GATT server attribute database root record. | 1 caller / 1 callee |
+| `0x600aa4c4` | 38 | BTU / Timer | **`btu_stop_quick_timer`** — Cancels active BTU quick timer node. | 6 callers / 2 callees |
+| `0x600aa534` | 114 | GATT Server | **`gatt_init_database`** — Initializes primary GATT server attribute database root record. | 2 callers / 4 callees |
 | `0x600aa5ac` | 46 | GATT Server | **`gatt_free_attr_buffer`** — Deallocates attribute value buffer to GKI memory pool (`FUN_6006ddd8`). | 2 callers / 1 callee |
-| `0x600aa5e4` | 92 | GATT Server | **`gatt_alloc_attr_buffer`** — Allocates attribute value buffer from GKI memory pool (`FUN_6006dbac`). | 2 callers / 1 callee |
-| `0x600aa648` | 44 | GATT Server | **`gatt_release_sr_cmd`** — Frees pending GATT server command buffer if active. | 1 caller / 1 callee |
+| `0x600aa5e4` | 92 | GATT Server | **`gatt_alloc_attr_buffer`** — Allocates attribute value buffer from GKI memory pool (`FUN_6006dbac`). | 1 caller / 2 callees |
+| `0x600aa648` | 44 | GATT Server | **`gatt_release_sr_cmd`** — Frees pending GATT server command buffer if active. | 12 callers / 1 callee |
 | `0x600aa678` | 48 | GATT Server | **`gatt_set_security_mode`** — Accessor/mutator for global GATT security policy (`DAT_600aa6a8 + 0x28`). | 1 caller / 0 callees |
 | `0x600aa6f0` | 80 | GAP Manager | **`gap_find_device_record`** — Searches 6-entry GAP device table (stride 32B) for matching BD_ADDR (`memcmp`). | 2 callers / 1 callee |
 | `0x600aa7a0` | 92 | GAP Manager | **`gap_allocate_device_record`** — Allocates unused slot in 6-entry GAP device table; initializes BD_ADDR. | 1 caller / 2 callees |
@@ -925,8 +925,8 @@ The full SMP Security Manager Protocol (`0x600c0000`–`0x600c2600`, 71 function
 | `0x600b5e00` | 164 | L2CAP CSM | **`l2c_csm_execute`** — **Central L2CAP Channel State Machine Dispatcher** (9 states -> 9 handlers). | 18 callers / 9 callees |
 | `0x600b643a` | 76 | L2CAP CSM | **`l2c_csm_start_config_timer`** — Starts 60-second configuration timer (`0x3c`) for CCB. | 1 caller / 2 callees |
 | `0x600b720c` | 186 | L2CAP FCR | **`l2c_fcr_adj_monitor_retransmit_timeout`** — Calculates FCR monitor and retransmission timeout intervals. | 3 callers / 2 callees |
-| `0x600b72cc` | 36 | L2CAP FCR | **`l2c_fcr_tx_window_advance`** — Advances FCR transmit sliding window sequence counters. | 2 callers / 0 callees |
-| `0x600b72f0` | 38 | L2CAP FCR | **`l2c_fcr_check_tx_ack`** — Validates acknowledgement sequence number against transmit window. | 1 caller / 0 callees |
+| `0x600b72cc` | 36 | L2CAP FCR | **`l2cu_crc16`** / **`l2c_fcr_calc_fcs`** — Computes 16-bit CRC Frame Check Sequence (FCS) over L2CAP payload using 256-entry lookup table at `0x60117ad0` (polynomial `0xA001`). | 2 callers / 0 callees |
+| `0x600b72f0` | 38 | L2CAP FCR | **`l2cu_check_crc16`** / **`l2c_fcr_check_fcs`** — Validates 16-bit CRC Frame Check Sequence (FCS) against trailer bytes on received L2CAP ERTM/FCR I-frames. | 1 caller / 0 callees |
 | `0x600b731c` | 84 | L2CAP FCR | **`l2c_fcr_chk_resend_s_frames`** — Checks for unacknowledged supervisory S-frames and triggers retransmit. | 5 callers / 1 callee |
 | `0x600b7374` | 178 | L2CAP FCR | **`l2c_fcr_free_retrans_q`** — Drains and frees all buffers in FCR retransmission queue. | 1 caller / 5 callees |
 | `0x600b7c94` | 38 | L2CAP FCR | **`l2c_fcr_set_fcr_options`** — Sets FCR channel configuration bitmask and window sizes. | 1 caller / 0 callees |
@@ -947,13 +947,13 @@ The full SMP Security Manager Protocol (`0x600c0000`–`0x600c2600`, 71 function
 | `0x600bc1f8` | 162 | L2CAP PDU | **`l2cu_copy_config_params`** — Copies L2CAP configuration parameter structure into CCB. | 1 caller / 0 callees |
 | `0x600bc424` | 82 | L2CAP PDU | **`l2cu_init_lcb_pool`** — Initializes 4-entry L2CAP link control block table. | 1 caller / 1 callee |
 | `0x600bc574` | 76 | L2CAP PDU | **`l2cu_check_link_congestion`** — Evaluates link buffer congestion status. | 1 caller / 0 callees |
-| `0x600bc710` | 74 | L2CAP PDU | **`l2cu_find_lcb_by_handle`** — Looks up LCB matching 16-bit HCI connection handle. | 1 caller / 0 callees |
+| `0x600bc710` | 74 | L2CAP PDU | **`l2cu_find_lcb_by_state`** — Searches 4-entry LCB table (stride 164B) matching link state/role at `+0x01`. | 1 caller / 0 callees |
 | `0x600bc760` | 130 | L2CAP PDU | **`l2cu_allocate_lcb`** — Allocates free LCB slot and initializes link state fields. | 1 caller / 0 callees |
 | `0x600bc7e8` | 52 | L2CAP PDU | **`l2cu_release_lcb`** — Frees link control block and returns it to pool. | 4 callers / 1 callee |
 | `0x600bc81c` | 24 | L2CAP PDU | **`l2cu_csm_broadcast_event`** — Iterates all open CCBs and feeds broadcast event to `l2c_csm_execute`. | 1 caller / 1 callee |
 | `0x600bc994` | 80 | L2CAP PDU | **`l2cu_process_fixed_chnl`** — Dispatches fixed-channel PDU (ATT CID 4 / SMP CID 6) to registered receiver. | 3 callers / 0 callees |
-| `0x600bcbe0` | 74 | L2CAP PDU | **`l2cu_find_ccb_by_cid`** — CCB lookup helper across CID range. | 9 callers / 0 callees |
-| `0x600bcc30` | 116 | L2CAP PDU | **`l2cu_find_ccb_by_handle_and_cid`** — Composite lookup matching HCI handle and local CID. | 9 callers / 0 callees |
+| `0x600bcbe0` | 74 | L2CAP PDU | **`l2cu_find_lcb_by_handle`** — Searches 4-entry LCB table (stride 164B) matching 16-bit HCI connection handle at `+0x02`. | 9 callers / 0 callees |
+| `0x600bcc30` | 116 | L2CAP PDU | **`l2cu_find_ccb_by_cid`** — Look up CCB across 8-entry pool (stride 216B) matching local dynamic CID (`> 0x3f`) and link pointer. | 9 callers / 0 callees |
 | `0x600bd118` | 48 | SDP Server | **`sdp_set_max_attr_list_size`** — Accessor/mutator for SDP max attribute list size (`DAT_600bd148 + 0x380`). | 1 caller / 0 callees |
 | `0x600bd484` | 48 | SDP Server | **`sdp_set_server_mtu`** — Accessor/mutator for SDP server MTU (`DAT_600bd4b4 + 0xf94`). | 1 caller / 0 callees |
 | `0x600bd5fc` | 86 | SDP Database | **`sdp_db_find_record`** — Searches SDP service database (stride 460B) matching 32-bit service record handle. | 1 caller / 0 callees |
@@ -966,27 +966,27 @@ The full SMP Security Manager Protocol (`0x600c0000`–`0x600c2600`, 71 function
 | `0x600bfb62` | 174 | SDP Codec | **`sdpu_process_attribute_rsp`** — Attribute response PDU parser jump table dispatcher. | 1 caller / 0 callees |
 | `0x600bfe2c` | 126 | SDP Codec | **`sdpu_calculate_attr_size`** — Computes total wire bytes (header + payload) for given DES attribute. | 4 callers / 0 callees |
 | `0x600bff84` | 94 | SDP Utils | **`sdpu_cb_event_dispatcher`** — Dispatches SDP connection callback through 4-entry table at `DAT_600bffe4`. | 1 caller / 0 callees |
-| `0x600c0114` | 142 | SMP PDU | **`smp_send_pairing_req`** — Serializes and sends SMP Pairing Request / Response PDU (Opcode `0x01`/`0x02`). | 0 callers / 2 callees |
-| `0x600c01b8` | 200 | SMP PDU | **`smp_send_confirm`** — Serializes and sends SMP Pairing Confirm PDU (Opcode `0x03`, 16-byte confirm). | 0 callers / 2 callees |
-| `0x600c03d8` | 82 | SMP PDU | **`smp_send_rand`** — Serializes and sends SMP Pairing Random PDU (Opcode `0x04`, 16-byte rand). | 0 callers / 2 callees |
-| `0x600c0434` | 132 | SMP PDU | **`smp_send_pairing_failed`** — Serializes and sends SMP Pairing Failed PDU (Opcode `0x05`, 1-byte reason). | 0 callers / 2 callees |
-| `0x600c04c4` | 42 | SMP PDU | **`smp_send_encryption_info`** — Serializes and sends SMP Encryption Information PDU (Opcode `0x06`, LTK). | 0 callers / 1 callee |
-| `0x600c0524` | 44 | SMP PDU | **`smp_send_master_id`** — Serializes and sends SMP Master Identification PDU (Opcode `0x07`, EDIV/Rand). | 0 callers / 1 callee |
-| `0x600c0558` | 28 | SMP PDU | **`smp_send_identity_info`** — Serializes and sends SMP Identity Information PDU (Opcode `0x08`, IRK). | 0 callers / 1 callee |
-| `0x600c0578` | 104 | SMP PDU | **`smp_send_id_addr_info`** — Serializes and sends SMP Identity Address Information PDU (Opcode `0x09`). | 0 callers / 3 callees |
-| `0x600c05e4` | 86 | SMP PDU | **`smp_send_signing_info`** — Serializes and sends SMP Signing Information PDU (Opcode `0x0a`, CSRK). | 0 callers / 2 callees |
-| `0x600c0640` | 78 | SMP PDU | **`smp_send_security_req`** — Serializes and sends SMP Security Request PDU (Opcode `0x0b`). | 0 callers / 1 callee |
-| `0x600c0698` | 154 | SMP PDU | **`smp_send_pair_public_key`** — Serializes and sends SMP SC Public Key PDU (Opcode `0x0c`, 64-byte key). | 0 callers / 4 callees |
-| `0x600c073c` | 114 | SMP PDU | **`smp_send_pair_dhkey_check`** — Serializes and sends SMP SC DHKey Check PDU (Opcode `0x0d`, 16-byte check). | 0 callers / 2 callees |
-| `0x600c07b4` | 40 | SMP Utils | **`smp_free_pdu_buffer`** — Releases SMP PDU buffer to GKI allocator (`FUN_6006ddd8`). | 2 callers / 1 callee |
-| `0x600c08c4` | 104 | SMP Utils | **`smp_set_key_distribution`** — Calculates initiator/responder key distribution bitmasks. | 1 caller / 1 callee |
-| `0x600c0930` | 176 | SMP Crypto | **`smp_derive_link_key`** — Cross-transport key derivation helper (BR/EDR link key <-> LE LTK). | 0 callers / 1 callee |
+| `0x600c0114` | 142 | SMP FSM | **`smp_proc_pairing_req`** — Evaluates incoming/outgoing Pairing Request/Response parameters, initializes pairing context, and transitions to Phase 1/2. | 0 callers / 5 callees |
+| `0x600c01b8` | 200 | SMP FSM | **`smp_proc_pairing_confirm`** — SMP Phase 2 authentication router; triggers confirmation computation (`f4` / `0x600c10a4`) across Just Works, Passkey, Numeric Comparison, and OOB models. | 0 callers / 4 callees |
+| `0x600c03d8` | 82 | SMP FSM | **`smp_proc_rand`** — SMP Phase 2 Random value processor; validates received random and computes confirmation verification. | 1 caller / 3 callees |
+| `0x600c0434` | 132 | SMP FSM | **`smp_check_pairing_in_progress`** — Checks active pairing target BD_ADDR and state `0x0e` (`SMP_STATE_BOND_PENDING`), emitting completion event `0x18`. | 1 caller / 3 callees |
+| `0x600c04c4` | 42 | SMP FSM | **`smp_reset`** / **`smp_init_context`** — Resets SMP control block state context and cancels active transaction timers. | 1 caller / 3 callees |
+| `0x600c0524` | 44 | SMP Config | **`smp_get_set_loc_io_caps`** — Getter/setter for local IO capabilities byte in SMP control block (`smp_cb + 0x1c`). | 1 caller / 0 callees |
+| `0x600c0558` | 28 | SMP Config | **`smp_set_sec_mode`** — Registers SMP security callback handler pointer at `DAT_600c0574`. | 1 caller / 0 callees |
+| `0x600c0578` | 104 | SMP API | **`SMP_Pair`** / **`smp_pair_req`** — Initiates SMP pairing with target BD_ADDR; validates idle state and opens L2CAP SMP fixed channel (`0x600b50d0`). | 2 callers / 3 callees |
+| `0x600c05e4` | 86 | SMP API | **`SMP_SecurityGrant`** — Security Grant API for peer BD_ADDR; marks `smp_cb + 0x1fa = 1` and posts event 8 to `smp_sm_event`. | 1 caller / 2 callees |
+| `0x600c0640` | 78 | SMP API | **`SMP_PasskeyReply`** — Processes user passkey entry reply; validates state `0x02` and emits event `0x15` to `smp_sm_event`. | 1 caller / 2 callees |
+| `0x600c0698` | 154 | SMP API | **`SMP_ConfirmReply`** — Processes user confirmation reply; validates passkey value <= 999,999 (`DAT_600c0738`) and routes to `smp_sm_event` event `0x25` or stores DHKey check. | 1 caller / 4 callees |
+| `0x600c073c` | 114 | SMP API | **`SMP_NumericComparisonReply`** — Processes user Numeric Comparison accept/reject reply; validates state `0x06` and dispatches event `0x23` or error `0x0c`. | 1 caller / 3 callees |
+| `0x600c07b4` | 40 | SMP Utils | **`smp_free_pdu_buffer`** — Releases SMP PDU buffer to GKI allocator (`FUN_6006ddd8`). | 1 caller / 2 callees |
+| `0x600c08c4` | 104 | SMP Utils | **`smp_set_key_distribution`** — Calculates initiator/responder key distribution bitmasks. | 1 caller / 2 callees |
+| `0x600c0930` | 176 | SMP Crypto | **`smp_derive_link_key`** — Cross-transport key derivation helper (BR/EDR link key <-> LE LTK). | 1 caller / 4 callees |
 | `0x600c0c84` | 44 | SMP FSM | **`smp_set_state_phase2_dhkey`** — SMP state transition to Phase 2 DHKey computation (sub-state 6). | 2 callers / 2 callees |
 | `0x600c0cb4` | 108 | SMP Crypto | **`smp_generate_passkey`** — Calculates 6-digit numeric comparison passkey (0 to 999999 / `0xF423F`). | 1 caller / 1 callee |
 | `0x600c0d20` | 28 | SMP Crypto | **`smp_pack_passkey_u32`** — Serializes 32-bit passkey value into 4 little-endian wire bytes. | 1 caller / 0 callees |
 | `0x600c0d3c` | 112 | SMP Crypto | **`smp_pack_passkey_u32_alt`** — Alternative passkey packing entry point. | 1 caller / 1 callee |
 | `0x600c0db4` | 44 | SMP FSM | **`smp_set_state_phase2_confirm`** — SMP state transition to Phase 2 confirm wait (sub-state 7). | 1 caller / 2 callees |
-| `0x600c0de4` | 44 | SMP FSM | **`smp_set_state_phase2_rand`** — SMP state transition to Phase 2 random wait (sub-state 8). | 2 callers / 2 callees |
+| `0x600c0de4` | 44 | SMP FSM | **`smp_set_state_phase2_rand`** — SMP state transition to Phase 2 random wait (sub-state 8). | 1 caller / 2 callees |
 | `0x600c0e14` | 98 | SMP Crypto | **`smp_compute_aes_cmac_f4`** — Wrapper for AES-CMAC confirmation calculation `f4` (`FUN_600f0ac8`). | 0 callers / 5 callees |
 | `0x600c0e7c` | 84 | SMP Crypto | **`smp_compute_aes_cmac_f5`** — Wrapper for AES-CMAC key generation calculation `f5`. | 0 callers / 4 callees |
 | `0x600c0ed4` | 44 | SMP FSM | **`smp_set_state_phase2_check`** — SMP state transition to DHKey check wait (sub-state 5). | 1 caller / 2 callees |
@@ -998,7 +998,7 @@ The full SMP Security Manager Protocol (`0x600c0000`–`0x600c2600`, 71 function
 | `0x600c13e8` | 168 | SMP Crypto | **`smp_aes_cmac_kdf`** — AES-CMAC based Key Derivation Function (KDF) for LE Secure Connections. | 1 caller / 2 callees |
 | `0x600c1494` | 176 | SMP Crypto | **`smp_aes_cmac_hash`** — Generates 128-bit AES-CMAC cryptographic hash block. | 1 caller / 1 callee |
 | `0x600c1548` | 42 | SMP FSM | **`smp_set_state_phase3_enc`** — SMP state transition to Phase 3 link encryption start (sub-state 13). | 3 callers / 2 callees |
-| `0x600c1578` | 42 | SMP FSM | **`smp_set_state_phase3_done`** — SMP state transition to Phase 3 completion (sub-state 14). | 2 callers / 2 callees |
+| `0x600c1578` | 42 | SMP FSM | **`smp_set_state_phase3_done`** — SMP state transition to Phase 3 completion (sub-state 14). | 1 caller / 2 callees |
 | `0x600c1738` | 68 | SMP Timer | **`smp_start_auth_timer`** — Starts 30-second SMP transaction watchdog timer (`0x1e`). | 0 callers / 1 callee |
 | `0x600c1988` | 102 | SMP Timer | **`smp_proc_timer_expiry`** — SMP timer expiry callback; aborts pairing on timeout. | 0 callers / 1 callee |
 | `0x600c19f4` | 36 | SMP Config | **`smp_set_pairing_security_mode`** — Sets SMP pairing mode / security level (`DAT_600c1a18 + 0x23`). | 5 callers / 0 callees |
@@ -1008,7 +1008,7 @@ The full SMP Security Manager Protocol (`0x600c0000`–`0x600c2600`, 71 function
 | `0x600c1c04` | 38 | SMP FSM | **`smp_send_timeout_event`** — Emits timeout event `0x16` to `smp_sm_event`. | 0 callers / 1 callee |
 | `0x600c229c` | 98 | SMP Crypto | **`smp_sc_store_peer_dhkey_check`** — Stores peer DHKey check record in SMP control block. | 1 caller / 1 callee |
 | `0x600c2304` | 86 | SMP Config | **`smp_get_auth_req_flags`** — Extracts and validates AuthReq bitmask (MITM, SC, Keypress, Bonding). | 7 callers / 0 callees |
-| `0x600c25ac` | 80 | SMP Crypto | **`smp_validate_pairing_confirm`** — Verifies received pairing confirm value against expected hash (`memcmp`). | 1 caller / 3 callees |
+| `0x600c25ac` | 80 | SMP Crypto | **`smp_sc_validate_dhkey_check`** — Verifies received peer LE Secure Connections DHKey Check against expected locally computed hash (`memcmp`). | 1 caller / 3 callees |
 | `0x600c7048` | 94 | BTA DM | **`bta_dm_check_device_acl`** — Checks device ACL link state and security encryption level. | 2 callers / 2 callees |
 | `0x600c70ac` | 58 | BTA DM | **`bta_dm_get_device_type`** — Returns device Bluetooth type (BR/EDR, BLE, or Dual-mode). | 2 callers / 0 callees |
 | `0x600c70ec` | 58 | BTA DM | **`bta_dm_get_device_features`** — Returns device supported feature bitmask. | 2 callers / 0 callees |
@@ -1025,7 +1025,288 @@ The full SMP Security Manager Protocol (`0x600c0000`–`0x600c2600`, 71 function
 | `0x600c7c68` | 166 | BTA GATTS | **`bta_gatts_send_rsp_evt`** — Formats GATTS response event message and queues to GKI. | 1 caller / 1 callee |
 | `0x600c7d14` | 74 | BTA GATTS | **`bta_gatts_send_close_evt`** — Formats GATTS connection close event message. | 2 callers / 1 callee |
 | `0x600c7eb8` | 156 | BTA SYS | **`bta_sys_dispatch_event`** — Routes BTA subsystem events across BTA SYS event bus. | 5 callers / 5 callees |
-| `0x600c89e0` | 106 | EC Math | **`ec_point_double_jacobian`** — NIST P-256 / P-192 Jacobian projective coordinate point doubling (\(2P\)). | 2 callers / 3 callees |
-| `0x600c8a54` | 110 | EC Math | **`ec_point_add_jacobian`** — NIST P-256 / P-192 Jacobian projective coordinate point addition (\(P + Q\)). | 1 caller / 3 callees |
-| `0x600c8acc` | 80 | EC Math | **`ec_point_affine_to_jacobian`** — Affine \((x, y)\) to Jacobian \((X, Y, 1)\) coordinate conversion. | 3 callers / 2 callees |
+| `0x600c89e0` | 106 | EC Math | **`ec_field_double_mod_p`** — Multi-precision finite field modular doubling ($r = (2a) \pmod p$) for NIST P-256 / P-192 curves. | 2 callers / 3 callees |
+| `0x600c8a54` | 110 | EC Math | **`ec_field_add_mod_p`** — Multi-precision finite field modular addition ($r = (a + b) \pmod p$) for NIST P-256 / P-192 curves. | 1 caller / 3 callees |
+| `0x600c8acc` | 80 | EC Math | **`ec_field_sub_mod_p`** — Multi-precision finite field modular subtraction ($r = (a - b) \pmod p$) for NIST P-256 / P-192 curves. | 3 callers / 2 callees |
 
+
+## Session 30 (Wave 2) — Complete Decompilation of Lower BTA/BTE Stack (`0x600921b8`–`0x6009ffff`): 228 Functions / 21,514 Code Bytes (100% Milestone for Lower Stack)
+228 newly decompiled and analyzed functions across `0x600921b8`–`0x6009ffff`, completing the entire lower address range of the Broadcom BTA/BTE stack. Combined with previous sessions, **332 of 332 functions (49,734 of 49,734 bytes = 100.0%)** in the `0x600921b8`–`0x6009ffff` range are now fully decompiled and documented.
+Overall BTA/BTE Bluetooth stack decompilation progress (`0x600921b8`–`0x600c9cc4`) increases from 632 to **860 of 1,076 functions (79.9% by count, 183,237 of 204,449 bytes = 89.6% by byte size)**.
+
+With this wave, **SIX additional core Broadcom BTM/HCI subsystems reach 100% full decompilation**:
+1. **HCI H4 UART Transport & Flow Control** (`0x600959cc`–`0x60097664`): **36 / 36 functions (100.0%)** — 3,892 / 3,892 bytes
+2. **BTM Power Management & Sniff Subrating** (`0x600930dc`–`0x600955dc`, `0x6009819c`–`0x60098be8`): **38 / 38 functions (100.0%)** — 3,884 / 3,884 bytes
+3. **BTM ACL Link Control & Security Link Records** (`0x60098c14`–`0x60099f4c`): **26 / 26 functions (100.0%)** — 2,822 / 2,822 bytes
+4. **BTM Advertising, EIR & BLE Scanning Subsystem** (`0x6009a114`–`0x6009b230`): **19 / 19 functions (100.0%)** — 1,942 / 1,942 bytes
+5. **BTM BLE Connection, Resolving List & Privacy** (`0x6009b8b4`–`0x6009c790`): **30 / 30 functions (100.0%)** — 2,600 / 2,600 bytes
+6. **BTM Security Database & Link Key Registry** (`0x6009c848`–`0x6009eb9c`): **26 / 26 functions (100.0%)** — 3,328 / 3,328 bytes
+7. **BTM Device Discovery, Page/Inquiry Scan & HCI Setup** (`0x6009ec14`–`0x6009ffa0`): **27 / 27 functions (100.0%)** — 3,254 / 3,254 bytes
+
+---
+
+### Key Architectural Discoveries
+
+#### 1. HCI H4 UART Physical Transport Layer (`0x600959cc`–`0x60097664`)
+The firmware implements the complete 3-wire/4-wire Broadcom HCI H4 UART transport protocol:
+- **H4 Frame Synchronizer**: `FUN_600959cc` (`hcisu_h4_rx_parse_hdr`) decodes the 1-byte H4 packet type indicator: `0x01` (HCI Command), `0x02` (HCI ACL Data), `0x03` (HCI SCO Data), and `0x04` (HCI Event). It computes exact header lengths (3B for commands, 4B for ACL, 3B for SCO, 2B for events) and streams variable-length payloads into dynamically allocated GKI buffers via `FUN_60095b2c` (`hcisu_h4_rx_accum`).
+- **Hardware Flow Control & Low-Power Handshake**: `FUN_60095bbc` verifies CTS state before asserting UART TX DMA. `FUN_60095ee8` and `FUN_60095f9c` implement the Broadcom Low-Power Mode (LPM) handshake using `BT_WAKE` / `HOST_WAKE` GPIO lines (`FUN_60095f10` ISR).
+- **HCI Credit Accounting**: `FUN_600970e4` and `FUN_60097200` maintain controller command buffer credits (`Num_HCI_Command_Packets`), preventing host FIFO overflows.
+
+#### 2. BTM Power Management & Sniff Subrating (`0x600930dc`–`0x600955dc`, `0x6009819c`–`0x60098be8`)
+Power mode negotiation between the Stadia controller host and connected peers/consoles is mediated through a multi-tier BTA DM / BTM PM state machine:
+- **Multi-Link Power Arbitration**: `FUN_60093988` reconciles active power mode requests (Active, Sniff, Park, Hold) across multiple active profiles (HID Gamepad vs Audio vs Device Management), selecting the highest-activity mode required.
+- **Sniff Subrating Negotiation**: `FUN_600941c4` (`bta_dm_pm_send_ssr_req`) and `FUN_600985f8` (`BTM_SetSniffSubrating`) issue HCI Sniff Subrating commands (`0x0811`), setting max latency (`max_lat`), min remote timeout (`min_rmt_to`), and min local timeout (`min_loc_to`) to reduce Bluetooth radio duty cycle and battery consumption while in gamepad idle states.
+
+#### 3. BTM ACL Link Control & Encryption State (`0x60098c14`–`0x60099f4c`)
+The BTM ACL manager maintains active connection records:
+- **Dual-Indexed Link Descriptors**: `FUN_60098c5c` (`btm_acl_alloc`) and `FUN_60098cc4` (`btm_acl_free`) manage the fixed ACL link table in `DAT_60098c10`, providing O(1) indexed lookups by 6-byte BD_ADDR (`FUN_60098d2c`) and 16-bit connection handle (`FUN_60098d8c`).
+- **Encryption Level Enforcement**: `FUN_60099190` mutates link security level: `0` (Unencrypted), `1` (BR/EDR E0 stream cipher), and `2` (LE AES-CCM 128-bit). `FUN_600999bc` propagates HCI Encryption Change events directly into L2CAP and SMP security handlers.
+
+#### 4. BTM BLE Privacy, Resolving List & Resolvable Private Addresses (`0x6009a114`–`0x6009c790`)
+The BLE subsystem implements Bluetooth Core Spec 4.2 / 5.0 privacy architectures:
+- **Cryptographic RPA Generation & Verification**: `FUN_6009c194` (`btm_ble_gen_rpa`) generates Resolvable Private Addresses by concatenating a 24-bit random seed `prand` (`0x40` top bits) with a 24-bit hash $hash = 	ext{ah}(IRK, prand)$. `FUN_6009c1d4` (`btm_ble_verify_rpa`) verifies inbound peer RPAs against bonded Identity Resolving Keys (IRKs) using AES-128 cryptographic hash helper `ah` (`FUN_600c0ac4`).
+- **Hardware Resolving List**: `FUN_6009beb0` (`BTM_BleAddResolvingList`) provisions controller hardware resolving lists (`0x2027`), offloading RPA resolution from host CPU to the Broadcom radio.
+
+#### 5. BTM Security Database & Link Key Registry (`0x6009c848`–`0x6009eb9c`)
+`btm_sec_cb` manages persistent security records (`btm_sec_dev_rec`):
+- **Key Storage**: `FUN_6009cd94` (`BTM_WriteLinkKey`), `FUN_6009ce30` (`BTM_ReadLinkKey`), and `FUN_6009cec8` (`BTM_SecAddBleKey`) store 16-byte Link Keys, Long Term Keys (LTKs), Identity Resolving Keys (IRKs), Connection Signature Resolving Keys (CSRKs), and EDIV/Rand values.
+- **Service Security Policy Check**: `FUN_6009e70c` evaluates incoming channel/service connection attempts against registered policy masks (`BTM_SEC_IN_AUTHENTICATE`, `BTM_SEC_IN_ENCRYPT`, `BTM_SEC_IN_AUTHORIZE`), blocking unauthenticated access to GATT/HID channels.
+
+#### 6. BTM Discovery, Scan & HCI Setup (`0x6009ec14`–`0x6009ffa0`)
+The device discovery and configuration pipeline controls Bluetooth visibility:
+- **Inquiry Pipeline**: `FUN_6009ec14` (`BTM_StartInquiry`) and `FUN_6009ee18` (`btm_proc_ext_inq_result`) handle Standard, RSSI-based, and Extended Inquiry Result (EIR) records.
+- **Device Configuration**: `FUN_6009f644` (`BTM_WriteScanEnable`) toggles Page/Inquiry Scan; `FUN_6009feb8` writes the 24-bit Class of Device (`0x002508` for Gamepad/Peripheral); `FUN_6009ffa0` provisions the local Bluetooth Device Name ("Stadia Controller").
+
+### Complete Table of 228 Functions Decompiled in Session 30 (Wave 2)
+
+| Address | Bytes | Subsystem / Range | Name / Verified Role | Callers / Callees |
+|---|---:|---|---|---|
+| `0x60092448` |  72 | CRC / Math | **`crc32_finalize`** — Computes final CRC-32 checksum with XOR inversion and context wrap-up (`DAT_60092490`). | 1 caller / 4 callees |
+| `0x60092498` | 118 | CRC / Math | **`crc32_block_update`** — Updates running CRC-32 table accumulator across input byte buffer (`0x1c` byte chunks). | 1 caller / 5 callees |
+| `0x60092514` |  14 | CRC / Math | **`crc32_reset`** — Resets CRC-32 calculation context accumulator to initial seed (`DAT_60092524`). | 1 caller / 0 callees |
+| `0x60092528` |  78 | CRC / Math | **`crc32_calc_buffer`** — Iterative multi-block CRC-32 calculator with boundary checking and length validation. | 3 callers / 4 callees |
+| `0x6009257c` |  20 | CRC / Math | **`crc32_set_flags`** — Sets CRC-32 engine mode flags (`0x10000000` bitmask in `DAT_60092590`). | 4 callers / 0 callees |
+| `0x60092594` |  16 | CRC / Math | **`crc32_get_context`** — Retrieves pointer to active CRC-32 engine context block (`DAT_600925a4`). | 2 callers / 3 callees |
+| `0x600925a8` |  16 | CRC / Math | **`crc32_free_context`** — Clears and invalidates CRC-32 engine calculation state. | 2 callers / 2 callees |
+| `0x6009267c` |  28 | BTA DM / Timer | **`bta_dm_timer_check`** — Low-level timer interval validator and watchdog tick checker (`DAT_60092698`). | 5 callers / 1 callee |
+| `0x600926a0` |  70 | BTA DM / Timer | **`bta_dm_timer_tick`** — Calculates elapsed timer ticks and checks threshold limits (`0x58`, `0xb0`). | 3 callers / 3 callees |
+| `0x600926b8` |  18 | BTA DM / Timer | **`bta_dm_timer_isr`** — Timer interrupt callback; dispatches expired timing events across BTA subsystems. | 2 callers / 6 callees |
+| `0x60092744` |  54 | BTA DM / Sys | **`bta_dm_sys_enqueue`** — Enqueues BTA DM event message into BTA system task queue (`FUN_6006bf74`). | 2 callers / 2 callees |
+| `0x600927d8` |  92 | BTA DM / PM | **`bta_dm_pm_set_policy`** — Configures link policy parameters for target BD_ADDR; calls `FUN_60097f5c`. | 3 callers / 2 callees |
+| `0x60092838` | 106 | BTA DM / PM | **`bta_dm_pm_select_mode`** — Evaluates power mode requirements (Active, Sniff, Park) and issues PM requests. | 3 callers / 2 callees |
+| `0x600928ac` |  94 | BTA DM / PM | **`bta_dm_pm_req_dispatcher`** — Top-level power management request router; routes between `FUN_600927d8` and `FUN_60092838`. | 3 callers / 4 callees |
+| `0x60092970` |  22 | BTA DM / PM | **`bta_dm_pm_timer_cback`** — BTA DM power management watchdog timer callback; posts timeout event `0x16c`. | 1 caller / 1 callee |
+| `0x60092de8` |  98 | BTA DM / PM | **`bta_dm_pm_state_change`** — Transitions BTA DM power management state machine; logs state and posts event `0x4d`. | 4 callers / 7 callees |
+| `0x600930dc` |  88 | BTA DM / PM | **`bta_dm_pm_find_peer`** — Searches BTA DM PM peer connection table (`DAT_60093134`) for matching BD_ADDR. | 2 callers / 2 callees |
+| `0x60093478` | 110 | BTA DM / PM | **`bta_dm_pm_ssr_config`** — Configures Sniff Subrating (SSR) latency and timeout parameters (`DAT_600934f0`). | 3 callers / 4 callees |
+| `0x600935dc` |  74 | BTA DM / PM | **`bta_dm_pm_get_profile_mode`** — Looks up profile-specific power mode table entry (`DAT_60093628` + index * `0x11`). | 1 caller / 0 callees |
+| `0x6009362c` | 162 | BTA DM / PM | **`bta_dm_pm_eval_mode_change`** — Evaluates link activity level and triggers transition to sniff or active mode. | 2 callers / 3 callees |
+| `0x60093988` | 162 | BTA DM / PM | **`bta_dm_pm_multi_link_arb`** — Arbitrates conflicting power mode requests across concurrent Bluetooth links. | 3 callers / 2 callees |
+| `0x600941c4` |  60 | BTA DM / PM | **`bta_dm_pm_send_ssr_req`** — Formats and transmits Sniff Subrating request command (`0x124` byte buffer). | 3 callers / 3 callees |
+| `0x60094208` | 196 | BTA DM / PM | **`bta_dm_pm_calc_policy_mask`** — Computes effective link policy bitmask based on active profile requirements. | 3 callers / 4 callees |
+| `0x600942d4` |  52 | BTA DM / PM | **`bta_dm_pm_cmd_complete`** — BTA DM PM command completion callback; updates status in `DAT_60094308`. | 4 callers / 5 callees |
+| `0x600944c0` |  86 | BTA DM / PM | **`bta_dm_pm_negotiate_mode`** — Negotiates power mode parameters with peer; updates control block at `+0x20`. | 4 callers / 6 callees |
+| `0x6009451c` | 106 | BTA DM / PM | **`bta_dm_pm_trigger_mode_change`** — Initiates link power mode change via BTM link policy API; opcode `0x1d17`. | 4 callers / 8 callees |
+| `0x60094ba4` | 160 | BTM / PM | **`btm_pm_init`** — Initializes BTM Power Management subsystem control block (`DAT_60098190`). | 3 callers / 7 callees |
+| `0x60094d24` | 152 | BTM / PM | **`BTM_SetPowerMode`** — Public API: requests link power mode change (Active, Sniff, Park, Hold) for connection. | 7 callers / 19 callees |
+| `0x60094f14` |  64 | BTM / PM | **`btm_pm_read_link_policy`** — Reads current link policy settings for specified connection handle. | 1 caller / 2 callees |
+| `0x60094f58` |  80 | BTM / PM | **`btm_pm_write_default_policy`** — Configures default system-wide link policy mask (`DAT_60094fa8`). | 3 callers / 9 callees |
+| `0x60094fac` |  74 | BTM / PM | **`btm_pm_write_link_policy`** — Writes link policy mask for specific connection handle via HCI. | 2 callers / 2 callees |
+| `0x60094ffc` | 106 | BTM / PM | **`btm_pm_validate_sniff_params`** — Validates sniff interval (`min`/`max`), sniff attempt, and sniff timeout parameters. | 1 caller / 7 callees |
+| `0x6009506c` |  74 | BTM / PM | **`btm_pm_eval_transition`** — Evaluates power mode transition feasibility against current connection state. | 5 callers / 9 callees |
+| `0x6009519c` |  76 | BTM / PM | **`btm_pm_set_park_params`** — Configures beacon interval and timing parameters for Park mode. | 2 callers / 3 callees |
+| `0x600951ec` |  68 | BTM / PM | **`btm_pm_set_hold_params`** — Configures hold mode duration and max hold interval parameters. | 2 callers / 2 callees |
+| `0x6009547c` | 176 | BTM / PM | **`btm_pm_proc_mode_change`** — Processes HCI Mode Change event (`0x14`); updates link record power state. | 1 caller / 2 callees |
+| `0x60095534` |  80 | BTM / PM | **`btm_pm_notify_cback`** — Notifies registered BTA/BTM power management callbacks of mode change. | 1 caller / 2 callees |
+| `0x60095588` |  80 | BTM / PM | **`btm_pm_cancel_mode_req`** — Cancels pending power mode change request for specified connection handle. | 1 caller / 3 callees |
+| `0x600955dc` | 106 | BTM / PM | **`btm_pm_get_status`** — Returns current power management status and active mode (`DAT_6009564c`). | 5 callers / 7 callees |
+| `0x600959cc` | 202 | HCI / H4 UART | **`hcisu_h4_rx_parse_hdr`** — Parses 1-byte HCI H4 packet type header (`1`=CMD, `2`=ACL, `3`=SCO, `4`=EVT). | 2 callers / 12 callees |
+| `0x60095ae8` |  64 | HCI / H4 UART | **`hcisu_h4_rx_step`** — HCI H4 UART receive state machine step; manages byte stream synchronization. | 1 caller / 2 callees |
+| `0x60095b2c` |  74 | HCI / H4 UART | **`hcisu_h4_rx_accum`** — Accumulates incoming UART bytes into active GKI receive buffer. | 1 caller / 7 callees |
+| `0x60095b7c` |  28 | HCI / H4 UART | **`hcisu_h4_alloc_buf`** — Allocates GKI packet buffer for incoming HCI message (`FUN_6006dbac`). | 2 callers / 1 callee |
+| `0x60095b9c` |  28 | HCI / H4 UART | **`hcisu_h4_free_buf`** — Releases completed HCI packet buffer back to GKI pool (`FUN_6006ddd8`). | 2 callers / 1 callee |
+| `0x60095bbc` |  82 | HCI / H4 UART | **`hcisu_h4_check_flow_ctrl`** — Checks hardware RTS/CTS flow control status before initiating transmit. | 2 callers / 1 callee |
+| `0x60095c14` |  28 | HCI / H4 UART | **`hcisu_h4_tx_queue_check`** — Checks if HCI H4 UART transmit queue contains pending outbound packets. | 3 callers / 2 callees |
+| `0x60095c34` |  76 | HCI / H4 UART | **`hcisu_h4_tx_enqueue`** — Enqueues outbound HCI packet into UART transmit ring buffer (`DAT_60095c7c`). | 1 caller / 1 callee |
+| `0x60095c84` |  76 | HCI / H4 UART | **`hcisu_h4_tx_dequeue`** — Dequeues next pending HCI packet from UART transmit ring buffer. | 1 caller / 2 callees |
+| `0x60095cd4` | 116 | HCI / H4 UART | **`hcisu_h4_tx_start`** — Triggers UART DMA / FIFO transmission for head of transmit queue. | 3 callers / 6 callees |
+| `0x60095d4c` |  76 | HCI / H4 UART | **`hcisu_h4_set_baudrate`** — Reconfigures UART transport baudrate (e.g. 115200 to 3000000 bps). | 2 callers / 4 callees |
+| `0x60095d9c` |  50 | HCI / H4 UART | **`hcisu_h4_reset`** — Resets HCI H4 transport state machine, flushing RX/TX ring buffers. | 3 callers / 11 callees |
+| `0x60095dd4` |  28 | HCI / H4 UART | **`hcisu_h4_resync`** — Error recovery handler: resynchronizes H4 parser after framing/parity errors. | 1 caller / 1 callee |
+| `0x60095ee8` |  36 | HCI / H4 UART | **`hcisu_h4_sleep_assert`** — Asserts controller BT_WAKE / sleep signal via low-power protocol GPIO. | 3 callers / 2 callees |
+| `0x60095f10` |  34 | HCI / H4 UART | **`hcisu_h4_host_wake_isr`** — HOST_WAKE interrupt handler; wakes BTU task on controller activity. | 2 callers / 1 callee |
+| `0x60095f9c` | 130 | HCI / H4 UART | **`hcisu_h4_lpm_handshake`** — Broadcom low-power mode (LPM) controller sleep/wake handshake negotiator. | 3 callers / 2 callees |
+| `0x6009605c` | 128 | HCI / H4 UART | **`hcisu_h4_timer_expiry`** — Watchdog timer expiration callback for HCI UART response timeouts. | 1 caller / 1 callee |
+| `0x600960e0` | 114 | HCI / H4 UART | **`hcisu_h4_quick_timer_tick`** — Quick timer tick processor for UART character timeout detection. | 2 callers / 2 callees |
+| `0x60096158` |  62 | HCI / H4 UART | **`hcisu_h4_trace_pkt`** — Formats and outputs diagnostic trace log for HCI packet transmission. | 1 caller / 0 callees |
+| `0x6009619c` |  62 | HCI / H4 UART | **`hcisu_h4_send_cmd`** — Serializes HCI Command packet with type `0x01` and queues to UART. | 1 caller / 0 callees |
+| `0x6009623c` |  24 | HCI / H4 UART | **`hcisu_h4_send_acl`** — Serializes HCI ACL Data packet with type `0x02` and queues to UART. | 4 callers / 2 callees |
+| `0x6009625c` |  46 | HCI / H4 UART | **`hcisu_h4_tx_flush`** — Flushes pending outbound packets from UART transmit FIFO. | 4 callers / 3 callees |
+| `0x600962b8` |  32 | HCI / H4 UART | **`hcisu_h4_cts_isr`** — UART CTS line change interrupt service routine; resumes stalled TX. | 3 callers / 2 callees |
+| `0x60096314` |  34 | HCI / H4 UART | **`hcisu_h4_rx_drain`** — Drains hardware UART RX FIFO into temporary staging buffer. | 4 callers / 8 callees |
+| `0x6009633c` |  24 | HCI / H4 UART | **`hcisu_h4_get_rx_stats`** — Returns count of received bytes, packets, and framing errors. | 7 callers / 9 callees |
+| `0x60096358` |  26 | HCI / H4 UART | **`hcisu_h4_get_tx_stats`** — Returns count of transmitted bytes, packets, and retransmissions. | 3 callers / 2 callees |
+| `0x60096378` | 148 | HCI / H4 UART | **`hcisu_h4_clear_stats`** — Clears UART transport RX/TX statistical counters. | 2 callers / 2 callees |
+| `0x60096424` |  34 | HCI / Transport | **`hci_transport_init`** — Initializes top-level HCI transport subsystem control block (`DAT_60096420`). | 1 caller / 1 callee |
+| `0x60096528` |  46 | HCI / Transport | **`hci_transport_open`** — Opens HCI physical transport channel and brings up UART interface. | 2 callers / 2 callees |
+| `0x6009655c` |  44 | HCI / Transport | **`hci_transport_close`** — Closes HCI physical transport channel and shuts down UART interface. | 3 callers / 3 callees |
+| `0x60096594` |  24 | HCI / Transport | **`hci_transport_write`** — Synchronous write entry point for raw HCI transport packets. | 3 callers / 3 callees |
+| `0x600965b4` | 108 | HCI / Transport | **`hci_transport_read`** — Synchronous read entry point for raw HCI transport packets. | 2 callers / 1 callee |
+| `0x60096858` |  84 | HCI / Transport | **`hci_transport_reg_cback`** — Registers upper-layer receive callback with HCI transport layer. | 1 caller / 2 callees |
+| `0x600968b0` | 122 | HCI / Transport | **`hci_transport_dereg_cback`** — Deregisters upper-layer receive callback from HCI transport layer. | 4 callers / 5 callees |
+| `0x60096930` |  72 | HCI / Transport | **`hci_transport_get_pwr_state`** — Queries active power state of Bluetooth controller hardware. | 2 callers / 2 callees |
+| `0x6009697c` |  96 | HCI / Transport | **`hci_transport_set_pwr_state`** — Sets power state (Full, Low-Power, Shutdown) of Bluetooth controller. | 2 callers / 2 callees |
+| `0x600969e0` |  54 | HCI / Transport | **`hci_transport_send_vendor_cmd`** — Sends Broadcom vendor-specific HCI command (`0xFCxx` opcode cluster). | 4 callers / 3 callees |
+| `0x60096a1c` |  46 | HCI / Transport | **`hci_transport_vendor_evt_cback`** — Dispatches Broadcom vendor-specific HCI event (`0xFF`) to registered handler. | 1 caller / 1 callee |
+| `0x600970e4` | 104 | HCI / Credits | **`hci_credit_init`** — Initializes HCI flow control credit tracking for command/ACL buffers. | 1 caller / 2 callees |
+| `0x60097154` |  26 | HCI / Credits | **`hci_credit_get_avail`** — Returns number of available HCI command credits from controller. | 1 caller / 1 callee |
+| `0x60097174` |  38 | HCI / Credits | **`hci_credit_has_credits`** — Checks whether at least one HCI command credit is available (`> 0`). | 2 callers / 1 callee |
+| `0x60097200` | 142 | HCI / Credits | **`hci_credit_update`** — Updates available HCI credits on Command Complete / Status events. | 2 callers / 3 callees |
+| `0x600973f8` | 112 | HCI / Credits | **`hci_credit_flush_queue`** — Flushes pending command queue when credits are exhausted or link resets. | 2 callers / 1 callee |
+| `0x6009746c` |  22 | HCI / Credits | **`hci_credit_abort_txn`** — Aborts current in-flight HCI command transaction on timeout. | 3 callers / 2 callees |
+| `0x6009759c` |  90 | HCI / Debug | **`hci_debug_get_opcode_name`** — Returns human-readable string name for 16-bit HCI command opcode. | 5 callers / 5 callees |
+| `0x60097600` |  90 | HCI / Debug | **`hci_debug_get_event_name`** — Returns human-readable string name for 8-bit HCI event code. | 2 callers / 3 callees |
+| `0x60097664` | 142 | HCI / Debug | **`hci_debug_get_status_name`** — Returns human-readable string name for HCI status / error code. | 2 callers / 3 callees |
+| `0x6009819c` | 198 | BTM / Link Policy | **`BTM_SetLinkPolicy`** — Sets link policy settings (Role Switch, Hold, Sniff, Park) for ACL link. | 8 callers / 8 callees |
+| `0x6009837c` | 110 | BTM / Link Policy | **`btm_pm_get_link_policy`** — Reads active link policy mask for target connection handle. | 3 callers / 3 callees |
+| `0x60098530` | 190 | BTM / Link Policy | **`btm_pm_build_sniff_req`** — Formats HCI Sniff Mode command parameters (`interval`, `attempt`, `timeout`). | 3 callers / 5 callees |
+| `0x600985f8` | 106 | BTM / Link Policy | **`BTM_SetSniffSubrating`** — Configures Sniff Subrating parameters with peer device via HCI. | 3 callers / 3 callees |
+| `0x60098668` |  50 | BTM / Link Policy | **`BTM_ExitSniffMode`** — Issues HCI Exit Sniff Mode command (`0x0803`) for active link. | 2 callers / 2 callees |
+| `0x600986a0` |  58 | BTM / Link Policy | **`BTM_SwitchRole`** — Initiates Master/Slave role switch request via HCI (`0x080b`). | 2 callers / 1 callee |
+| `0x600986e0` |  48 | BTM / Link Policy | **`BTM_GetRole`** — Returns current role (Master=0, Slave=1) for target connection handle. | 4 callers / 5 callees |
+| `0x60098718` | 132 | BTM / Link Policy | **`BTM_SetLinkSupervisionTimeout`** — Sets link supervision timeout value via HCI Write Link Supervision Timeout (`0x0c37`). | 2 callers / 3 callees |
+| `0x600987a0` |  54 | BTM / Link Policy | **`BTM_GetLinkSupervisionTimeout`** — Reads configured link supervision timeout value from local link record. | 2 callers / 1 callee |
+| `0x600987dc` |  62 | BTM / Link Policy | **`btm_pm_send_link_policy_cmd`** — Sends HCI Write Link Policy Settings command (`0x080d`) to controller. | 3 callers / 4 callees |
+| `0x60098820` | 150 | BTM / Link Policy | **`btm_pm_proc_mode_change_evt`** — Processes HCI Mode Change event; updates link policy state machine. | 2 callers / 2 callees |
+| `0x60098b70` |  80 | BTM / Link Policy | **`btm_pm_proc_ssr_evt`** — Processes HCI Sniff Subrating event; updates subrating parameters in link record. | 2 callers / 1 callee |
+| `0x60098bc4` |  32 | BTM / Link Policy | **`BTM_IsLinkInSniff`** — Returns boolean indicating whether target link is currently in Sniff mode. | 2 callers / 1 callee |
+| `0x60098be8` |  34 | BTM / Link Policy | **`btm_pm_reset_link_policy`** — Resets link policy state and clears pending policy requests. | 4 callers / 3 callees |
+| `0x60098c14` |  32 | BTM / ACL | **`btm_acl_init`** — Initializes BTM ACL link database control block (`DAT_60098c10`). | 4 callers / 3 callees |
+| `0x60098c3c` |  26 | BTM / ACL | **`btm_acl_reset`** — Clears all active ACL link records and resets connection counters. | 4 callers / 3 callees |
+| `0x60098c5c` |  98 | BTM / ACL | **`btm_acl_alloc`** — Allocates unused ACL Link Control Block (LCB) from pool matching BD_ADDR. | 2 callers / 1 callee |
+| `0x60098cc4` |  98 | BTM / ACL | **`btm_acl_free`** — Releases ACL Link Control Block (LCB) back to free pool on disconnection. | 2 callers / 1 callee |
+| `0x60098d2c` |  90 | BTM / ACL | **`btm_bda_to_acl`** — Finds active ACL Link Control Block matching 6-byte BD_ADDR. | 3 callers / 3 callees |
+| `0x60098d8c` | 166 | BTM / ACL | **`btm_handle_to_acl`** — Finds active ACL Link Control Block matching 16-bit connection handle. | 5 callers / 9 callees |
+| `0x60098e78` |  26 | BTM / ACL | **`BTM_GetHCIConnHandle`** — Returns 16-bit HCI connection handle for specified BD_ADDR. | 1 caller / 1 callee |
+| `0x60098ea0` |  36 | BTM / ACL | **`BTM_GetBDAddrByHandle`** — Copies 6-byte BD_ADDR matching specified 16-bit HCI connection handle. | 1 caller / 1 callee |
+| `0x60098ec8` | 104 | BTM / ACL | **`btm_acl_update_state`** — Updates ACL link connection state (Connecting, Connected, Disconnecting). | 16 callers / 29 callees |
+| `0x60098f34` |  78 | BTM / ACL | **`BTM_IsAclLinkUp`** — Returns boolean indicating whether ACL link to specified BD_ADDR is connected. | 12 callers / 11 callees |
+| `0x60099190` | 102 | BTM / ACL | **`btm_acl_set_encryption`** — Sets ACL encryption state (`0`=Off, `1`=E0, `2`=AES-CCM) in link record. | 5 callers / 7 callees |
+| `0x60099204` | 202 | BTM / ACL | **`btm_acl_conn_complete`** — Handles HCI Connection Complete event; populates LCB with handle, BD_ADDR, link type. | 6 callers / 5 callees |
+| `0x600992d4` |  66 | BTM / ACL | **`btm_acl_disc_complete`** — Handles HCI Disconnection Complete event; frees LCB and notifies upper layers. | 2 callers / 2 callees |
+| `0x600994b8` | 194 | BTM / ACL | **`btm_acl_packet_type_change`** — Handles HCI Packet Type Change event; updates supported packet types bitmask. | 4 callers / 4 callees |
+| `0x60099768` | 160 | BTM / ACL | **`btm_acl_auth_complete`** — Handles HCI Authentication Complete event; updates security link status. | 4 callers / 4 callees |
+| `0x600999bc` |  90 | BTM / ACL | **`btm_acl_enc_change`** — Handles HCI Encryption Change event; notifies BTM security and L2CAP. | 4 callers / 4 callees |
+| `0x60099a1c` | 188 | BTM / ACL | **`btm_acl_read_remote_features_complete`** — Processes HCI Read Remote Supported Features Complete event; stores 8-byte feature mask. | 3 callers / 5 callees |
+| `0x60099bb8` |  78 | BTM / ACL | **`btm_acl_read_remote_ext_features_complete`** — Processes HCI Read Remote Extended Features Complete event; stores extended feature pages. | 4 callers / 5 callees |
+| `0x60099c0c` | 134 | BTM / ACL | **`btm_acl_read_remote_version_complete`** — Processes HCI Read Remote Version Info Complete event; stores LMP version, subversion, manufacturer. | 6 callers / 7 callees |
+| `0x60099c9c` |  30 | BTM / ACL | **`btm_acl_read_clock_offset_complete`** — Processes HCI Read Clock Offset Complete event; stores 16-bit clock offset in LCB. | 2 callers / 1 callee |
+| `0x60099cc0` |  84 | BTM / ACL | **`btm_acl_link_supervision_timeout_change`** — Handles Link Supervision Timeout Change event; updates watchdog timer value. | 2 callers / 2 callees |
+| `0x60099d18` |  70 | BTM / ACL | **`BTM_GetNumAclLinks`** — Returns count of currently active ACL links across controller. | 3 callers / 4 callees |
+| `0x60099d64` |  34 | BTM / ACL | **`BTM_GetLinkKeySize`** — Returns effective encryption key size (in bytes) for target connection handle. | 2 callers / 1 callee |
+| `0x60099d8c` |  64 | BTM / ACL | **`btm_acl_notify_link_state`** — Notifies registered upper-layer protocols (L2CAP, SDP, RFCOMM) of link events. | 2 callers / 2 callees |
+| `0x60099f04` |  68 | BTM / ACL | **`btm_acl_flush_tx_queue`** — Flushes pending outbound ACL data buffers on link disconnection. | 3 callers / 0 callees |
+| `0x60099f4c` | 136 | BTM / ACL | **`btm_acl_calc_pkt_size`** — Calculates optimal ACL packet size and fragmentation thresholds for L2CAP MTU. | 3 callers / 2 callees |
+| `0x6009a114` |  60 | BTM / BLE Scan | **`BTM_BleSetScanParams`** — Configures BLE scan parameters: scan type (Active/Passive), interval, window, address type. | 2 callers / 1 callee |
+| `0x6009a154` | 128 | BTM / BLE Scan | **`BTM_BleSetScanEnable`** — Enables or disables BLE scanning via HCI LE Set Scan Enable (`0x200c`). | 3 callers / 4 callees |
+| `0x6009a1dc` | 112 | BTM / BLE Scan | **`btm_ble_proc_adv_report`** — Processes HCI LE Advertising Report event (`0x3e` sub-event `2`). | 5 callers / 5 callees |
+| `0x6009a254` | 106 | BTM / BLE Scan | **`btm_ble_parse_adv_data`** — Top-level TLV parser for BLE Advertising Data (AD) structures in advertising reports. | 5 callers / 5 callees |
+| `0x6009a3d4` | 194 | BTM / BLE Scan | **`btm_ble_extract_dev_name`** — Extracts Shortened (`0x08`) or Complete (`0x09`) Local Name from AD structures. | 2 callers / 3 callees |
+| `0x6009a4a4` | 192 | BTM / BLE Scan | **`btm_ble_extract_uuids`** — Extracts 16-bit (`0x02`/`0x03`), 32-bit (`0x04`/`0x05`), and 128-bit (`0x06`/`0x07`) Service UUIDs from AD. | 2 callers / 3 callees |
+| `0x6009a570` |  56 | BTM / BLE Scan | **`btm_ble_extract_tx_pwr_appearance`** — Extracts TX Power Level (`0x0a`) and Appearance Category (`0x19`) from AD. | 1 caller / 1 callee |
+| `0x6009a72c` | 132 | BTM / BLE Adv | **`BTM_BleWriteAdvParams`** — Configures BLE advertising parameters via HCI LE Set Advertising Parameters (`0x2006`). | 6 callers / 7 callees |
+| `0x6009a804` |  34 | BTM / BLE Adv | **`BTM_BleSetAdvEnable`** — Enables or disables BLE advertising via HCI LE Set Advertising Enable (`0x200a`). | 3 callers / 2 callees |
+| `0x6009a82c` | 174 | BTM / BLE Adv | **`BTM_BleWriteAdvData`** — Writes 31-byte advertising payload via HCI LE Set Advertising Data (`0x2008`). | 5 callers / 8 callees |
+| `0x6009ab40` |  80 | BTM / BLE Adv | **`BTM_BleWriteScanRspData`** — Writes 31-byte scan response payload via HCI LE Set Scan Response Data (`0x2009`). | 2 callers / 2 callees |
+| `0x6009ab94` |  26 | BTM / BLE Adv | **`BTM_BleSetAdvChannelMap`** — Sets 3-bit advertising channel map (channels 37, 38, 39). | 1 caller / 3 callees |
+| `0x6009abb4` |  26 | BTM / BLE Adv | **`BTM_BleSetAdvFilterPolicy`** — Sets advertising filter policy (Allow All, Whitelist Scan, Whitelist Conn, Whitelist All). | 2 callers / 2 callees |
+| `0x6009abd4` |  26 | BTM / BLE Adv | **`BTM_BleSetAdvTxPower`** — Configures advertising transmit power level. | 1 caller / 2 callees |
+| `0x6009abf4` | 148 | BTM / BLE Adv | **`BTM_BleSetDirectedAdv`** — Configures high-duty-cycle or low-duty-cycle directed advertising parameters. | 2 callers / 2 callees |
+| `0x6009ac8c` | 112 | BTM / BLE Adv | **`btm_ble_proc_directed_adv_report`** — Processes directed advertising reports and triggers automatic reconnection. | 3 callers / 4 callees |
+| `0x6009af60` | 110 | BTM / BLE Adv | **`btm_ble_update_adv_interval`** — Dynamically adjusts advertising interval based on system power state. | 4 callers / 5 callees |
+| `0x6009b0a8` | 134 | BTM / BLE Adv | **`btm_ble_config_adv_filter`** — Configures hardware BLE advertisement filtering rules in controller. | 5 callers / 5 callees |
+| `0x6009b230` |  92 | BTM / BLE Adv | **`BTM_BleGetAdvStatus`** — Returns boolean indicating whether BLE advertising is currently active. | 1 caller / 0 callees |
+| `0x6009b8b4` |  84 | BTM / BLE Conn | **`BTM_BleCreateConn`** — Initiates BLE connection creation via HCI LE Create Connection (`0x200d`). | 3 callers / 2 callees |
+| `0x6009b914` |  66 | BTM / BLE Conn | **`BTM_BleCancelConn`** — Cancels pending BLE connection creation via HCI LE Create Connection Cancel (`0x200e`). | 2 callers / 3 callees |
+| `0x6009b960` |  70 | BTM / BLE Conn | **`btm_ble_conn_complete`** — Parses HCI LE Connection Complete event (`0x3e` sub `1`); populates connection state. | 2 callers / 3 callees |
+| `0x6009b9b0` |  76 | BTM / BLE Conn | **`btm_ble_enhanced_conn_complete`** — Parses HCI LE Enhanced Connection Complete event (`0x3e` sub `0x0a`) with local/peer RPA. | 4 callers / 5 callees |
+| `0x6009ba0c` | 112 | BTM / BLE Conn | **`BTM_BleUpdateConnParams`** — Sends HCI LE Connection Update command (`0x2013`) with min/max interval, latency, timeout. | 3 callers / 5 callees |
+| `0x6009ba84` |  94 | BTM / BLE Conn | **`btm_ble_conn_update_complete`** — Parses HCI LE Connection Update Complete event (`0x3e` sub `3`); updates connection timing. | 2 callers / 4 callees |
+| `0x6009baec` |  70 | BTM / BLE Conn | **`BTM_BleReadRemoteFeatures`** — Reads peer LE features via HCI LE Read Remote Features (`0x2016`). | 2 callers / 3 callees |
+| `0x6009bb3c` |  14 | BTM / BLE Conn | **`btm_ble_read_remote_feat_complete`** — Handles HCI LE Read Remote Features Complete event (`0x3e` sub `4`). | 2 callers / 2 callees |
+| `0x6009bb50` |  92 | BTM / BLE Conn | **`BTM_BleSetDataLength`** — Requests BLE Data Packet Length Extension via HCI LE Set Data Length (`0x2022`). | 5 callers / 5 callees |
+| `0x6009bbb0` | 122 | BTM / BLE Conn | **`btm_ble_data_length_change`** — Handles HCI LE Data Length Change event (`0x3e` sub `7`); updates max TX/RX octets and time. | 2 callers / 2 callees |
+| `0x6009bc34` |  76 | BTM / BLE Conn | **`BTM_BleReadDefaultDataLength`** — Reads suggested default data length parameters from controller. | 3 callers / 2 callees |
+| `0x6009bc88` |  76 | BTM / BLE Conn | **`BTM_BleWriteDefaultDataLength`** — Writes suggested default data length parameters via HCI (`0x2024`). | 3 callers / 3 callees |
+| `0x6009bcd8` | 144 | BTM / BLE Filter | **`BTM_BleClearWhitelist`** — Clears controller advertising/scanning whitelist via HCI LE Clear White List (`0x2010`). | 4 callers / 4 callees |
+| `0x6009bd70` | 112 | BTM / BLE Filter | **`BTM_BleAddWhitelist`** — Adds device to controller whitelist via HCI LE Add Device To White List (`0x2011`). | 4 callers / 4 callees |
+| `0x6009bde4` |  86 | BTM / BLE Filter | **`BTM_BleRemoveWhitelist`** — Removes device from controller whitelist via HCI LE Remove Device From White List (`0x2012`). | 2 callers / 2 callees |
+| `0x6009be40` | 108 | BTM / BLE Privacy | **`BTM_BleClearResolvingList`** — Clears controller address resolving list via HCI LE Clear Resolving List (`0x2029`). | 5 callers / 6 callees |
+| `0x6009beb0` | 104 | BTM / BLE Privacy | **`BTM_BleAddResolvingList`** — Adds device IRK and BD_ADDR to Resolving List via HCI LE Add Device To Resolving List (`0x2027`). | 4 callers / 4 callees |
+| `0x6009bf1c` | 138 | BTM / BLE Privacy | **`BTM_BleRemoveResolvingList`** — Removes device from Resolving List via HCI LE Remove Device From Resolving List (`0x2028`). | 4 callers / 6 callees |
+| `0x6009bfb0` | 100 | BTM / BLE Privacy | **`BTM_BleEnableAddressResolution`** — Enables controller-based address resolution via HCI LE Set Address Resolution Enable (`0x202d`). | 4 callers / 4 callees |
+| `0x6009c01c` | 102 | BTM / BLE Privacy | **`BTM_BleReadPeerResolvableAddr`** — Reads current peer Resolvable Private Address (RPA) via HCI LE Read Peer Resolvable Address (`0x202b`). | 4 callers / 5 callees |
+| `0x6009c088` | 150 | BTM / BLE Privacy | **`BTM_BleReadLocalResolvableAddr`** — Reads current local Resolvable Private Address (RPA) via HCI LE Read Local Resolvable Address (`0x202c`). | 2 callers / 3 callees |
+| `0x6009c124` | 108 | BTM / BLE Privacy | **`BTM_BleSetRpaTimeout`** — Sets RPA rotation timeout period (in seconds) via HCI LE Set Resolvable Private Address Timeout (`0x202e`). | 3 callers / 5 callees |
+| `0x6009c194` |  58 | BTM / BLE Privacy | **`btm_ble_gen_rpa`** — Generates cryptographic Resolvable Private Address (RPA) from local IRK and random seed `prand`. | 1 caller / 1 callee |
+| `0x6009c1d4` |  48 | BTM / BLE Privacy | **`btm_ble_verify_rpa`** — Cryptographically verifies received RPA against stored peer IRK using AES-128 hash helper `ah`. | 1 caller / 2 callees |
+| `0x6009c208` |  52 | BTM / BLE Privacy | **`btm_ble_get_addr_type`** — Inspects top 2 bits of address: Public (`00`), Random Static (`11`), RPA (`01`), NRPA (`00`). | 1 caller / 1 callee |
+| `0x6009c240` | 122 | BTM / BLE Privacy | **`BTM_BleSetPrivacyMode`** — Configures Privacy Mode (`0` = Network Privacy, `1` = Device Privacy) via HCI (`0x204e`). | 3 callers / 3 callees |
+| `0x6009c6d8` |  62 | BTM / BLE Conn | **`btm_ble_start_conn_timer`** — Starts connection supervision watchdog timer for active BLE link. | 5 callers / 5 callees |
+| `0x6009c71c` |  82 | BTM / BLE Conn | **`btm_ble_conn_timer_expiry`** — Watchdog timer expiry callback; triggers link disconnection on supervision timeout. | 5 callers / 5 callees |
+| `0x6009c778` |  20 | BTM / BLE Conn | **`btm_ble_stop_conn_timer`** — Stops connection supervision watchdog timer. | 4 callers / 4 callees |
+| `0x6009c790` |  52 | BTM / BLE Conn | **`btm_ble_update_supervision_param`** — Updates active connection supervision timeout parameter. | 9 callers / 8 callees |
+| `0x6009c848` | 196 | BTM / Sec DB | **`btm_find_dev`** — Searches BTM security device record database (`DAT_6009c800`) for matching BD_ADDR. | 6 callers / 5 callees |
+| `0x6009c914` | 176 | BTM / Sec DB | **`btm_sec_alloc_dev`** — Allocates unused `btm_sec_dev_rec` security record slot for new bonded/paired device. | 2 callers / 3 callees |
+| `0x6009c9d4` | 168 | BTM / Sec DB | **`btm_sec_free_dev`** — Frees `btm_sec_dev_rec` security record slot on unbonding/unpairing. | 3 callers / 3 callees |
+| `0x6009ca80` |  84 | BTM / Sec DB | **`btm_sec_clear_dev_db`** — Clears all entries in security device database and resets security control block. | 4 callers / 5 callees |
+| `0x6009cd94` | 148 | BTM / Sec Keys | **`BTM_WriteLinkKey`** — Writes 16-byte BR/EDR link key and key type into device security record. | 2 callers / 1 callee |
+| `0x6009ce30` | 148 | BTM / Sec Keys | **`BTM_ReadLinkKey`** — Reads 16-byte BR/EDR link key from device security record. | 3 callers / 4 callees |
+| `0x6009cec8` | 182 | BTM / Sec Keys | **`BTM_SecAddBleKey`** — Stores peer LE security keys (LTK, IRK, CSRK, EDIV/Rand) in security record. | 3 callers / 4 callees |
+| `0x6009d930` | 142 | BTM / Sec Keys | **`BTM_SecGetBleKey`** — Retrieves stored peer LE security keys (LTK, IRK, CSRK) from security record. | 3 callers / 2 callees |
+| `0x6009dd74` | 180 | BTM / Sec Keys | **`BTM_SecSetLocalBleKeys`** — Configures local device BLE security keys (Local IRK, Local CSRK, Local LTK). | 7 callers / 6 callees |
+| `0x6009de30` | 144 | BTM / Sec State | **`BTM_SetSecurityFlags`** — Sets security state flags (Authenticated, Encrypted, Bonded, MITM-protected). | 2 callers / 4 callees |
+| `0x6009decc` |  64 | BTM / Sec State | **`BTM_GetSecurityFlags`** — Returns active security state bitmask for target device record. | 4 callers / 5 callees |
+| `0x6009df10` | 194 | BTM / Sec State | **`BTM_SetDeviceType`** — Sets Bluetooth device operational type (`1`=BR/EDR, `2`=BLE, `3`=Dual-Mode). | 3 callers / 3 callees |
+| `0x6009dfd8` | 188 | BTM / Sec State | **`BTM_SetDeviceClass`** — Stores 24-bit Bluetooth Class of Device (CoD) descriptor in security record. | 2 callers / 3 callees |
+| `0x6009e2e0` |  82 | BTM / Sec State | **`BTM_SetDeviceName`** — Stores cached UTF-8 remote device name in security record. | 2 callers / 1 callee |
+| `0x6009e338` | 178 | BTM / Sec State | **`BTM_GetDeviceName`** — Retrieves cached remote device name from security record. | 2 callers / 5 callees |
+| `0x6009e6c0` |  72 | BTM / Sec State | **`BTM_SetPinCode`** — Sets legacy PIN code / passkey string for BR/EDR legacy pairing. | 6 callers / 5 callees |
+| `0x6009e70c` |  82 | BTM / Sec Policy | **`btm_sec_check_requirements`** — Validates whether active link security satisfies registered service security requirements. | 5 callers / 6 callees |
+| `0x6009e768` |  94 | BTM / Sec Policy | **`BTM_SecRegister`** — Registers service security policy (Authentication, Authorization, Encryption requirements). | 2 callers / 2 callees |
+| `0x6009e7d0` | 102 | BTM / Sec Policy | **`BTM_SecDeregister`** — Deregisters service security record and releases service ID. | 2 callers / 1 callee |
+| `0x6009e84c` | 158 | BTM / Sec Policy | **`btm_sec_check_authz`** — Checks whether incoming connection request is authorized by application callback. | 11 callers / 11 callees |
+| `0x6009e8fc` |  88 | BTM / Sec Policy | **`btm_sec_check_authn`** — Checks whether connection meets required authentication security level. | 9 callers / 9 callees |
+| `0x6009e95c` | 128 | BTM / Sec Policy | **`btm_sec_check_enc`** — Checks whether connection is encrypted to required key strength. | 5 callers / 4 callees |
+| `0x6009eab4` | 170 | BTM / Sec Action | **`BTM_SecAuthenticate`** — Initiates link authentication procedure via HCI Authentication Requested (`0x0411`). | 1 caller / 2 callees |
+| `0x6009eb64` |  52 | BTM / Sec Action | **`BTM_SecEncrypt`** — Initiates link encryption procedure via HCI Set Connection Encryption (`0x0413`). | 1 caller / 1 callee |
+| `0x6009eb9c` |  54 | BTM / Sec Action | **`BTM_SecCancel`** — Cancels pending authentication or security negotiation procedure. | 4 callers / 3 callees |
+| `0x6009ebd8` |  54 | BTM / Sec Action | **`BTM_GetEncryptionStatus`** — Returns boolean indicating whether target link is currently encrypted. | 4 callers / 3 callees |
+| `0x6009ec14` |  60 | BTM / Discovery | **`BTM_StartInquiry`** — Starts Bluetooth BR/EDR Inquiry discovery procedure via HCI Inquiry (`0x0401`). | 5 callers / 5 callees |
+| `0x6009ec54` | 168 | BTM / Discovery | **`BTM_CancelInquiry`** — Cancels active BR/EDR Inquiry procedure via HCI Inquiry Cancel (`0x0402`). | 4 callers / 4 callees |
+| `0x6009ed00` | 154 | BTM / Discovery | **`btm_proc_inq_result`** — Processes standard HCI Inquiry Result event (`0x02`); parses BD_ADDR, CoD, clock offset. | 8 callers / 8 callees |
+| `0x6009eda4` | 110 | BTM / Discovery | **`btm_proc_inq_result_rssi`** — Processes HCI Inquiry Result with RSSI event (`0x22`); records received signal strength. | 1 caller / 1 callee |
+| `0x6009ee18` | 106 | BTM / Discovery | **`btm_proc_ext_inq_result`** — Processes HCI Extended Inquiry Result event (`0x2f`); parses 240-byte EIR data. | 4 callers / 4 callees |
+| `0x6009ee8c` | 122 | BTM / Discovery | **`btm_proc_inq_complete`** — Processes HCI Inquiry Complete event (`0x01`); notifies discovery callback. | 3 callers / 3 callees |
+| `0x6009ef10` | 136 | BTM / Discovery | **`btm_inq_db_find`** — Searches BTM inquiry discovery cache database (`DAT_6009ef00`) for matching BD_ADDR. | 3 callers / 5 callees |
+| `0x6009efa0` |  94 | BTM / Discovery | **`btm_inq_db_alloc`** — Allocates entry in inquiry discovery cache for newly discovered device. | 2 callers / 1 callee |
+| `0x6009f004` | 132 | BTM / Discovery | **`btm_inq_db_clear`** — Clears inquiry discovery cache database. | 2 callers / 1 callee |
+| `0x6009f08c` | 148 | BTM / Discovery | **`BTM_ReadRemoteDeviceName`** — Initiates Remote Name Request procedure via HCI Remote Name Request (`0x0419`). | 6 callers / 5 callees |
+| `0x6009f1fc` | 122 | BTM / Discovery | **`BTM_CancelRemoteDeviceName`** — Cancels pending Remote Name Request via HCI Remote Name Request Cancel (`0x041a`). | 2 callers / 3 callees |
+| `0x6009f27c` | 106 | BTM / Discovery | **`btm_proc_rmt_name_complete`** — Handles HCI Remote Name Request Complete event (`0x07`); parses UTF-8 name. | 2 callers / 3 callees |
+| `0x6009f2ec` | 204 | BTM / Discovery | **`btm_discovery_fsm`** — Central device discovery state machine dispatcher (Inquiry -> Name Request -> Complete). | 5 callers / 4 callees |
+| `0x6009f3c0` |  96 | BTM / Discovery | **`btm_discovery_timeout`** — Watchdog timer callback for device discovery / remote name transaction timeout. | 5 callers / 4 callees |
+| `0x6009f428` | 178 | BTM / Discovery | **`btm_discovery_next_step`** — Advances discovery state machine to next queued device in search list. | 5 callers / 4 callees |
+| `0x6009f4e4` | 148 | BTM / Config | **`BTM_SetDiscoverability`** — Configures discoverability mode (General Discoverable, Limited Discoverable, Non-Discoverable). | 6 callers / 6 callees |
+| `0x6009f57c` |  80 | BTM / Config | **`BTM_GetDiscoverability`** — Returns active discoverability mode bitmask. | 6 callers / 5 callees |
+| `0x6009f5d0` |  54 | BTM / Config | **`BTM_SetConnectability`** — Configures connectability mode (Connectable, Non-Connectable) for page scan. | 5 callers / 4 callees |
+| `0x6009f60c` |  50 | BTM / Config | **`BTM_GetConnectability`** — Returns active connectability mode bitmask. | 5 callers / 4 callees |
+| `0x6009f644` | 120 | BTM / Config | **`BTM_WriteScanEnable`** — Writes HCI Scan Enable setting (`0`=None, `1`=Inq, `2`=Page, `3`=Both) via HCI (`0x0c1a`). | 15 callers / 13 callees |
+| `0x6009f8c8` | 112 | BTM / Config | **`BTM_ReadScanEnable`** — Returns current local scan enable mode setting. | 6 callers / 6 callees |
+| `0x6009f93c` |  78 | BTM / Config | **`BTM_WritePageScanActivity`** — Sets page scan interval and window via HCI Write Page Scan Activity (`0x0c1c`). | 9 callers / 8 callees |
+| `0x6009f990` | 154 | BTM / Config | **`BTM_WriteInquiryScanActivity`** — Sets inquiry scan interval and window via HCI Write Inquiry Scan Activity (`0x0c1e`). | 7 callers / 6 callees |
+| `0x6009fe40` | 116 | BTM / Config | **`BTM_WriteInquiryMode`** — Configures Inquiry Mode (`0`=Standard, `1`=RSSI, `2`=Extended) via HCI (`0x0c45`). | 3 callers / 2 callees |
+| `0x6009feb8` |  90 | BTM / Config | **`BTM_WriteClassOfDevice`** — Writes 24-bit local Class of Device via HCI Write Class of Device (`0x0c24`). | 6 callers / 10 callees |
+| `0x6009ff18` | 130 | BTM / Config | **`BTM_ReadClassOfDevice`** — Reads 24-bit local Class of Device from local BTM control block. | 30 callers / 62 callees |
+| `0x6009ffa0` | 186 | BTM / Config | **`BTM_WriteLocalDeviceName`** — Writes local Bluetooth device name string via HCI Write Local Name (`0x0c13`). | 2 callers / 1 callee |
