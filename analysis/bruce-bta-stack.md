@@ -818,3 +818,214 @@ gki_cb.os Control Block (Base 0x2001E65C):
 
 
 
+
+
+---
+
+## Session 29 (Wave 1) — BTA/BTE Bluetooth Stack Expansion: 100% Milestone Reached on 7 Subsystems (HCIC, L2CAP CSM/FCR/Link, L2CAP PDU/Buffers, SDP, BTU Task/GATT Helpers, SMP, EC Crypto/Math)
+
+142 newly decompiled and analyzed functions across `0x600921b8`–`0x600c9cc4`, bringing total BTA/BTE decompilation progress from 490 to **632 of 1,076 functions (58.7% by count, 161,723 of 204,449 bytes = 79.1% by byte size)**.
+
+With this wave, **SEVEN major Broadcom BTA/BTE subsystems are now 100% fully decompiled and documented**:
+1. **`btsnd_hcic_*` HCI Command Send Layer** (`0x600b0700`–`0x600b5000`): **122 / 122 functions (100.0%)** — 18,094 / 18,094 bytes
+2. **L2CAP Channel State Machine (CSM), FCR & Link** (`0x600b5000`–`0x600ba000`): **56 / 56 functions (100.0%)** — 18,685 / 18,685 bytes
+3. **L2CAP PDU Reassembly & Buffer Management** (`0x600ba000`–`0x600bd000`): **38 / 38 functions (100.0%)** — 11,326 / 11,326 bytes
+4. **SDP Service Discovery Protocol** (`0x600bd000`–`0x600c0000`): **36 / 36 functions (100.0%)** — 11,772 / 11,772 bytes
+5. **BTU Task & GATT Core Helpers** (`0x600a9000`–`0x600ab000`): **34 / 34 functions (100.0%)** — 5,444 / 5,444 bytes
+6. **SMP Security Manager Protocol** (`0x600c0000`–`0x600c2600`): **71 / 71 functions (100.0%)** — 8,742 / 8,742 bytes
+7. **EC Crypto, Jacobian Point Arithmetic & BTA Tail** (`0x600c7000`–`0x600c9cc4`): **31 / 31 functions (100.0%)** — 10,980 / 10,980 bytes
+
+---
+
+### Key Architectural Discoveries
+
+#### 1. L2CAP Channel State Machine (`l2c_csm_execute`) Fully Resolved
+`FUN_600b5e00` (164 bytes) is confirmed as **`l2c_csm_execute`**, the central L2CAP Channel State Machine event dispatcher. It inspects the CCB state byte at `+0x04` and dispatches across all 9 standard Bluetooth Core Spec / Broadcom BTE channel states via exact 1:1 switch routing:
+- State 0 (`CST_CLOSED`): `FUN_600b5ec8` (`l2c_csm_closed`)
+- State 1 (`CST_ORIG_W4_SEC_COMP`): `FUN_600b61c4` (`l2c_csm_orig_w4_sec_comp`)
+- State 2 (`CST_TERM_W4_SEC_COMP`): `FUN_600b6378` (`l2c_csm_term_w4_sec_comp`)
+- State 3 (`CST_W4_L2CAP_CONNECT_RSP`): `FUN_600b6550` (`l2c_csm_w4_l2cap_connect_rsp`)
+- State 4 (`CST_W4_L2CA_CONNECT_RSP`): `FUN_600b674c` (`l2c_csm_w4_l2ca_connect_rsp`)
+- State 5 (`CST_CONFIG`): `FUN_600b6900` (`l2c_csm_config`)
+- State 6 (`CST_OPEN`): `FUN_600b6d30` (`l2c_csm_open`)
+- State 7 (`CST_W4_L2CAP_DISCONNECT_RSP`): `FUN_600b6fcc` (`l2c_csm_w4_l2cap_disconnect_rsp`)
+- State 8 (`CST_W4_L2CA_DISCONNECT_RSP`): `FUN_600b70f4` (`l2c_csm_w4_l2ca_disconnect_rsp`)
+
+#### 2. Bluetooth SDP Data Element Sequence (DES) Wire Codec
+`FUN_600bfb4c` (14 bytes) and `FUN_600bfe2c` (126 bytes) implement exact Bluetooth Core Spec SDP Data Element Sequence wire encoding/decoding. `FUN_600bfb4c` (`sdpu_get_len_from_type`) extracts data element byte lengths from the 3-bit size descriptor field:
+- `0` -> 1 byte (nil/uint8/int8/bool)
+- `1` -> 2 bytes (uint16/int16/uuid16)
+- `2` -> 4 bytes (uint32/int32/uuid32)
+- `3` -> 8 bytes (uint64/int64)
+- `4` -> 16 bytes (uint128/int128/uuid128)
+- `5` -> uint8 length follows in wire stream
+- `6` -> uint16 big-endian length follows (`(buf[0] << 8) | buf[1]`)
+- `7` -> uint32 big-endian length follows
+
+#### 3. GAP Service Characteristic Value Mutator (`gap_set_attrib_value`)
+`FUN_600aad90` (156 bytes) is confirmed as the runtime attribute mutator for the GAP Generic Access service (`0x1800`), matching the 4 characteristics registered by `FUN_600aac04`:
+- `0x2a00` (Device Name): updates name string via `FUN_600a10e0`
+- `0x2a01` (Appearance): stores 16-bit appearance category code at `local_c + 4`
+- `0x2a04` (Peripheral Preferred Connection Parameters): copies 8-byte connection parameter struct (min interval, max interval, slave latency, supervision timeout) via `memcpy` (`thunk_EXT_FUN_0000b572`)
+- `0x2aa6` (Central Address Resolution): stores 1-byte boolean flag at `local_c + 4`
+
+#### 4. SMP Security Manager Protocol State Machine & LE Secure Connections
+The full SMP Security Manager Protocol (`0x600c0000`–`0x600c2600`, 71 functions) is now 100% decompiled. It includes:
+- Command PDU Builders: Pairing Request (`0x600c0114`), Confirm (`0x600c01b8`), Random (`0x600c03d8`), Failed (`0x600c0434`), Encryption Info / LTK (`0x600c04c4`), Master ID (`0x600c0524`), Identity Info / IRK (`0x600c0558`), Identity Address (`0x600c0578`), Signing Info / CSRK (`0x600c05e4`), Security Request (`0x600c0640`), SC Public Key (`0x600c0698`), SC DHKey Check (`0x600c073c`).
+- Cryptographic Toolbox: AES-CMAC confirmation calculation `f4` (`0x600c0e14`), key generation `f5` (`0x600c0e7c`), check value generation `f6` (`0x600c1204`), and 6-digit numeric comparison passkey computation (`0x600c0cb4`, modulo 1,000,000 / `DAT_600c0dac = 999999`).
+
+#### 5. Jacobian Projective Coordinate EC Point Arithmetic
+`FUN_600c89e0` (106B), `FUN_600c8a54` (110B), and `FUN_600c8acc` (80B) implement Jacobian coordinate point arithmetic (\(X, Y, Z\) where \(x = X/Z^2, y = Y/Z^3\)) for NIST P-256 / P-192 curve scalar multiplication, feeding SMP LE Secure Connections ECDH:
+- `FUN_600c8acc` (`ec_point_affine_to_jacobian`): Converts 2D affine point \((x, y)\) to 3D Jacobian point \((X, Y, 1)\).
+- `FUN_600c89e0` (`ec_point_double_jacobian`): Computes Jacobian point doubling (\(2P\)) in \(\mathbb{F}_p\).
+- `FUN_600c8a54` (`ec_point_add_jacobian`): Computes Jacobian point addition (\(P + Q\)) in \(\mathbb{F}_p\).
+
+---
+
+### Complete Table of 142 Functions Decompiled in Session 29 (Wave 1)
+
+| Address | Bytes | Subsystem / Range | Name / Verified Role | Callers / Callees |
+|---|---:|---|---|---|
+| `0x600a9308` | 164 | BTU / HCI Queue | **`btu_hcif_send_cmd`** — Enqueues HCI command buffer to transport queue; manages HCI command credit tracking. | 2 callers / 3 callees |
+| `0x600a93b0` | 136 | BTU / HCI Queue | **`btu_hcif_cmd_timeout`** — Command credit timeout handler; flushes pending command buffer on timeout. | 1 caller / 3 callees |
+| `0x600a9e74` | 92 | BTU / HCI Queue | **`btu_hcif_ack_event`** — HCI Command Complete / Status credit acknowledgement processor. | 2 callers / 0 callees |
+| `0x600a9ed8` | 36 | BTU / HCI Queue | **`btu_hcif_reset`** — Clears BTU HCI command queue state and resets credit counters. | 1 caller / 0 callees |
+| `0x600aa4c4` | 38 | BTU / Timer | **`btu_stop_quick_timer`** — Cancels active BTU quick timer node. | 3 callers / 0 callees |
+| `0x600aa534` | 114 | GATT Server | **`gatt_init_database`** — Initializes primary GATT server attribute database root record. | 1 caller / 1 callee |
+| `0x600aa5ac` | 46 | GATT Server | **`gatt_free_attr_buffer`** — Deallocates attribute value buffer to GKI memory pool (`FUN_6006ddd8`). | 2 callers / 1 callee |
+| `0x600aa5e4` | 92 | GATT Server | **`gatt_alloc_attr_buffer`** — Allocates attribute value buffer from GKI memory pool (`FUN_6006dbac`). | 2 callers / 1 callee |
+| `0x600aa648` | 44 | GATT Server | **`gatt_release_sr_cmd`** — Frees pending GATT server command buffer if active. | 1 caller / 1 callee |
+| `0x600aa678` | 48 | GATT Server | **`gatt_set_security_mode`** — Accessor/mutator for global GATT security policy (`DAT_600aa6a8 + 0x28`). | 1 caller / 0 callees |
+| `0x600aa6f0` | 80 | GAP Manager | **`gap_find_device_record`** — Searches 6-entry GAP device table (stride 32B) for matching BD_ADDR (`memcmp`). | 2 callers / 1 callee |
+| `0x600aa7a0` | 92 | GAP Manager | **`gap_allocate_device_record`** — Allocates unused slot in 6-entry GAP device table; initializes BD_ADDR. | 1 caller / 2 callees |
+| `0x600aa800` | 82 | GAP Manager | **`gap_free_device_record`** — Flushes pending callback queue and releases GAP device table entry. | 1 caller / 3 callees |
+| `0x600aa858` | 70 | GAP Manager | **`gap_enqueue_operation`** — Allocates GKI queue node and enqueues pending GATT client operation. | 1 caller / 2 callees |
+| `0x600aa8a4` | 70 | GAP Manager | **`gap_dequeue_operation`** — Dequeues next pending GATT client operation and frees queue node. | 1 caller / 2 callees |
+| `0x600aaacc` | 70 | GAP Manager | **`gap_validate_attr_handle`** — Validates GAP service attribute handle against registered table. | 0 callers / 0 callees |
+| `0x600aad90` | 156 | GAP Manager | **`gap_set_attrib_value`** — Attribute value mutator for GAP characteristics: Name (`0x2a00`), Appearance (`0x2a01`), PPCP (`0x2a04`), CAR (`0x2aa6`). | 2 callers / 2 callees |
+| `0x600aae30` | 182 | GAP Manager | **`gap_read_attr_value`** — Dispatches GATT read request for GAP service characteristics. | 2 callers / 6 callees |
+| `0x600aaeec` | 70 | GAP Manager | **`gap_is_device_connected`** — Checks whether target BD_ADDR has an active GAP connection. | 1 caller / 2 callees |
+| `0x600aaf38` | 152 | GAP Manager | **`gap_process_gatt_operation_comp`** — Dispatches GATT client operation completion callback. | 1 caller / 2 callees |
+| `0x600aafd4` | 78 | GAP Manager | **`gap_map_gatt_status`** — Translates internal GAP return codes to standard GATT status codes. | 1 caller / 0 callees |
+| `0x600b0718` | 18 | HCIC Command | **`btsnd_hcic_reset_all_params`** — Memsets HCI control block `DAT_600b072c` (81 bytes = 0x51). | 1 caller / 1 callee |
+| `0x600b076c` | 178 | HCIC Command | **`btm_ble_read_resolving_list_entry`** — Evaluates 10-entry resolving list state and triggers scan/adv parameter updates. | 1 caller / 3 callees |
+| `0x600b4e8a` | 54 | HCIC Command | **`btsnd_hcic_ble_set_adv_param_tail`** — Serializes trailing adv parameter bytes and dispatches HCI command. | 1 caller / 1 callee |
+| `0x600b4ec2` | 2 | HCIC Command | **`l2c_set_local_mtu_stub`** — 2-byte entry stub to `l2c_set_local_mtu`. | 1 caller / 0 callees |
+| `0x600b4ec4` | 12 | HCIC Command | **`l2c_set_local_mtu_veneer`** — 12-byte entry veneer to `l2c_set_local_mtu`. | 1 caller / 0 callees |
+| `0x600b4ed0` | 96 | HCIC / L2CAP Glue | **`l2c_set_local_mtu`** — Configures local MTU in CCB (`+0x14`) or global default (`DAT_600b4f30 + 0xea0`). | 1 caller / 1 callee |
+| `0x600b4f34` | 166 | HCIC / L2CAP Glue | **`l2c_link_update_conn_params`** — Updates BLE link connection latency/supervision timeout parameters. | 2 callers / 3 callees |
+| `0x600b4fe4` | 44 | HCIC Command | **`btsnd_hcic_set_power_mode`** — Accessor/mutator for global link policy power mode (`DAT_600b5010`). | 1 caller / 0 callees |
+| `0x600b5018` | 94 | L2CAP Link | **`l2c_link_sec_comp`** — L2CAP link security completion mode flags updater. | 1 caller / 0 callees |
+| `0x600b507c` | 78 | L2CAP Link | **`l2c_link_check_security`** — Evaluates L2CAP channel security requirements against active link state. | 1 caller / 0 callees |
+| `0x600b542c` | 162 | L2CAP Link | **`l2c_ble_link_sec_comp`** — BLE link security completion event router to active CCBs. | 2 callers / 2 callees |
+| `0x600b54d4` | 102 | L2CAP Link | **`l2c_ble_create_conn`** — Triggers lower-layer BLE connection creation. | 3 callers / 6 callees |
+| `0x600b56aa` | 106 | L2CAP Link | **`l2c_link_hci_disc_comp_tail`** — HCI disconnect completion tail cleanup handler. | 1 caller / 4 callees |
+| `0x600b5bc0` | 68 | L2CAP Link | **`l2c_link_set_idle_timeout`** — Configures L2CAP link idle timeout counter. | 1 caller / 0 callees |
+| `0x600b5dd0` | 38 | L2CAP CSM | **`l2c_csm_start_quick_timer`** — Starts 2-tick quick timer for active CSM state transition. | 1 caller / 1 callee |
+| `0x600b5e00` | 164 | L2CAP CSM | **`l2c_csm_execute`** — **Central L2CAP Channel State Machine Dispatcher** (9 states -> 9 handlers). | 18 callers / 9 callees |
+| `0x600b643a` | 76 | L2CAP CSM | **`l2c_csm_start_config_timer`** — Starts 60-second configuration timer (`0x3c`) for CCB. | 1 caller / 2 callees |
+| `0x600b720c` | 186 | L2CAP FCR | **`l2c_fcr_adj_monitor_retransmit_timeout`** — Calculates FCR monitor and retransmission timeout intervals. | 3 callers / 2 callees |
+| `0x600b72cc` | 36 | L2CAP FCR | **`l2c_fcr_tx_window_advance`** — Advances FCR transmit sliding window sequence counters. | 2 callers / 0 callees |
+| `0x600b72f0` | 38 | L2CAP FCR | **`l2c_fcr_check_tx_ack`** — Validates acknowledgement sequence number against transmit window. | 1 caller / 0 callees |
+| `0x600b731c` | 84 | L2CAP FCR | **`l2c_fcr_chk_resend_s_frames`** — Checks for unacknowledged supervisory S-frames and triggers retransmit. | 5 callers / 1 callee |
+| `0x600b7374` | 178 | L2CAP FCR | **`l2c_fcr_free_retrans_q`** — Drains and frees all buffers in FCR retransmission queue. | 1 caller / 5 callees |
+| `0x600b7c94` | 38 | L2CAP FCR | **`l2c_fcr_set_fcr_options`** — Sets FCR channel configuration bitmask and window sizes. | 1 caller / 0 callees |
+| `0x600b85c6` | 24 | L2CAP FCR | **`l2c_fcr_update_rx_seq`** — Updates expected receive sequence number in CCB (`+0xb4`). | 1 caller / 1 callee |
+| `0x600b932c` | 38 | L2CAP Link | **`l2c_set_non_flushable_pbf`** — Configures non-flushable packet boundary flag on ACL links. | 1 caller / 0 callees |
+| `0x600b9358` | 168 | L2CAP Link | **`l2c_link_send_to_lower`** — Formats ACL data header and routes packet buffer to BTU task. | 2 callers / 3 callees |
+| `0x600bb15c` | 146 | L2CAP PDU | **`l2cu_process_pending_commands`** — Flushes pending L2CAP signaling command queue. | 2 callers / 6 callees |
+| `0x600bb2ac` | 96 | L2CAP PDU | **`l2cu_free_lcb`** — Releases link control block and terminates associated channel timers. | 1 caller / 4 callees |
+| `0x600bb3b4` | 146 | L2CAP PDU | **`l2cu_disconnect_ccb`** — Initiates disconnect sequence for channel control block. | 1 caller / 3 callees |
+| `0x600bb6dc` | 94 | L2CAP PDU | **`l2cu_find_lcb_by_bd_addr`** — Searches 4-entry LCB table (stride 164B) by 6-byte BD_ADDR. | 26 callers / 1 callee |
+| `0x600bb740` | 26 | L2CAP PDU | **`l2cu_get_num_links`** — Returns count of active L2CAP physical links (`DAT_600bb75c + 0xe9c`). | 1 caller / 0 callees |
+| `0x600bb760` | 62 | L2CAP PDU | **`l2cu_reject_connection`** — Formats and transmits L2CAP Connection Reject signaling packet. | 1 caller / 1 callee |
+| `0x600bb8f8` | 8 | L2CAP PDU | **`l2cu_no_op_return`** — No-op stub returning input register. | 2 callers / 0 callees |
+| `0x600bb904` | 2 | L2CAP PDU | **`l2cu_reassemble_pdu`** — Basic-mode PDU reassembly entry stub. | 1 caller / 0 callees |
+| `0x600bbb2c` | 200 | L2CAP PDU | **`l2cu_allocate_ccb`** — Allocates new CCB, assigns dynamic local CID (`0x0040`–`0x007f`). | 1 caller / 4 callees |
+| `0x600bc158` | 76 | L2CAP PDU | **`l2cu_find_ccb_by_local_cid`** — Look up CCB by local channel ID (CID). | 1 caller / 0 callees |
+| `0x600bc1a8` | 74 | L2CAP PDU | **`l2cu_find_ccb_by_remote_cid`** — Look up CCB by peer/remote channel ID (CID). | 3 callers / 0 callees |
+| `0x600bc1f8` | 162 | L2CAP PDU | **`l2cu_copy_config_params`** — Copies L2CAP configuration parameter structure into CCB. | 1 caller / 0 callees |
+| `0x600bc424` | 82 | L2CAP PDU | **`l2cu_init_lcb_pool`** — Initializes 4-entry L2CAP link control block table. | 1 caller / 1 callee |
+| `0x600bc574` | 76 | L2CAP PDU | **`l2cu_check_link_congestion`** — Evaluates link buffer congestion status. | 1 caller / 0 callees |
+| `0x600bc710` | 74 | L2CAP PDU | **`l2cu_find_lcb_by_handle`** — Looks up LCB matching 16-bit HCI connection handle. | 1 caller / 0 callees |
+| `0x600bc760` | 130 | L2CAP PDU | **`l2cu_allocate_lcb`** — Allocates free LCB slot and initializes link state fields. | 1 caller / 0 callees |
+| `0x600bc7e8` | 52 | L2CAP PDU | **`l2cu_release_lcb`** — Frees link control block and returns it to pool. | 4 callers / 1 callee |
+| `0x600bc81c` | 24 | L2CAP PDU | **`l2cu_csm_broadcast_event`** — Iterates all open CCBs and feeds broadcast event to `l2c_csm_execute`. | 1 caller / 1 callee |
+| `0x600bc994` | 80 | L2CAP PDU | **`l2cu_process_fixed_chnl`** — Dispatches fixed-channel PDU (ATT CID 4 / SMP CID 6) to registered receiver. | 3 callers / 0 callees |
+| `0x600bcbe0` | 74 | L2CAP PDU | **`l2cu_find_ccb_by_cid`** — CCB lookup helper across CID range. | 9 callers / 0 callees |
+| `0x600bcc30` | 116 | L2CAP PDU | **`l2cu_find_ccb_by_handle_and_cid`** — Composite lookup matching HCI handle and local CID. | 9 callers / 0 callees |
+| `0x600bd118` | 48 | SDP Server | **`sdp_set_max_attr_list_size`** — Accessor/mutator for SDP max attribute list size (`DAT_600bd148 + 0x380`). | 1 caller / 0 callees |
+| `0x600bd484` | 48 | SDP Server | **`sdp_set_server_mtu`** — Accessor/mutator for SDP server MTU (`DAT_600bd4b4 + 0xf94`). | 1 caller / 0 callees |
+| `0x600bd5fc` | 86 | SDP Database | **`sdp_db_find_record`** — Searches SDP service database (stride 460B) matching 32-bit service record handle. | 1 caller / 0 callees |
+| `0x600bde90` | 168 | SDP Client | **`sdp_conn_originate`** — Allocates SDP CCB and initiates L2CAP channel connection to peer SDP server. | 0 callers / 4 callees |
+| `0x600be060` | 154 | SDP Client | **`sdp_conn_timeout`** — Manages SDP transaction watchdog timer (30s = `0x1e`) and connection response. | 0 callers / 4 callees |
+| `0x600bf2d8` | 74 | SDP Utils | **`sdpu_find_ccb_by_cid`** — Searches 3-entry SDP CCB table (stride 60B) matching L2CAP CID at `+0x22`. | 4 callers / 0 callees |
+| `0x600bf328` | 72 | SDP Utils | **`sdpu_allocate_ccb`** — Allocates unused SDP CCB slot and clears control block. | 1 caller / 1 callee |
+| `0x600bfb4c` | 14 | SDP Codec | **`sdpu_get_len_from_type`** — Spec-verified SDP Data Element Sequence (DES) length header decoder. | 1 caller / 0 callees |
+| `0x600bfb5a` | 8 | SDP Codec | **`sdpu_extract_attr_seq_len`** — DES attribute sequence length parser helper. | 1 caller / 0 callees |
+| `0x600bfb62` | 174 | SDP Codec | **`sdpu_process_attribute_rsp`** — Attribute response PDU parser jump table dispatcher. | 1 caller / 0 callees |
+| `0x600bfe2c` | 126 | SDP Codec | **`sdpu_calculate_attr_size`** — Computes total wire bytes (header + payload) for given DES attribute. | 4 callers / 0 callees |
+| `0x600bff84` | 94 | SDP Utils | **`sdpu_cb_event_dispatcher`** — Dispatches SDP connection callback through 4-entry table at `DAT_600bffe4`. | 1 caller / 0 callees |
+| `0x600c0114` | 142 | SMP PDU | **`smp_send_pairing_req`** — Serializes and sends SMP Pairing Request / Response PDU (Opcode `0x01`/`0x02`). | 0 callers / 2 callees |
+| `0x600c01b8` | 200 | SMP PDU | **`smp_send_confirm`** — Serializes and sends SMP Pairing Confirm PDU (Opcode `0x03`, 16-byte confirm). | 0 callers / 2 callees |
+| `0x600c03d8` | 82 | SMP PDU | **`smp_send_rand`** — Serializes and sends SMP Pairing Random PDU (Opcode `0x04`, 16-byte rand). | 0 callers / 2 callees |
+| `0x600c0434` | 132 | SMP PDU | **`smp_send_pairing_failed`** — Serializes and sends SMP Pairing Failed PDU (Opcode `0x05`, 1-byte reason). | 0 callers / 2 callees |
+| `0x600c04c4` | 42 | SMP PDU | **`smp_send_encryption_info`** — Serializes and sends SMP Encryption Information PDU (Opcode `0x06`, LTK). | 0 callers / 1 callee |
+| `0x600c0524` | 44 | SMP PDU | **`smp_send_master_id`** — Serializes and sends SMP Master Identification PDU (Opcode `0x07`, EDIV/Rand). | 0 callers / 1 callee |
+| `0x600c0558` | 28 | SMP PDU | **`smp_send_identity_info`** — Serializes and sends SMP Identity Information PDU (Opcode `0x08`, IRK). | 0 callers / 1 callee |
+| `0x600c0578` | 104 | SMP PDU | **`smp_send_id_addr_info`** — Serializes and sends SMP Identity Address Information PDU (Opcode `0x09`). | 0 callers / 3 callees |
+| `0x600c05e4` | 86 | SMP PDU | **`smp_send_signing_info`** — Serializes and sends SMP Signing Information PDU (Opcode `0x0a`, CSRK). | 0 callers / 2 callees |
+| `0x600c0640` | 78 | SMP PDU | **`smp_send_security_req`** — Serializes and sends SMP Security Request PDU (Opcode `0x0b`). | 0 callers / 1 callee |
+| `0x600c0698` | 154 | SMP PDU | **`smp_send_pair_public_key`** — Serializes and sends SMP SC Public Key PDU (Opcode `0x0c`, 64-byte key). | 0 callers / 4 callees |
+| `0x600c073c` | 114 | SMP PDU | **`smp_send_pair_dhkey_check`** — Serializes and sends SMP SC DHKey Check PDU (Opcode `0x0d`, 16-byte check). | 0 callers / 2 callees |
+| `0x600c07b4` | 40 | SMP Utils | **`smp_free_pdu_buffer`** — Releases SMP PDU buffer to GKI allocator (`FUN_6006ddd8`). | 2 callers / 1 callee |
+| `0x600c08c4` | 104 | SMP Utils | **`smp_set_key_distribution`** — Calculates initiator/responder key distribution bitmasks. | 1 caller / 1 callee |
+| `0x600c0930` | 176 | SMP Crypto | **`smp_derive_link_key`** — Cross-transport key derivation helper (BR/EDR link key <-> LE LTK). | 0 callers / 1 callee |
+| `0x600c0c84` | 44 | SMP FSM | **`smp_set_state_phase2_dhkey`** — SMP state transition to Phase 2 DHKey computation (sub-state 6). | 2 callers / 2 callees |
+| `0x600c0cb4` | 108 | SMP Crypto | **`smp_generate_passkey`** — Calculates 6-digit numeric comparison passkey (0 to 999999 / `0xF423F`). | 1 caller / 1 callee |
+| `0x600c0d20` | 28 | SMP Crypto | **`smp_pack_passkey_u32`** — Serializes 32-bit passkey value into 4 little-endian wire bytes. | 1 caller / 0 callees |
+| `0x600c0d3c` | 112 | SMP Crypto | **`smp_pack_passkey_u32_alt`** — Alternative passkey packing entry point. | 1 caller / 1 callee |
+| `0x600c0db4` | 44 | SMP FSM | **`smp_set_state_phase2_confirm`** — SMP state transition to Phase 2 confirm wait (sub-state 7). | 1 caller / 2 callees |
+| `0x600c0de4` | 44 | SMP FSM | **`smp_set_state_phase2_rand`** — SMP state transition to Phase 2 random wait (sub-state 8). | 2 callers / 2 callees |
+| `0x600c0e14` | 98 | SMP Crypto | **`smp_compute_aes_cmac_f4`** — Wrapper for AES-CMAC confirmation calculation `f4` (`FUN_600f0ac8`). | 0 callers / 5 callees |
+| `0x600c0e7c` | 84 | SMP Crypto | **`smp_compute_aes_cmac_f5`** — Wrapper for AES-CMAC key generation calculation `f5`. | 0 callers / 4 callees |
+| `0x600c0ed4` | 44 | SMP FSM | **`smp_set_state_phase2_check`** — SMP state transition to DHKey check wait (sub-state 5). | 1 caller / 2 callees |
+| `0x600c0f04` | 44 | SMP FSM | **`smp_set_state_phase2_ltk`** — SMP state transition to LTK calculation (sub-state 9). | 0 callers / 2 callees |
+| `0x600c10a4` | 156 | SMP Crypto | **`smp_sc_compute_confirm`** — Computes LE Secure Connections confirmation value (`FUN_600fc542`). | 1 caller / 2 callees |
+| `0x600c1158` | 80 | SMP Crypto | **`smp_sc_compute_dhkey_check`** — Computes LE Secure Connections DHKey check value. | 1 caller / 2 callees |
+| `0x600c11bc` | 40 | SMP Crypto | **`smp_sc_compute_dhkey_check_alt`** — DHKey check calculation trailing helper. | 1 caller / 1 callee |
+| `0x600c1204` | 166 | SMP Crypto | **`smp_sc_compute_numeric_compare`** — Derives 6-digit user confirmation code from DHKey and nonces (`f6`). | 0 callers / 2 callees |
+| `0x600c13e8` | 168 | SMP Crypto | **`smp_aes_cmac_kdf`** — AES-CMAC based Key Derivation Function (KDF) for LE Secure Connections. | 1 caller / 2 callees |
+| `0x600c1494` | 176 | SMP Crypto | **`smp_aes_cmac_hash`** — Generates 128-bit AES-CMAC cryptographic hash block. | 1 caller / 1 callee |
+| `0x600c1548` | 42 | SMP FSM | **`smp_set_state_phase3_enc`** — SMP state transition to Phase 3 link encryption start (sub-state 13). | 3 callers / 2 callees |
+| `0x600c1578` | 42 | SMP FSM | **`smp_set_state_phase3_done`** — SMP state transition to Phase 3 completion (sub-state 14). | 2 callers / 2 callees |
+| `0x600c1738` | 68 | SMP Timer | **`smp_start_auth_timer`** — Starts 30-second SMP transaction watchdog timer (`0x1e`). | 0 callers / 1 callee |
+| `0x600c1988` | 102 | SMP Timer | **`smp_proc_timer_expiry`** — SMP timer expiry callback; aborts pairing on timeout. | 0 callers / 1 callee |
+| `0x600c19f4` | 36 | SMP Config | **`smp_set_pairing_security_mode`** — Sets SMP pairing mode / security level (`DAT_600c1a18 + 0x23`). | 5 callers / 0 callees |
+| `0x600c1a1c` | 20 | SMP Config | **`smp_get_pairing_security_mode`** — Returns current SMP pairing security level (`DAT_600c1a30 + 0x23`). | 1 caller / 0 callees |
+| `0x600c1b20` | 78 | SMP Utils | **`smp_check_ltk_valid`** — Validates LTK encryption key size and key material integrity. | 2 callers / 1 callee |
+| `0x600c1b74` | 138 | SMP FSM | **`smp_dispatch_sm_event`** — Routes SMP events to `smp_sm_event` with 30s timeout guard (`FUN_600aa340`). | 12 callers / 4 callees |
+| `0x600c1c04` | 38 | SMP FSM | **`smp_send_timeout_event`** — Emits timeout event `0x16` to `smp_sm_event`. | 0 callers / 1 callee |
+| `0x600c229c` | 98 | SMP Crypto | **`smp_sc_store_peer_dhkey_check`** — Stores peer DHKey check record in SMP control block. | 1 caller / 1 callee |
+| `0x600c2304` | 86 | SMP Config | **`smp_get_auth_req_flags`** — Extracts and validates AuthReq bitmask (MITM, SC, Keypress, Bonding). | 7 callers / 0 callees |
+| `0x600c25ac` | 80 | SMP Crypto | **`smp_validate_pairing_confirm`** — Verifies received pairing confirm value against expected hash (`memcmp`). | 1 caller / 3 callees |
+| `0x600c7048` | 94 | BTA DM | **`bta_dm_check_device_acl`** — Checks device ACL link state and security encryption level. | 2 callers / 2 callees |
+| `0x600c70ac` | 58 | BTA DM | **`bta_dm_get_device_type`** — Returns device Bluetooth type (BR/EDR, BLE, or Dual-mode). | 2 callers / 0 callees |
+| `0x600c70ec` | 58 | BTA DM | **`bta_dm_get_device_features`** — Returns device supported feature bitmask. | 2 callers / 0 callees |
+| `0x600c712c` | 58 | BTA DM | **`bta_dm_get_device_security`** — Returns device security flags record. | 2 callers / 0 callees |
+| `0x600c716c` | 58 | BTA DM | **`bta_dm_get_device_cod`** — Returns 24-bit Class of Device (CoD) descriptor. | 2 callers / 0 callees |
+| `0x600c73e0` | 58 | BTA DM | **`bta_dm_get_device_rssi`** — Returns last recorded link RSSI value. | 2 callers / 0 callees |
+| `0x600c7420` | 58 | BTA DM | **`bta_dm_get_device_tx_power`** — Returns device transmit power level descriptor. | 2 callers / 0 callees |
+| `0x600c7460` | 58 | BTA DM | **`bta_dm_get_device_conn_state`** — Returns active connection state flag. | 2 callers / 0 callees |
+| `0x600c7878` | 106 | BTA GATTC | **`bta_gattc_send_open_evt`** — Formats GATTC open connection event message and queues to GKI. | 2 callers / 1 callee |
+| `0x600c78e8` | 114 | BTA GATTC | **`bta_gattc_send_close_evt`** — Formats GATTC close connection event message and queues to GKI. | 2 callers / 1 callee |
+| `0x600c7960` | 128 | BTA GATTC | **`bta_gattc_send_search_evt`** — Formats GATTC service search event message. | 1 caller / 1 callee |
+| `0x600c79e4` | 194 | BTA GATTC | **`bta_gattc_send_read_evt`** — Formats GATTC read characteristic value event message. | 1 caller / 2 callees |
+| `0x600c7bac` | 182 | BTA GATTC | **`bta_gattc_send_write_evt`** — Formats GATTC write characteristic value event message. | 1 caller / 1 callee |
+| `0x600c7c68` | 166 | BTA GATTS | **`bta_gatts_send_rsp_evt`** — Formats GATTS response event message and queues to GKI. | 1 caller / 1 callee |
+| `0x600c7d14` | 74 | BTA GATTS | **`bta_gatts_send_close_evt`** — Formats GATTS connection close event message. | 2 callers / 1 callee |
+| `0x600c7eb8` | 156 | BTA SYS | **`bta_sys_dispatch_event`** — Routes BTA subsystem events across BTA SYS event bus. | 5 callers / 5 callees |
+| `0x600c89e0` | 106 | EC Math | **`ec_point_double_jacobian`** — NIST P-256 / P-192 Jacobian projective coordinate point doubling (\(2P\)). | 2 callers / 3 callees |
+| `0x600c8a54` | 110 | EC Math | **`ec_point_add_jacobian`** — NIST P-256 / P-192 Jacobian projective coordinate point addition (\(P + Q\)). | 1 caller / 3 callees |
+| `0x600c8acc` | 80 | EC Math | **`ec_point_affine_to_jacobian`** — Affine \((x, y)\) to Jacobian \((X, Y, 1)\) coordinate conversion. | 3 callers / 2 callees |
+
