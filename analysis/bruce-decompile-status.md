@@ -2,7 +2,7 @@
 
 Data-driven status doc for the "decompile all of `bruce` to source-reconstruction quality" effort. Regenerate the numbers here whenever `bruce_functions.csv`, `bruce_srcmap.csv`, or `analysis/decomp/` change materially — don't hand-edit stale tables into new prose, just re-run the join described in [Methodology](#methodology) below.
 
-**Snapshot: 2026-08-17 (full regeneration, session 24 / Wave 1).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a single `analysis/decomp/` directory listing taken at the conclusion of Wave 1 (1664 decomp files, 1522 in-census). Decompiled census functions grew from 1,006 to **1522** (+516 functions, +51,124 bytes), and fully decompiled attributed source files grew from 67 to **80 of 139**.
+**Snapshot: 2026-08-17 (full regeneration, session 31 / Wave 1).** ⚠️ *(corrected, QA session 31 — the prior version of this line described a session-24-era delta, "grew from 1,006... attributed source files grew from 67 to 80 of 139," which is stale history unrelated to this regeneration; attributed source files have been 139 of 139 fully decompiled since session 28's milestone, unchanged this wave.)* Every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a `analysis/decomp/` directory listing taken at the conclusion of session 31 (1664 decomp files, 1522 in-census). Decompiled census functions grew from 1,496 (session 30) to **1522** (+26 functions, +1,750 bytes) — the wave itself added 28 functions / 1,978 bytes (per each decomp file's own header), but 2 of them (`0x600ee18a`, `0x600925bc`, the session 30 GHIDRA-TODO resolutions) aren't yet reflected in `bruce_functions.csv` (not regenerated this wave — GHIDRA-TODO) and are excluded from this census-relative join per this doc's own methodology (§Methodology, note 2).
 
 ## 1. Top-line stats
 
@@ -189,7 +189,7 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 
 | # | Start | End | Span (B) | Code bytes | Funcs | Already decompiled | Density | Largest function in range |
 |---:|---|---|---:|---:|---:|---:|---:|---|
-| 1★ | `0x600921b8` | `0x600c9cc4` | 228108 | 204449 | 1076 | 490 | 89.6% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |
+| 1★ | `0x600921b8` | `0x600c9cc4` | 228108 | 204449 | 1076 | 886 | 90.5% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |
 | 2† | `0x600ecb72` | `0x6013d4e4` | 330098 | 95117 | 1006 | 14 | 28.8% | `FUN_601054dc` (2546B @ `601054dc`) |
 | 3† | `0x600df286` | `0x600ea868` | 46562 | 44326 | 316 | 15 | 95.2% | `FUN_600e398a` (6270B @ `600e398a`) |
 | 4† | `0x600cc6e4` | `0x600d4560` | 32380 | 24998 | 304 | 35 | 77.2% | `FUN_600ccfb4` (1568B @ `600ccfb4`) |
@@ -203,6 +203,8 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 | 12 | `0x6007b96c` | `0x6007e69c` | 11568 | 9552 | 53 | 0 | 82.6% | `FUN_6007d144` (980B @ `6007d144`) |
 | 13 | `0x60052294` | `0x60054a46` | 10162 | 8254 | 99 | 3 | 81.2% | `FUN_600526a0` (472B @ `600526a0`) |
 | 14 | `0x60072260` | `0x60073b7c` | 6428 | 6400 | 3 | 2 | 99.6% | `FUN_600723b4` (6088B @ `600723b4`) |
+
+*(Row 1★'s "Already decompiled" / "Density" corrected, QA session 31 — the prior values (490 / 89.6%) were a stale pre-session-29 snapshot, inconsistent within this very regeneration with §1a's own freshly-computed 886 / 90.5% for the same BTA/BTE-block metric. When regenerating this table, recompute every row fresh; don't carry a value forward from an older doc/section without re-deriving it.)*
 | 15 | `0x6006c35c` | `0x6006e480` | 8484 | 5784 | 53 | 0 | 68.2% | `FUN_6006d998` (712B @ `6006d998`) |
 
 ## 4. The honest bottom line

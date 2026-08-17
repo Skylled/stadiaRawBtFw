@@ -1329,9 +1329,9 @@ The device discovery and configuration pipeline controls Bluetooth visibility:
 | `0x6009ff18` | 130 | BTM / Config | ~~**`BTM_ReadClassOfDevice`** — Reads 24-bit local Class of Device from local BTM control block.~~ ⚠️ **60 real callers / 2 real callees** (not the claimed 30/62). Loops the same 8-record array doing a 6-byte memcmp of `param_1` against two BD_ADDR-sized fields — a generic "find device record by BD_ADDR" lookup (explaining the huge fan-in), not a Class-of-Device reader. Not `BTM_ReadClassOfDevice`. *(corrected, QA)* | 60 callers / 2 callees *(QA-verified)* |
 | `0x6009ffa0` | 186 | BTM / Config | ~~**`BTM_WriteLocalDeviceName`** — Writes local Bluetooth device name string via HCI Write Local Name (`0x0c13`).~~ ⚠️ Scans the same 8-record array for the entry with the **smallest** value in a priority/LRU field — an LRU/least-priority slot-eviction scan. No name string, no length, no HCI `0x0c13`. Not `BTM_WriteLocalDeviceName`. *(corrected, QA)* | 1 caller / 0 callees *(QA-verified)* |
 
-## Session 31 (Wave 1) — BTM Startup, Device Reset & Command Complete State Machine (28 functions, 2,007 bytes)
+## Session 31 (Wave 1) — BTM Startup, Device Reset & Command Complete State Machine (28 functions, 1,978 bytes)
 
-Decompiled and documented 28 functions (2,007 bytes): resolved the two Session 30 `GHIDRA-TODO` items (reconstructed tail targets `0x600ee18a` and `0x600925bc`, corrected thunk stub boundaries for `0x600926a0` and `0x600926b8`), plus the complete BTM controller startup, device reset, and HCI command-complete sequence (`0x600a0060`–`0x600a0804`).
+Decompiled and documented 28 functions (1,978 bytes, not the 2,007 originally stated here — corrected, QA session 31: summing each decomp file's own `size=` header gives 1,978, a 29-byte hand-count slip in the original write-up; every individual function's byte count in the table below was independently checked and is correct, only the headline total was off): resolved the two Session 30 `GHIDRA-TODO` items (reconstructed tail targets `0x600ee18a` and `0x600925bc`, corrected thunk stub boundaries for `0x600926a0` and `0x600926b8`), plus the complete BTM controller startup, device reset, and HCI command-complete sequence (`0x600a0060`–`0x600a0804`, 26 functions, 1,750 bytes).
 
 ### 1. GHIDRA-TODO Boundary and Tail-Target Resolutions
 
