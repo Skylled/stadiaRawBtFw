@@ -1399,4 +1399,28 @@ Decompiled and documented 18 functions (1,382 bytes across `0x600a0cac`–`0x600
 | `0x600a1340` |  16 | BTM / Config | **`BTM_ReadDeviceClass`** — Returns local 24-bit Class of Device value (`DAT_600a1350`). | 1 caller / 0 callees |
 | `0x600a1354` |  16 | BTM / Config | **`BTM_GetHciHandle`** — Returns HCI handle table pointer / base handle (`DAT_600a1364`). | 6 callers / 0 callees |
 
+## Session 33 (Wave 3) — BTM Vendor-Specific Events, Radio Diagnostics & Inquiry Management (16 functions, 1,702 bytes)
+
+Decompiled and documented 16 functions (1,702 bytes across `0x600a13f0`–`0x600a1efc`): Vendor Specific Event dispatchers, radio power/RSSI diagnostics, inquiry timeout & cancel operations, and resolving list handlers:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600a13f0` | 156 | BTM / VSE | **`BTM_RegisterForVSEvents`** — 3-slot vendor-specific event callback registrar (`btm_cb + 0x6f4 + slot*4`). If `param_2 != 0`, registers `param_1` into an empty slot; if `param_2 == 0`, clears slot matching `param_1`. | 1 caller / 0 callees |
+| `0x600a1490` |  78 | BTM / VSE | **`btm_vendor_specific_evt`** — Vendor Specific Event dispatcher called by top-level HCI event dispatcher `FUN_600a89f0` on event `0xff`. Iterates 3 slots and invokes `(*cback)(param_2, param_1)`. | 1 caller / 0 callees |
+| `0x600a14e4` | 118 | BTM / Config | **`BTM_SetAfhChannelAssessment`** — Stack bring-up filter configuration: configures event filter via `FUN_600b3240` (`btsnd_hcic_set_event_filter`, HCI `0x0c05`), sets inquiry scan (`0x600a1d3c`), sets page scan (`0x600a1900`), writes link timeout (`0x600b30ac`), and configures AFH assessment via `FUN_600b4b8c` (`btsnd_hcic_write_afh_channel_assessment`). | 1 caller / 5 callees |
+| `0x600a1560` |  82 | BTM / Radio | **`BTM_ReadTxPower`** — Registers completion callback into `btm_cb+0x700` and issues HCI Read Tx Power Level via `FUN_600b3418`. | 2 callers / 1 callee |
+| `0x600a15b8` | 140 | BTM / Complete | **`btm_read_tx_power_complete`** — Handles HCI Read Tx Power Level complete (`0x0c2d`): formats event struct `{event=2, status, handle, tx_power}` and invokes callback `btm_cb+0x700`. | 1 caller / 0 callees |
+| `0x600a1648` |  76 | BTM / Complete | **`btm_read_rssi_complete`** — Handles HCI Read RSSI complete (`0x1405`): formats event struct `{event=3, status, rssi}` and invokes callback `btm_cb+0x700`. | 1 caller / 0 callees |
+| `0x600a1698` |  94 | BTM / Complete | **`btm_read_link_quality_complete`** — Handles HCI Read Link Quality complete (`0x1403`): formats event struct `{event=4, status, link_quality}` and invokes callback `btm_cb+0x700`. | 1 caller / 0 callees |
+| `0x600a16fc` | 192 | BTM / Complete | **`btm_ble_read_resolving_list_complete`** — Handles LE Read Resolving List / RPA complete: reverses 6-byte BD_ADDR and 16-byte IRK arrays for each entry and dispatches to registered callback `btm_cb+0x700`. | 1 caller / 0 callees |
+| `0x600a17c0` |  40 | BTM / Complete | **`btm_notify_inquiry_filter_complete`** — Invokes registered inquiry filter completion callback at `btm_cb+0x6f0`. | 2 callers / 0 callees |
+| `0x600a1b68` | 110 | BTM / Config | **`BTM_SetPageTimeout`** — Validates `param_1` (0 or 1), verifies controller support in `btm_cb+0x816 & 0x10`, checks `BTM_IsDeviceUp` (`0x600a01a0`), and sends HCI Write Default Link Policy via `FUN_600b4c70` (HCI `0x0c43`). | 1 caller / 2 callees |
+| `0x600a1bdc` | 110 | BTM / Config | **`BTM_SetInquiryTimeout`** — Validates `param_1` (0 or 1), verifies controller support in `btm_cb+0x816 & 0x20`, checks `BTM_IsDeviceUp`, and sends HCI Write Page Scan Type via `FUN_600b4d58` (HCI `0x0c47`). | 1 caller / 2 callees |
+| `0x600a1c50` |  86 | BTM / Config | **`BTM_SetErroneousDataReporting`** — Validates `param_1` (0 or 1), verifies support in `btm_cb+0x816 & 0x40`, checks `BTM_IsDeviceUp`, and sends HCI Write Inquiry Mode via `FUN_600b4ce4` (HCI `0x0c45`). | 1 caller / 2 callees |
+| `0x600a1cac` | 134 | BTM / Inquiry | **`BTM_CancelInquiry`** — Checks `BTM_IsDeviceUp`, verifies inquiry active (`btm_cb+0x1112 & 8 != 0`), clears inquiry state bits, sends HCI Inquiry Cancel via `FUN_600b203c` (`btsnd_hcic_inquiry_cancel`, HCI `0x0402`), and increments sequence counter `+0x44`. | 1 caller / 2 callees |
+| `0x600a1e9c` |  60 | BTM / Inquiry | **`BTM_ReadInquiryScanActivity`** — Returns inquiry scan window (`btm_cb+0xb14`), interval (`btm_cb+0xb16`), and type (`btm_cb+0xb12`). | 1 caller / 0 callees |
+| `0x600a1edc` |  26 | BTM / Inquiry | **`BTM_IsInquiryActive`** — Returns inquiry active status byte `*(btm_cb + 0x1112)`. | 1 caller / 0 callees |
+| `0x600a1efc` | 200 | BTM / Inquiry | **`BTM_CancelPeriodicInquiry`** — Verifies `BTM_IsDeviceUp` and state byte `+0x61e`, stops inquiry filter/timer via `FUN_6009e70c()`, clears inquiry control block fields (`+0x61e=0, +0x61d=0, +0x38=0, +0x34=0`), increments sequence counter `+0x44`, and invokes `FUN_600a25f8()`. | 1 caller / 4 callees |
+
+
 
