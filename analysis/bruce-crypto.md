@@ -253,7 +253,7 @@ All five share the crypto stack's uniform `FUN_600e0552` (`ERR_put_error`-shaped
 | `bio__60084c90` | 46 | `bio.c` | `BIO_ctrl` | Dispatches control commands (`cmd`, `larg`, `parg`) to `method->ctrl` vtable slot. |
 | `ex_data__600919d4` | 160 | `ex_data.c` | `CRYPTO_free_ex_data` / `CRYPTO_cleanup_all_ex_data` | Thread-safe invocation of per-class `free_func` callbacks and reclamation of `CRYPTO_EX_DATA` vector. |
 | `buf__60090ef4` | 44 | `buf.c` | `BUF_MEM_new` | Allocates a 12-byte `BUF_MEM` expandable memory buffer (`length=0, data=NULL, max=0`). |
-| `buf__60090f24` | 78 | `buf.c` | `BUF_MEM_grow` | Reallocates `BUF_MEM` buffer with $4/3$ exponential growth factor and 4-byte alignment. |
+| `buf__60090f24` | 78 | `buf.c` | `BUF_MEM_grow` | Reallocates `BUF_MEM` buffer with $4/3$ exponential growth factor and 4-byte alignment; returns 1 on success, 0 on failure. |
 
 ### Detailed Function Breakdowns:
 
@@ -321,8 +321,8 @@ All five share the crypto stack's uniform `FUN_600e0552` (`ERR_put_error`-shaped
   - Initializes fields: `ret->length = 0`, `ret->data = NULL`, `ret->max = 0`.
   - **Caller:** `pem_lib__600861c0`.
 - **`buf__60090f24` (`BUF_MEM_grow`, 78B):**
-  - **Signature:** `size_t BUF_MEM_grow(BUF_MEM *str, size_t len)`
-  - If current capacity `str->max >= len`, returns `len` (success).
+  - **Signature:** `int BUF_MEM_grow(BUF_MEM *str, size_t len)`
+  - If current capacity `str->max >= len`, returns `1` (`kSuccess`).
   - Enforces integer overflow boundary: checks `len < 0xFFFFFFFD`.
   - Calculates geometric growth capacity:
     ```c
@@ -334,7 +334,73 @@ All five share the crypto stack's uniform `FUN_600e0552` (`ERR_put_error`-shaped
   - On allocation error or overflow, reports `ERR_put_error(ERR_LIB_BUF=7, 0, ERR_R_MALLOC_FAILURE=0x41, "buf.c", line=0x61/0x68/0x6E)` and returns `0`.
   - **Caller:** `FUN_600ece78`.
 
+### Session 23: BoringSSL ASN.1, Object, PEM, and DSA Helpers (Wave 5 Sweep)
+
+#### 1. ASN.1 Object Identifier Table (`obj.c`):
+- **`obj__60091c10` (`OBJ_nid2obj`, 102B):**
+  - **Signature:** `ASN1_OBJECT * OBJ_nid2obj(int nid)` in `crypto/obj/obj.c`.
+  - **Static NID Lookup:** If `nid <= 0x3C0` (960, matching BoringSSL's built-in `NUM_NID` = 961):
+    - Tests if `nid == 0` or `nid_objs[nid].nid != 0` (`*(int *)(nid * 0x18 + 0x6010E1C4 + 8) != 0`).
+    - Returns pointer to static `ASN1_OBJECT` in table `0x6010E1C4` (stride 24 bytes = `0x18`: `const char *sn; const char *ln; int nid; int length; const unsigned char *data; int flags;`).
+  - **Dynamic NID Table:** If `nid > 960`:
+    - Acquires ex_data / obj mutex `CRYPTO_MUTEX` at `0x20003C74` via `FUN_600e0c82`.
+    - If dynamic object hash table `*0x2002013C != NULL`: searches LHASH table via `FUN_600edbf4` with comparator callbacks `0x600EDC45` / `0x600EDC4D`.
+    - Releases mutex via `FUN_600e0c94`. If match found, returns dynamic `ASN1_OBJECT *`.
+  - **Error Path:** On unknown NID, calls `ERR_put_error(ERR_LIB_ASN1=8, 0, ASN1_R_UNKNOWN_NID=100, "obj.c", line=0x16B=363)` via `FUN_600e0552` and returns `NULL`.
+  - **Callers:** `FUN_600edc68`, `FUN_600e0d54`, `FUN_600ecabe`.
+
+#### 2. ASN.1 ANY DEFINED BY Template Resolution (`tasn_utl.c`):
+- **`tasn_utl__60090cbc` (`asn1_do_adb`, 100B):**
+  - **Signature:** `const ASN1_TEMPLATE * asn1_do_adb(ASN1_VALUE **pval, const ASN1_TEMPLATE *tt, int nullerr)` in `crypto/asn1/tasn_utl.c`.
+  - **Template Flag Check:** If `(tt->flags & ASN1_TFLG_ADB_MASK = 0x300) == 0`, returns `tt` unchanged.
+  - **Selector Extraction:** Reads `ASN1_ADB` descriptor pointer from `tt->item` (`param_2[4]`). Reads selector field at offset `adb->offset` from `*pval`.
+  - If selector value is 0: returns default template `adb->default_tt` (offset `+0x18`).
+  - **Type Resolution:**
+    - If `tt->flags & ASN1_TFLG_ADB_OID`: extracts NID via `OBJ_obj2nid` (`FUN_60091b94`).
+    - Otherwise: extracts integer tag via `ASN1_INTEGER_get` (`FUN_600ec514`).
+    - Iterates `adb->tbl` (count `adb->tblcount` at `+0x10`, entry stride 24 bytes):
+      - If `tbl[i].value == selector`: returns matching `&tbl[i].tt` (offset `+4`).
+    - Fallback: returns `adb->null_tt` (offset `+0x14`).
+  - **Error Handling:** If resulting template is `NULL` and `nullerr != 0`, calls `ERR_put_error(ERR_LIB_ASN1=12, 0, ASN1_R_UNSUPPORTED_ANY_DEFINED_BY_TYPE=0xBA, "tasn_utl.c", line=0x115=277)` via `FUN_600e0552`.
+  - **Callers:** `tasn_dec__6008fa18`, `FUN_600902e4`, `FUN_60090940`.
+
+#### 3. ECDSA DER Signature Decoding (`ecdsa_asn1.c`):
+- **`ecdsa_asn1__60084d34` (`ECDSA_SIG_from_bytes`, 92B):**
+  - **Signature:** `ECDSA_SIG * ECDSA_SIG_from_bytes(const uint8_t *in, size_t in_len)` in `crypto/fipsmodule/ecdsa/ecdsa_asn1.c`.
+  - **Container Allocation:** Creates new signature struct `sig = ECDSA_SIG_new()` (`FUN_600ea77a` — allocates 8-byte container with `BIGNUM *r, *s` limbs).
+  - **DER Sequence Parsing:**
+    - Initializes CBS parser with tag `0x20000010` (`CBS_ASN1_SEQUENCE`) via `FUN_600ed556`.
+    - Parses ASN.1 INTEGER `r`: `bn_asn1__60090dd8(&seq, sig->r)`.
+    - Parses ASN.1 INTEGER `s`: `bn_asn1__60090dd8(&seq, sig->s)`.
+    - Verifies no trailing garbage in sequence: `FUN_600ed39c(&seq)` (`CBS_len(&seq) == 0`).
+  - **Failure Cleanup:** If parsing fails, logs `ERR_put_error(ERR_LIB_ECDSA=0x1A=26, 0, ECDSA_R_BAD_SIGNATURE=100, "ecdsa_asn1.c", line=0xA2=162)` via `FUN_600e0552`, frees signature `ECDSA_SIG_free(sig)` (`FUN_600ea75c`), and returns `NULL`.
+  - Returns decoded `ECDSA_SIG *` on success.
+
+#### 4. Generic PEM ASN.1 Stream Reader (`pem_oth.c`):
+- **`pem_oth__600866c4` (`PEM_ASN1_read_bio`, 88B):**
+  - **Signature:** `void * PEM_ASN1_read_bio(d2i_of_void *d2i, const char *name, BIO *bp, void **x, pem_password_cb *cb, void *u)` in `crypto/pem/pem_oth.c`.
+  - **Base64 Decode:** Reads and decodes PEM container to DER buffer via `PEM_bytes_read_bio(&data, &len, NULL, name, bp, cb, u)` (`FUN_60086508`).
+  - **Deserialization:** If read succeeds, invokes the provided `d2i` deserializer function pointer: `(*d2i)(x, &p, len)`.
+  - If `d2i` fails: reports `ERR_put_error(ERR_LIB_PEM=9, 0, ERR_R_ASN1_LIB=0x0C, "pem_oth.c", line=0x54=84)` via `FUN_600e0552`.
+  - **Reclamation:** Always frees intermediate decoded DER buffer via `OPENSSL_free(data)` (`thunk_EXT_FUN_0000ac5e`).
+  - Returns deserialized object pointer.
+  - **Caller:** `FUN_60086720` (`PEM_ASN1_read`).
+
+#### 5. DSA Context Allocation & Lifecycle (`dsa.c`):
+- **`dsa__60091098` (`DSA_new_method`, 64B):**
+  - **Signature:** `DSA * DSA_new_method(const ENGINE *engine)` in `crypto/dsa/dsa.c`.
+  - **Memory Allocation:** Allocates 104-byte (`0x68`) `struct dsa_st` via `OPENSSL_malloc(0x68)` (`FUN_600e092c`).
+  - On allocation failure: reports `ERR_put_error(ERR_LIB_DSA=10, 0, ERR_R_MALLOC_FAILURE=0x41, "dsa.c", line=0x5D=93)` via `FUN_600e0552` and returns `NULL`.
+  - **Field Initialization:**
+    - Zeroes 104 bytes via `memset(dsa, 0, 0x68)` (`thunk_EXT_FUN_0000b5ba`).
+    - Sets initial reference counter: `dsa->references = 1` at offset `+0x60`.
+    - Initializes embedded mutex `CRYPTO_MUTEX` at offset `+0x20` via `FUN_600e0c4a`.
+    - Initializes generic extension data vector `CRYPTO_EX_DATA` at offset `+0x64` via `FUN_600edb24`.
+  - Returns initialized `DSA *` pointer.
+  - **Caller:** `FUN_60091160` (`DSA_new`).
+
 ## Related, unexplored
 - HAB4 boot signing is RSA-4096 (confirmed via the CSF block, see project memory) and lives in NXP's boot ROM, **not** in this image — so any RSA/EC code found in bruce itself would be an *application-layer* use, separate from secure boot.
 - ~~BoringSSL's X25519 (`p_x25519.c`...) shares the same field/point arithmetic core... not yet traced whether X25519 has a live caller~~ — **resolved (session 22, above):** `p_x25519_asn1.c` (the ASN.1-layer wrapper, not `p_x25519.c`'s raw ECDH primitives) is now fully decompiled; same "registered, not confirmed live" status as ED25519.
+
 

@@ -2,7 +2,7 @@
 
 Data-driven status doc for the "decompile all of `bruce` to source-reconstruction quality" effort. Regenerate the numbers here whenever `bruce_functions.csv`, `bruce_srcmap.csv`, or `analysis/decomp/` change materially — don't hand-edit stale tables into new prose, just re-run the join described in [Methodology](#methodology) below.
 
-**Snapshot: 2026-08-17 (full regeneration, session 24 / Wave 1).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a single `analysis/decomp/` directory listing taken at the conclusion of Wave 1 (1244 decomp files, 1104 in-census). Decompiled census functions grew from 1,006 to **1104** (+98 functions, +13,616 bytes), and fully decompiled attributed source files grew from 67 to **80 of 139**.
+**Snapshot: 2026-08-17 (full regeneration, session 24 / Wave 1).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a single `analysis/decomp/` directory listing taken at the conclusion of Wave 1 (1266 decomp files, 1126 in-census). Decompiled census functions grew from 1,006 to **1126** (+120 functions, +15,128 bytes), and fully decompiled attributed source files grew from 67 to **80 of 139**.
 
 ## 1. Top-line stats
 
@@ -10,7 +10,7 @@ Data-driven status doc for the "decompile all of `bruce` to source-reconstructio
 |---|---:|---:|---:|---:|
 | **Total functions (census)** | 4,995 | 100% | 660,570 | 100% |
 | **Attributed** (leaked `__FILE__` → 139 src files) | 448 | 8.97% | 97,450 | 14.75% |
-| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 1,104 | 22.10% | 304,579 | 46.11% |
+| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 1,126 | 22.54% | 306,091 | 46.34% |
 | **Attributed ∪ Decompiled** (understood in *some* way) | 1,126 | 22.54% | 306,091 | **46.34%** |
 | **Totally unknown** (no attribution, no decompile) | 3,869 | 77.46% | 354,479 | **53.66%** |
 
@@ -152,31 +152,31 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 | `event_groups.c` | 2 | 2 | 128 | 128 | 0 |
 | `buffer.h` | 1 | 1 | 128 | 128 | 0 |
 | `buf.c` | 2 | 2 | 122 | 122 | 0 |
-| `pwm.h` | 3 | 0 | 116 | 0 | 116 |
+| `pwm.h` | 3 | 3 | 116 | 116 | 0 |
 | `uart.cc` | 1 | 1 | 114 | 114 | 0 |
 | `battery_charger_bq25601.cc` | 2 | 2 | 114 | 114 | 0 |
-| `usb_configuration_handler.cc` | 1 | 0 | 112 | 0 | 112 |
-| `reboot_reason.cc` | 1 | 0 | 108 | 0 | 108 |
-| `obj.c` | 1 | 0 | 102 | 0 | 102 |
-| `tasn_utl.c` | 1 | 0 | 100 | 0 | 100 |
+| `usb_configuration_handler.cc` | 1 | 1 | 112 | 112 | 0 |
+| `reboot_reason.cc` | 1 | 1 | 108 | 108 | 0 |
+| `obj.c` | 1 | 1 | 102 | 102 | 0 |
+| `tasn_utl.c` | 1 | 1 | 100 | 100 | 0 |
 | `system_tasks.cc` | 1 | 1 | 100 | 100 | 0 |
-| `persistent_crash_register.cc` | 1 | 0 | 100 | 0 | 100 |
-| `i2c_device.h` | 1 | 0 | 100 | 0 | 100 |
-| `logging.cc` | 1 | 0 | 98 | 0 | 98 |
+| `persistent_crash_register.cc` | 1 | 1 | 100 | 100 | 0 |
+| `i2c_device.h` | 1 | 1 | 100 | 100 | 0 |
+| `logging.cc` | 1 | 1 | 98 | 98 | 0 |
 | `buffer.cc` | 1 | 1 | 94 | 94 | 0 |
-| `ecdsa_asn1.c` | 1 | 0 | 92 | 0 | 92 |
-| `pem_oth.c` | 1 | 0 | 88 | 0 | 88 |
-| `key_value_store.h` | 1 | 0 | 88 | 0 | 88 |
-| `srtc.cc` | 1 | 0 | 80 | 0 | 80 |
+| `ecdsa_asn1.c` | 1 | 1 | 92 | 92 | 0 |
+| `pem_oth.c` | 1 | 1 | 88 | 88 | 0 |
+| `key_value_store.h` | 1 | 1 | 88 | 88 | 0 |
+| `srtc.cc` | 1 | 1 | 80 | 80 | 0 |
 | `evp.c` | 1 | 1 | 70 | 70 | 0 |
-| `dsa.c` | 1 | 0 | 64 | 0 | 64 |
-| `info.cc` | 1 | 0 | 62 | 0 | 62 |
-| `transfer_bug_report.cc` | 1 | 0 | 48 | 0 | 48 |
-| `heap_support.c` | 1 | 0 | 44 | 0 | 44 |
-| `gotham_task.cc` | 1 | 0 | 44 | 0 | 44 |
-| `gatt_service_handle.h` | 1 | 0 | 28 | 0 | 28 |
-| `init.cc` | 1 | 0 | 22 | 0 | 22 |
-| `exit.c` | 1 | 0 | 16 | 0 | 16 |
+| `dsa.c` | 1 | 1 | 64 | 64 | 0 |
+| `info.cc` | 1 | 1 | 62 | 62 | 0 |
+| `transfer_bug_report.cc` | 1 | 1 | 48 | 48 | 0 |
+| `heap_support.c` | 1 | 1 | 44 | 44 | 0 |
+| `gotham_task.cc` | 1 | 1 | 44 | 44 | 0 |
+| `gatt_service_handle.h` | 1 | 1 | 28 | 28 | 0 |
+| `init.cc` | 1 | 1 | 22 | 22 | 0 |
+| `exit.c` | 1 | 1 | 16 | 16 | 0 |
 
 ## 3. Prioritized gap list
 
@@ -184,16 +184,6 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 
 | Rank | Src file | Remaining funcs | Remaining bytes | Already decompiled |
 |---:|---|---:|---:|---:|
-| 1 | `pwm.h` | 3 | 116 | 0/3 |
-| 2 | `usb_configuration_handler.cc` | 1 | 112 | 0/1 |
-| 3 | `reboot_reason.cc` | 1 | 108 | 0/1 |
-| 4 | `obj.c` | 1 | 102 | 0/1 |
-| 5 | `tasn_utl.c` | 1 | 100 | 0/1 |
-| 6 | `persistent_crash_register.cc` | 1 | 100 | 0/1 |
-| 7 | `i2c_device.h` | 1 | 100 | 0/1 |
-| 8 | `logging.cc` | 1 | 98 | 0/1 |
-| 9 | `ecdsa_asn1.c` | 1 | 92 | 0/1 |
-| 10 | `pem_oth.c` | 1 | 88 | 0/1 |
 
 ### 3b. Unattributed contiguous address ranges — candidate whole modules
 
@@ -222,8 +212,8 @@ Of **4,995 total functions** (the current census):
 | | Functions | Bytes |
 |---|---:|---:|
 | Attributed to a source file | 448 | 97,450 |
-| Decompiled (in census) | 1,104 | 304,579 |
-| — of which both attributed AND decompiled | 426 | 95,938 |
+| Decompiled (in census) | 1,126 | 306,091 |
+| — of which both attributed AND decompiled | 448 | 97,450 |
 | — of which in the identified-but-not-formally-attributed BTA/BTE stack (§1a) | 490 | 148,991 |
 | **Understood in some way (union)** | **1,126 (22.5%)** | **306,091 (46.3%)** |
 | **Completely unknown — no attribution, no decompile, no module ID** | 3,869 (77.5%), or **3,283 (65.7%) excluding BTA-identified** | 354,479 (53.7%), or **299,021 (45.3%) excluding BTA-identified** |

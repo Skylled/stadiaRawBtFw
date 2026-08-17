@@ -792,5 +792,29 @@ gki_cb.os Control Block (Base 0x2001E65C):
        - Returns `NULL` (`0`).
 - **Callers & Integration:** Invoked directly from `state_machine__600df264` (`state_machine.cc`, line 61: `adapter__60080424(DAT_60080970, param_1)`) to register the `StateMachine` instance (`param_1`) as the active adapter event listener during BLE connection state machine setup and transitions.
 
+---
+
+## Wave 5: `gatt_service_handle.h` — GATT Service Handle Wrapper
+
+`gatt_service_handle__6005d9a8` (28 bytes, `src: gatt_service_handle.h`) is an inline accessor method of Google's first-party `GattServiceHandle` C++ class that extracts the registered 16-bit / 32-bit GATT service attribute handle from the underlying BTA/BTE GATT server service record.
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `gatt_service_handle__6005d9a8` | 28 | `gatt_service_handle.h` | **`GattServiceHandle::GetAttributeHandle` / `GetHandle`.** Accessor verifying that the internal GATT service pointer (`this + 0x0C`) is non-null (asserting at line `0x18C` = 396 on null), returning the service attribute handle at `service_ + 0x10`. |
+
+### `gatt_service_handle__6005d9a8` (28B) — Attribute Handle Accessor (`GattServiceHandle::GetAttributeHandle`)
+- **Signature:** `uint32_t gatt_service_handle__6005d9a8(GattServiceHandle *this)`
+- **Class / Header:** `gatt_service_handle.h` (`0x6011CF74`)
+- **Object State Fields (`this`):**
+  - `this + 0x0C` (void *): Pointer to internal BTA/BTE GATT service registration record (`service_`).
+  - `service_ + 0x10` (uint32_t / uint16_t): The allocated GATT service start / attribute handle assigned by the Broadcom GATT server stack upon service creation (`GATTS_CreateService`).
+- **Execution Flow:**
+  1. **Null Pointer Check:** Tests if `*(int *)(this + 0x0C) == 0`.
+  2. **Fatal Assertion on Unbound Handle:** If the service pointer is NULL (attempting to query handle before service creation or after deletion):
+     - Formats and emits fatal panic assert at line `0x18C` (396) of `gatt_service_handle.h` (`0x6011CF74`): `"CHECK failed: service_ != nullptr"` (`0x60122CE9` / `0x60127A03`) via `FUN_601016a2`.
+  3. **Handle Return:** If valid, loads and returns `*(uint32_t *)(*(int *)(this + 0x0C) + 0x10)`.
+- **Caller & Integration:** Invoked from `FUN_600df4c4` during BLE GATT server database initialization and characteristic value notification / indication dispatch.
+
+
 
 
