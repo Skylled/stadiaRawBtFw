@@ -2,8 +2,8 @@
 // --- callers ---
 //   600a020c FUN_600a020c
 // --- callees ---
-//   6006dbac FUN_6006dbac
 //   600a9234 FUN_600a9234
+//   6006dbac FUN_6006dbac
 
 
 bool FUN_600b102c(void)

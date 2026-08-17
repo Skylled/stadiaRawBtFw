@@ -2,11 +2,11 @@
 // --- callers ---
 //   600a00bc FUN_600a00bc
 // --- callees ---
+//   600aa3cc FUN_600aa3cc
+//   6013cf90 thunk_EXT_FUN_0000b5ba
 //   600a2578 FUN_600a2578
 //   6013d3a0 thunk_EXT_FUN_0000b572
-//   6013cf90 thunk_EXT_FUN_0000b5ba
 //   600a25f8 FUN_600a25f8
-//   600aa3cc FUN_600aa3cc
 
 
 void FUN_600a2338(void)

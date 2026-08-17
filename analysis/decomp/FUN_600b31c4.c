@@ -3,9 +3,9 @@
 //   600a01c4 FUN_600a01c4
 // --- callees ---
 //   6009a804 FUN_6009a804
-//   6006dbac FUN_6006dbac
 //   6009a7c0 FUN_6009a7c0
 //   600a9234 FUN_600a9234
+//   6006dbac FUN_6006dbac
 
 
 undefined4 FUN_600b31c4(char param_1)
