@@ -1514,6 +1514,29 @@ Decompiled and documented 15 functions (1,536 bytes across `0x600a7fb4`–`0x600
 | `0x600abb14` | 172 | GATT / Core | **`gatt_notify_app_state`** — Iterates GATT service database entries via `FUN_600af610()`, looks up attribute record via `FUN_600af814()`, and invokes application callback `+0x14` (`(*cback)(app_id, bd_addr, handle, 1, 0, transport)`). | 3 callers / 3 callees |
 | `0x600abbc4` |  42 | GATT / Core | **`gatt_get_attribute_handle`** — Reads 2-byte attribute handle from GATT cache via `FUN_600f3e6a(cache, param_1, &handle, 2)`. | 1 caller / 1 callee |
 
+## Session 38 (Wave 8) — GATT Server/Client Attribute Access, Buffer Allocation & Service Changed Subsystem (15 functions, 1,660 bytes)
+
+Decompiled and documented 15 functions (1,660 bytes across `0x600abbf4`–`0x600af240`): GATT handle buffer lookups, server read/write request handlers, client completion dispatchers, GKI command buffer allocator, and the complete Service Changed indication/discovery pipeline:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600abbf4` |  78 | GATT / Server | **`gatt_find_hdl_buffer_by_handle`** — Scans 10 handle buffer records (stride 18 bytes) for active record (`*(record+1) != 0`) matching attribute handle `param_1`. | 3 callers / 0 callees |
+| `0x600abc48` | 104 | GATT / Server | **`gatt_find_hdl_buffer_by_addr`** — Scans 10 handle buffer records (stride 0x12) matching transport `param_2` and 6-byte BD_ADDR `param_1` (`thunk_EXT_FUN_0000b554`). | 1 caller / 1 callee |
+| `0x600abcb4` | 118 | GATT / Server | **`gatt_server_handle_read_req`** — GATT server attribute read handler: copies offset/handle; if matching standard characteristic, copies attribute data (2 bytes) into output buffer `param_3+9` and returns status 0 (success) or 2/10 (error). | 1 caller / 1 callee |
+| `0x600abd38` | 104 | GATT / Server | **`gatt_server_handle_write_req`** — GATT server attribute write handler: validates attribute handle `*param_2` and length `< 3`, copies write payload to internal characteristic buffer `DAT_600abda8`, returning status 0 or 0xd/0x80/10. | 1 caller / 1 callee |
+| `0x600ac6ac` |  82 | GATT / Client | **`gatt_cl_op_cmpl`** — GATT client operation completion dispatcher: filters completion status based on opcode `param_3` (4, 6, 8, 0x10), delegates completion callback via `FUN_600b00b4(param_2, status, 0)`. | 1 caller / 1 callee |
+| `0x600ad494` |  92 | GATT / Core | **`gatt_alloc_sr_cmd_buf`** — Allocates server command packet buffer via GKI buffer allocator `FUN_6006dcdc(3, size, 0x42f)`, zeroes buffer via `thunk_EXT_FUN_0000b5ba`, and initializes CCB buffer pointers `param_1+4`, `param_1+0x14`, `param_1+8`. | 3 callers / 4 callees |
+| `0x600ada6c` | 102 | GATT / Profile | **`gatt_profile_disc_cmpl`** — Service discovery completion notification: formats 7-byte BD_ADDR + transport into stack frame, invokes registered profile callback `DAT_600adad4+0x1558` with event 1. | 4 callers / 2 callees |
+| `0x600adad8` | 118 | GATT / SrvChg | **`gatt_send_srv_chg_clt_ind`** — Sends Service Changed client indication: looks up Service Changed handle via `gatt_get_attribute_handle` (`0x600abbc4`); formats 4-byte payload `[1, 0, 0xff, 0xff]` (handles 0x0001–0xFFFF), sends GATT indication via `FUN_600f367e`. | 2 callers / 2 callees |
+| `0x600adb54` | 162 | GATT / SrvChg | **`gatt_init_srv_chg`** — Service Changed subsystem initialization: queries registered profile callback for service change records (event 4 / event 5 iterations), registers records with GATT profile registry. | 1 caller / 2 callees |
+| `0x600adbfc` | 134 | GATT / SrvChg | **`gatt_proc_srv_chg`** — Service Changed notification processor: walks service database entries via `FUN_600af610()`, checks if service changed indication needed via `FUN_600af6b0()`, and dispatches indications via `0x600adad8`. | 2 callers / 4 callees |
+| `0x600aefc0` |  92 | GATT / SrvChg | **`gatt_cl_srv_chg_ind_cback`** — Client Service Changed indication callback handler: looks up connection record via `FUN_600af718(param_1+0xd)`, clears flag, notifies profile callback with event 2. | 1 caller / 2 callees |
+| `0x600af074` |  58 | GATT / SrvChg | **`gatt_chk_srv_chg`** — Checks if received handle matches Service Changed attribute handle `*(DAT+0x1550)`; if matched, invokes `gatt_cl_srv_chg_ind_cback` (`0x600aefc0`), resets timer via `FUN_600af020`. | 1 caller / 2 callees |
+| `0x600af0b4` | 182 | GATT / SrvChg | **`gatt_proc_srv_chg_ind`** — Processes incoming Service Changed indication: cancels timer `param_1+0x74` (`FUN_600aa3cc`), checks handle matching via `0x600af074`, iterates 10 client registration records, and sends GATT confirmation via `FUN_600f6b96`. | 1 caller / 4 callees |
+| `0x600af1d8` |  96 | GATT / SrvChg | **`gatt_sr_update_srv_chg_ccc`** — Updates Client Characteristic Configuration (CCC) flags for Service Changed: iterates list `DAT_600af238`, sets CCC flag `entry+6 = 1`, and notifies callback with event 2. | 1 caller / 3 callees |
+| `0x600af240` | 138 | GATT / SrvChg | **`gatt_find_srv_chg_record`** — Searches Service Changed registry list `DAT_600af2cc` for matching service UUIDs `param_1` and `param_2` (`FUN_600f68f0`) and handle `param_3`. | 2 callers / 3 callees |
+
+
 
 
 
