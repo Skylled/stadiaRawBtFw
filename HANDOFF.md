@@ -26,6 +26,49 @@ This is a large, open-ended reverse-engineering project (decompile+document a ~5
 - **`getImageBase()` returns 0`** for the raw `BinaryLoader` import this project uses — use `getMinAddress()` for the real load address if writing new Ghidra scripts.
 - Subagents given only a soft "wait if busy" instruction can get stuck in an unproductive check-loop and need a direct, explicit override message from the orchestrator ("I have personally verified via `ps aux` and lock-file checks that Ghidra is free — stop checking and proceed now") to break out. If you see this happening, intervene directly rather than waiting for it to self-resolve.
 
+## Rigor rules for decompilation write-ups (added after the sessions 24–28 adversarial audit — read this before every wave)
+
+An independent, byte-level audit re-checked all 120 functions decompiled in sessions 24–28 against the raw flash image. **Verdict: the work is trustworthy and should continue** — every *fabrication*-class risk was absent (no invented addresses, no invented functions, no invented strings; all 120 functions exist at their stated addresses and the 448/448-attributed milestone is real). But a consistent, correctable error profile emerged: **9 substantive errors in ~103 checked claims, and every one was a wrong label attached to correct bytes, in the exact spot where the write-up reached *past* a leaked string.** The QA wave itself *reinforced* two of the errors instead of catching them. The rules below target those failure modes literally. Precision here is the entire value of the work — "8/10, mostly right" is not "recompile-grade."
+
+**The one principle behind all of it:** a leaked `__FILE__` string, a verbatim log/format string, or an RPC dispatch-table entry is *hard evidence* — lean on it, quote it, and the identification will be right (this is why ~94 of ~103 audited claims held up perfectly). The instant a claim goes *beyond* what a string proves — naming a peripheral, an enum, an API, a struct field, a function's size, or the behavior of an unnamed function — it must be independently grounded in bytes, or it drifts. All 9 confirmed errors were in that extrapolation zone.
+
+Concrete DO / DON'T, each anchored to a real sessions 24–28 miss:
+
+1. **Peripheral register bases — verify against the SoC memory map AND grep the repo. DON'T name one from memory.**
+   - Miss: `0x400D8000` was labeled the "OCOTP peripheral base" in `heap_5_improved.c`; OCOTP is actually `0x401F4000` — a fact *this same repo states correctly twice* (`bruce-misc-functions.md`'s BEE section, `analysis/device-probe-log.md`). `0x400D8000` is the CCM_ANALOG/ANATOP block.
+   - Rule: before naming any `0x40xxxxxx` / `0x60xxxxxx` literal as a peripheral, (a) confirm the base against the i.MX RT106x memory map, and (b) `grep -rn` that base across `analysis/` — if it is already named anywhere, match that name or resolve the contradiction *before* writing. A base that recurs many times across the image is a shared block (clock/analog/GPIO/SNVS), not a one-shot fuse read.
+
+2. **Function size / boundaries — check for tail-branches and census overlap. DON'T trust Ghidra's reported size blindly.**
+   - Miss: `heap_5_improved__600521b8` was written up as a clean 254-byte `vPortDefineHeapRegions`. The real function is ~52 bytes and ends in a `b.w 0x600cc71c` tail-branch to the actual init body; the 254-byte census extent *overlaps four other census functions*, and the headline `0x80000000` xBlockAllocatedBit detail lives at the branch target, not at `0x600521b8`.
+   - Rule: before quoting a size, check (a) does the disasm/decomp end in a `b.w` into a different address range, and (b) do any rows in `bruce_functions.csv` *start inside* `[addr, addr+size)`? Either means the boundary is a Ghidra artifact (the same failure class as the known `FUN_601054dc` jump-table corruption) — document the real extent and flag the artifact; never present the inflated size as fact.
+
+3. **Unnamed (`FUN_*`) functions and hardware-effect claims — stay strictly inside the evidence. This was the only true hallucination found.**
+   - Miss: `FUN_6007f7a0` was written up in `bruce-audio-subsystem.md` as a keyframe sequencer that "interpolates steps and drives PWM/haptics." It is actually the `"UxPatternLog"` diagnostic-RPC serializer (proven by the dispatch-table entry at `0x6013cebc` → handler `0x6007f7a1`) — no interpolation, no hardware driving — and the mislabel *contradicts* `bruce-log-buffer.md`, which already lists it correctly.
+   - Rule: for a function with no `__FILE__` attribution, assign no behavioral identity beyond what a string, constant, or dispatch-table entry directly proves. NEVER claim a hardware effect (PWM/LED/haptic/DMA/I2C) unless a store to that peripheral or a call to a known driver appears in the decomp. Before writing up anything reachable from an RPC dispatch table, cross-check the dispatch tables and `bruce-log-buffer.md` first.
+
+4. **Sibling-value branches — derive which-is-which; DON'T assume ordering. This is the most dangerous class because a swap still reads as correct.**
+   - Misses: `tasn_utl.c` labeled the `null_tt` / `default_tt` return templates backwards; (earlier, session 23) `p_x25519_asn1.c` swapped the priv vs pub roles.
+   - Rule: whenever two branches return sibling values (default vs null, priv vs pub, r vs s, min vs max), pin *each* from BOTH its struct offset and the library's documented semantics, and cite the offset for each. Never infer the roles from branch order.
+
+5. **Enum / error-lib / API names — map through the actual enum; distinguish sibling APIs by behavior.**
+   - Misses: `obj.c` labeled `ERR_LIB` value 8 as "ASN1" (8 = OBJ; ASN1 = 12 — a value the same doc uses correctly elsewhere); `buf.c`'s `BUF_MEM_reserve` was called `BUF_MEM_grow` (grow writes `length` and memsets — reserve does neither, and the QA "fix" reinforced the wrong name); `timers.c`'s `prvSwitchTimerLists` was called `prvProcessExpiredTimer` (which has no loop and no list swap).
+   - Rule: never guess an enum value's name — map it through the enum table. Distinguish sibling library functions by their *defining* behavior and cite it (does it write `length`? memset? loop? swap lists?).
+
+6. **Struct fields — only claim a field is set if there is an actual store to that offset.**
+   - Miss: `bio.c`'s `BIO_new` was said to set `init=1`; `init` lives at `+4` and is left 0 (only `references@+8` and `shutdown@+0x18` are set to 1).
+   - Rule: cite the offset for every field you claim is initialized; if there is no `str` to that offset in the decomp, don't claim it.
+
+7. **Self-reported stats — compute them from the census join, don't estimate.**
+   - Misses: session 24 claimed "29 functions" (28 decomp files were added); session 27 claimed "2,752 bytes" (the 25 files sum to 3,116); `bruce-decompile-status.md` §1's top-line still reads "80 of 139 / session 24" while §3a correctly shows zero remaining.
+   - Rule: derive each wave's function count and byte total by joining the newly-added `analysis/decomp/*.c` files against `bruce_functions.csv` (address-join, 3rd column = size) — never hand-count. When you touch `decompile-status.md`, either fully regenerate it per its own bottom-of-file methodology or explicitly mark which sections are stale; never leave §1 contradicting §3a.
+
+**The QA/verification wave is now the single highest-leverage rule, because in this audit it *reinforced* two errors (it endorsed the OCOTP misID and the `BUF_MEM_grow` name) rather than catching them.** A QA pass that paraphrases the write-up is worse than none. Every QA wave MUST:
+   - **Re-derive each claim from the raw bytes/strings independently** — treat "the write-up says X" as a hypothesis to *refute*, never as an established fact. Dump the bytes yourself (`file_offset = flash_addr − 0x60040000`, verified) and confirm.
+   - Run this fixed checklist every pass: (1) every peripheral base re-resolved against the memory map **plus** a repo-wide `grep` for a conflicting existing name; (2) every enum / error-lib / reason value re-mapped through its enum; (3) every priv/pub, default/null, r/s, min/max branch assignment re-derived from offsets; (4) every quoted function size checked for tail-branch/overlap artifacts; (5) every unnamed-function behavioral claim checked against its string/dispatch evidence; (6) every "field set to N" checked against an actual store at that offset.
+   - **Cover the *current* wave, not only the previous one.** The session-28 final wave shipped with no QA pass and carries two of the nine errors (`tasn_utl`, `obj`). Never let the last wave go unverified — if a run ends on a decompile wave, its QA is still owed.
+
+None of this is a reason to distrust the pipeline: the fabrication-class risks that would make the output unusable are simply absent, and the string-anchored core is excellent. These are the specific guardrails that convert a solid-but-imprecise pass into recompile-grade documentation.
+
 ## Current state (as of this handoff, commit `8271360`)
 
 Per the just-regenerated `analysis/bruce-decompile-status.md`:
