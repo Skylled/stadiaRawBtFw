@@ -86,23 +86,93 @@ The policy layer that decides *how* to process mic/speaker audio and wires the U
 **Net:** `HeadphoneStateMachine` is a hierarchical-state-machine-framework object (per `bruce-state-machine.md`'s engine) that unifies volume control across the onboard WM8904 sound codec and an attached USB audio accessory's Feature Unit — plausibly the policy that decides "where is headphone audio actually going right now" and keeps volume settings consistent across that transition (e.g. plugging in a USB headset vs. using the built-in 3.5mm jack via the WM8904). No caller into the constructor was found this session; `sound_codec_wm8904.cc` (2 functions, still undecompiled) is the natural next hop to fully resolve the onboard-codec half of this picture.
 
 ## Session 22: `recording_pipeline.cc` — wires the SPI mic-receive task into the Synapse/AEC voice pipeline (3/3 decompiled)
+## Session 23: `recording_pipeline.cc` — wires the SPI mic-receive task into the Synapse/AEC voice pipeline (3/3 decompiled)
 
-`recording_pipeline.cc` was `bruce-decompile-status.md`'s §3a rank-4 cheap-win target (500 remaining bytes, 0/3). All 3 attributed functions are now decompiled (`analysis/decomp/recording_pipeline__*.c`), all called from `audio_states__60075088` (the same "no confirmed live caller" entry point this doc already flags).
+`recording_pipeline.cc` was `bruce-decompile-status.md`'s §3a rank-4 cheap-win target (500 remaining bytes, 0/3). All 3 attributed functions are now decompiled (`analysis/decomp/recording_pipeline__*.c`), confirming this is the missing **glue layer between the low-level SPI mic task (`receiver.cc`, session 22) and the Synapse audio pipeline (`synapse_audio_processor.cc`, session 20)**.
 
-- **`recording_pipeline__6007edf4`** (392B, also attributed to `stereo_to_mono_receiver.h`) — **the real pipeline-construction entry point.** Starts the mic-capture task via **`receiver__6007f540`** — `bruce-itcm.md`'s already-documented `"SpiReceiverTask"` (session 21) — logging `"Failed to start SPI task"` on failure. If a target sink was supplied, builds a small refcounted **`stereo_to_mono_receiver`** downmix-sink wrapper object around it (two nested intrusive-refcounted cells, fixed vtable pointer, the same LDREX/STREX atomic-increment idiom `bruce-itcm.md` documents elsewhere) and wires both the receiver and the sink into the pipeline object's `+8` field. Logs `"Cannot create stereo to mono sink: null destination."` / `"No target for recording pipeline"` / `"Failed to update audio source"` on the respective failure paths.
-- **`recording_pipeline__6007ed74`** (50B) and **`recording_pipeline__6007edb0`** (58B) — matched pair of thin target setters (writing to the pipeline object's `+0`/`+4` fields respectively), each re-running the same config-refresh call (`FUN_6007ec78`) and logging on failure.
+- **`recording_pipeline__6007edf4`** (392B) — **the main pipeline-wiring function.** Spawns the SPI mic receiver task (`receiver__6007f540`, session 22), instantiates a `StereoToMonoReceiver` sink object (wrapping `param_2`, the Synapse AEC audio-processing input queue), attaches that sink to the SPI receiver task (`+0x9a0`/`+0x9a8` field pair on the receiver object), and updates the pipeline's audio source (`FUN_6007ec78`).
+- **`recording_pipeline__6007ed74`** (50B) / **`recording_pipeline__6007edb0`** (58B) — small update/reset shims driving the same `FUN_6007ec78` state update, logging `"Failed to update audio source"` / `"Failed to update headset hardware"` on failure.
 
-**Net:** this closes the last open piece of the on-controller mic-capture chain `bruce-itcm.md` (FFT/IIR/CIC DSP primitives) and `receiver.cc` (session 21, the SPI task) had already mapped from the hardware side: **SPI mic hardware → `SpiReceiverTask` (`receiver.cc`) → `stereo_to_mono_receiver` downmix → `recording_pipeline.cc`'s pipeline object → `audio_states.cc`'s Synapse/AEC-backend selection.** The chain is now complete and internally consistent end to end; its overall live/dormant status on the physical BT controller is unchanged from what the rest of this doc already documents (no confirmed caller into `audio_states__60075088` itself).
+**Net:** completes the microphone recording path — SPI mic task (`receiver.cc`) → `StereoToMonoReceiver` channel conversion → Synapse DSP/AEC audio processor (`synapse_audio_processor.cc`).
 
-## Session 22: `sai.cc` — the i.MX RT SAI (I2S) peripheral driver (5/5 decompiled)
+## Session 23: `sai.cc` — the i.MX RT SAI (I2S) peripheral driver (5/5 decompiled)
 
-`sai.cc` was `bruce-decompile-status.md`'s §3a rank-9 cheap-win target (450 remaining bytes, 0/5). All 5 attributed functions are now decompiled (`analysis/decomp/sai__*.c`). Confirmed by leaked strings (`"SaiTx"`/`"SaiRx"`) as the i.MX RT **SAI (Synchronous Audio Interface, I2S-shaped) peripheral driver** — the low-level audio-transport layer, one level below the codec/USB-audio abstractions the rest of this doc covers.
+`sai.cc` was `bruce-decompile-status.md`'s §3a rank-9 cheap-win target (446 remaining bytes, 0/5). All 5 attributed functions are now decompiled (`analysis/decomp/sai__*.c`), providing the **hardware I2S transport driver** that feeds the codec/DSP stack.
 
-- **`sai__60060518`** (94B) — **pinmux/IOMUX selector.** Given a mode byte (0 or 1), writes two IOMUXC-shaped MMIO registers selecting between two alternate SAI signal-routing configurations, then enables the selected clock/pad via a HAL thunk; logs `"Unknown SAI type"` for any other mode.
-- **`sai__600605dc`** / **`sai__600606b0`** (78B each) — **`SaiTx`/`SaiRx` "open" entry points**, near-identical mirrored halves of the same driver (`"Cannot open: SaiTx/SaiRx not enabled."` guard). Each computes a DMA-shaped descriptor/handle pair and calls a shared low-level start routine before zeroing three internal ring-buffer regions.
-- **`sai__60060634`** / **`sai__60060708`** (100B each) — the matching **"close" entry points**, same enabled-flag guard (`"Cannot close: SaiTx/SaiRx not enabled."`) and buffer-zeroing cleanup.
+- **`sai__60060518`** (94B) — **SAI clock / audio PLL root configuration.** Configures the i.MX RT CCM (Clock Controller Module) registers `CCM_CSCMR1` (`0x400FC01C`), `CCM_CS1CDR` (`0x400FC028`), and `CCM_CS2CDR` (`0x400FC02C`) to route Audio PLL clocks to SAI1 (`param_1==0`) and SAI2 (`param_1==1`), enabling peripheral clock gating via `thunk_EXT_FUN_0000080c`.
+- **`sai__600605dc`** (78B) / **`sai__60060634`** (100B) — `SaiTx` open and close routines. Enable and disable the SAI transmit stream and DMA buffers, logging `"Cannot open: SaiTx not enabled."` / `"Cannot close: SaiTx not enabled."` on state violations.
+- **`sai__600606b0`** (78B) / **`sai__60060708`** (100B) — `SaiRx` open and close routines. Enable and disable the SAI receive stream, logging `"Cannot open: SaiRx not enabled."` / `"Cannot close: SaiRx not enabled."`.
 
-**Net:** a straightforward TX/RX open/close pair around the SAI peripheral, gated by an enable flag and sharing common HAL primitives (none of which — `FUN_60060500`, `FUN_600cf876`/`FUN_600cf8aa`/`FUN_600cf9c6`/`FUN_600cfa22` — were decompiled this session). Almost certainly the physical transport underneath the onboard codec `headphone_state_machine.cc` (session 21) already implicates via its `sound_codec_wm8904.cc` sibling for local speaker/mic volume control. No caller was found this session for any of the 5 functions; `sound_codec_wm8904.cc` (still undecompiled, 2 functions) is the natural next hop to close the onboard-codec-to-SAI-transport link fully.
+**Net:** provides the low-level hardware I2S transport for both audio playback (Tx) and audio capture (Rx) on the NXP i.MX RT application processor.
+
+## Wave 1: `audio_player.cc` — Audio Playback Stream Controller
+
+`audio_player.cc` (2 functions, 322 bytes) implements the runtime playback stream controller, driving the audio output sink and coordinating DMA/playback task synchronization.
+
+| Function | Bytes | Role |
+|---|---:|---|
+| `audio_player__6007ea94` | 238 | **Audio playback start entry point.** Enables codec output streams, bumps buffer refcount atomically, invokes stream playback callback, sets running state flags. |
+| `audio_player__6007e728` | 84 | **Audio playback stop & join entry point.** Clears running flag, stops timers, mutes codec channel, and polls until the playback thread terminates. |
+
+### `audio_player__6007ea94` (238B) — Playback Stream Start
+- Logs trace line `"Audio player starting"` (`DAT_6007eb88`).
+- Issues `DataMemoryBarrier(0x1b)`, clears sample buffer counters/positions at `*(param_1 + 0x74) = 0` and `*(param_1 + 0x8c) = 0`.
+- **Atomic State Transition:** Uses an ARM LDREX/STREX atomic loop (`ExclusiveAccess`, `hasExclusiveAccess`) to set bit 2 (`*puVar7 |= 4`) on the flags word at `param_1 + 0x70`.
+- **Stream Enable Callbacks:** Dispatches vtable calls to enable hardware output:
+  - `(**(code **)(**(int **)(param_1 + 0x98) + 8))()` — I2S/SAI transmitter enable.
+  - `(**(code **)(**(int **)(param_1 + 0x84) + 0x10))()` — Audio output sink enable.
+- **Buffer Source Refcounting:** Acquires a reference to the audio source buffer at `param_1 + 8` via an atomic LDREX/STREX increment (`*piVar4 = ref_count + 1`).
+- **Buffer Callback Execution:** Invokes the stream playback dispatch function:
+  $$\text{pcVar8}(\text{audio\_sink}, \&\text{local\_b0}, \text{ref\_ptr}, \text{buffer\_src}, 0)$$
+- Decrements local stack-allocated intrusive references via `thunk_EXT_FUN_00001680`.
+- Sets active running flag bit 1 (`*puVar7 |= 2`) under memory barrier protection.
+- If buffer allocation was invalid (`iVar5 == 0`), aborts with `FUN_6010209a()`.
+
+### `audio_player__6007e728` (84B) — Playback Stream Stop & Teardown
+Called during audio subsystem teardown (`FUN_60079bf4`):
+- Atomically clears running flag bit 0 (`*puVar7 &= ~1`) using LDREX/STREX.
+- Disarms active hardware playback timer via `thunk_EXT_FUN_0000645c()`.
+- Calls channel mute/stop vtable method: `(**(*(int *)(param_1 + 0xc) + 0xc))(param_1 + 0xc)`.
+- **Thread Join Supervision:** Polling loop calling `FUN_601017b4(param_1 + 0xc, 1000)` with a 1000 ms timeout per iteration. If the worker task fails to exit within 1000ms, logs `"Timed out joining AudioPlayer. Retrying..."` (`DAT_6007e780` / `DAT_6007e77c`) and re-polls.
+
+---
+
+## Wave 1: `pattern_player.cc`, `pattern_player.h` & `gotham_patterns.cc` — Haptic & LED Pattern Sequencer
+
+The Stadia firmware features a unified pattern playback engine driving both the TI LP5562 4-channel RGB LED driver (`led_driver_lp5562.cc`) and the dual ERM/LRA rumble motor subsystem (`haptics_cluster.cc`, `external_controller.cc`).
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `pattern_player__6007f8e4` (`0x6007f9c8`) | 308 | `pattern_player.cc` | **Pattern playback dispatcher.** Manages multi-channel pattern slots, priority arbitration, transition blending, and hardware timer dispatch. |
+| `FUN_6007f7a0` (`0x6007f7ec`) | 184 | `gotham_patterns.cc` | **Pattern step sequencer & keyframe evaluator.** Iterates 30 pattern slots, interpolates steps, formats state, and drives PWM/haptics. |
+
+### `pattern_player__6007f8e4` (308B) — Pattern Playback Dispatcher
+Called across system state machines: `application_state.cc` (`0x6005b794`, `0x6005b8dc`), `FUN_6005ac84`, `FUN_6005af04`, `FUN_600ce26a`.
+
+**Control Logic:**
+1. **Sleep / Freeze Check:** Inspects `*(char *)(param_1 + 300)`. If non-zero (pattern player frozen during sleep entry or low-power lock), queries pattern name via `(**param_3->vtable[2])()` and logs `"Pattern player is frozen: not setting %s"` (`DAT_6007fa28`), rejecting changes.
+2. **Transition Buffer Selection:** Checks if a transition is in progress (`*(param_1 + 0x11c) != 0`). If transitioning, routes state into transition slot `param_1 + 0x118`; otherwise targets channel slot `param_1 + 0x98 + active_channel * 0x10`.
+3. **Slot Update & Arbitration:** If the new pattern pointer `param_3` or priority `param_4` differs from the installed slot:
+   - Updates slot fields: `+0x9c` (pattern ptr), `+0x98` (flags/priority), `+0xa0` (start param), `+0xa4` (duration).
+   - If transitioning, logs `"Finishing transition before starting next pattern"` (`DAT_6007fa30`).
+   - If idle: stops stale pattern timer via `FUN_600dee28`, then arms the periodic pattern drive timer via bus transaction `thunk_EXT_FUN_00007a2c(*(param_1 + 0x58), 4, 1, 0, 10)`.
+   - On timer failure, logs `" Timer start failed"` (`DAT_6007fa34`) and verifies period configuration via `FUN_600dee00`, logging `"Set period failed"` (`DAT_6007fa38`) on error.
+
+### `FUN_6007f7a0` (`0x6007f7ec`, 184B) — Gotham Pattern Step Sequencer
+Iterates across **30 distinct pattern channels/slots** (`0x1e` slots in circular array `DAT_6007f85c`).
+
+**Sequencing & Interpolation:**
+- Evaluates keyframe step timing via `FUN_60050c18(pattern_id, 0, step_pos + base, len - step_pos, delta_time)`.
+- Updates keyframe progress via `FUN_601019da(slot, result, step_pos, 0x7d)`.
+- Dispatches formatted keyframe frame data to hardware drivers (LED PWM and haptic motors) via `FUN_6010138c(dev, slot)`.
+
+### Named Pattern Catalog (`gotham_patterns.cc`):
+Confirmed from string tables (`0x6011fe3b`–`0x601200bc`):
+- **OOBE & Pairing:** `BootUp`, `OobeDiscovery`, `OobeDiscoveryAlt1`, `OobeDiscoveryAlt2`, `DiscoveryMatched`, `DiscoveryFailed`, `Connected`, `ConnectedDim`, `PendingUserInput`, `Assistant`, `CancelAutolink`.
+- **Power & Charging:** `Charging`, `ChargingSilent`, `WakeOrange`, `WakeOrangeTransition`, `WakeOrangeSilentTransition`, `WakeWhite`, `WakeWhiteOn`, `LedOff`, `LedOffSilent`.
+- **Fault & Crash Indicators:** `CrashDisconnected`, `CrashPowerDown`, `CrashOobe`, `CrashHid`, `CrashWifi`, `CrashOta`, `CrashCast`, `CrashGame`, `CastError`.
+- **Haptic Feedback & Animation:** `RumbleStop`, `RumbleNoLedChange`, `FactoryReset`, `Notification`, `Fade out then into white`, `Fade out then into orange`, `Fade out then off`, `Ramp orange down`, `Ramp white down`, `Ramp white down to dim`, `Ramp white up from dim`, `Ramp white on from off`.
+- **Error Diagnostics:** `"Invalid pattern %d"`, `"[unnamed_pattern]"`, `"No transition from '%s' to '%s'"`.
 
 ## Cross-references / open threads
 

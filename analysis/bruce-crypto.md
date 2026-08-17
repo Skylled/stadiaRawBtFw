@@ -167,20 +167,20 @@ All five share the crypto stack's uniform `FUN_600e0552` (`ERR_put_error`-shaped
 
 **Net**: this is unmodified, standard BoringSSL PEM-decode machinery (armor parsing → optional legacy-encrypted-key header/passphrase/KDF/decrypt → base64 decode), sitting directly above `pem_lib__60085f2c`'s already-documented call into `bcm.c`'s de-padding helper and presumably feeding `tasn_dec.c`/`ec_asn1.c`/`p_ed25519_asn1.c`'s DER decoders once the base64 armor is stripped — i.e. `pem_lib.c` is the "read a `-----BEGIN ... KEY-----` file" front door for the whole ASN.1/EC/Ed25519 stack documented above. Same standing caveat as everywhere else in this doc: **no caller into any of these 3 functions was found this session** — nothing in `bruce`'s decompiled call graph so far invokes `PEM_read_bio`, consistent with this whole cluster being present-in-the-link but not confirmed live on the BT-only controller.
 
-## Session 22: `p_x25519_asn1.c` — the X25519 `EVP_PKEY_ASN1_METHOD` (4/4 decompiled)
+## Session 23: `p_x25519_asn1.c` — the X25519 `EVP_PKEY_ASN1_METHOD` (4/4 decompiled)
 
 `p_x25519_asn1.c` was `bruce-decompile-status.md`'s §3a rank-5 cheap-win target (492 remaining bytes, 0/4). All 4 attributed functions are now decompiled (`analysis/decomp/p_x25519_asn1__*.c`) — this closes the "Related, unexplored" open note below that flagged `p_x25519.c`/`p_x25519_asn1.c` as not yet traced. It's BoringSSL's `crypto/curve25519/p_x25519_asn1.c`, structurally parallel to the already-documented `p_ed25519_asn1.c` — same `ASN1_ITEM`-template primitive-encode calls (`FUN_600ed1b4`/`FUN_600ed266`/`FUN_600ed0de`, shared with `tasn_dec.c`/`ec_asn1.c`), same error idiom (`FUN_600e0552`, `lib=6`=`ERR_LIB_EVP`).
 
 | Function | Bytes | Role |
 |---|---:|---|
-| `p_x25519_asn1__60085b50` | 168 | `x25519_pub_encode`-shaped: encodes a public-key object into DER, writing a fixed 3-byte OID literal matching X25519's `1.3.101.110` OID content bytes. |
-| `p_x25519_asn1__60085c04` | 136 | `x25519_pub_decode`-shaped counterpart: parses the DER wrapper back out and validates the embedded 32-byte raw public key. |
-| `p_x25519_asn1__60085d00` | 88 | `x25519_priv_decode`-shaped: unwraps a PKCS#8 private-key octet string via the same `tasn_dec.c`-family helpers (`FUN_600ed39c`/`FUN_600ed556`/`FUN_600ed398`), then hands the raw bytes to the function below. |
-| `p_x25519_asn1__60085c98` | 100 | **The raw-key `EVP_PKEY` constructor.** Validates the key is exactly 32 bytes, allocates a 0x41-byte internal key struct, copies the 32-byte scalar in at offset `0x20` (leaving the first 32 bytes for a derived/cached public key — the same `{pub(32)‖priv(32)}` internal layout `FUN_600e1d72`'s Ed25519 keypair code already uses), sets a "has private key" flag, and installs it via `FUN_600e0904` (`EVP_PKEY_assign`-shaped). |
+| `p_x25519_asn1__60085b50` | 168 | **`x25519_priv_encode`**: encodes an X25519 private key into a PKCS#8 `PrivateKeyInfo` structure in DER format. Verifies `has_private` flag at `key+0x40` (error `0x82`=`EVP_R_NOT_A_PRIVATE_KEY`), writes version 0, AlgorithmIdentifier with X25519 OID `1.3.101.110` (`0x2b 0x65 0x6e`), and wraps the 32-byte scalar from `key+0x20` in nested OCTET STRINGs. |
+| `p_x25519_asn1__60085c04` | 136 | **`x25519_pub_encode`**: encodes an X25519 public key into a `SubjectPublicKeyInfo` (SPKI) structure in DER format, writing the sequence header, AlgorithmIdentifier with X25519 OID, and the 32-byte public key as a BIT STRING. |
+| `p_x25519_asn1__60085d00` | 88 | **`x25519_pub_decode`**: decodes an X25519 `SubjectPublicKeyInfo` structure, verifying parameters are absent/empty (`FUN_600ed39c`), extracting the BIT STRING payload (`FUN_600ed556`), and passing the 32-byte public key material to `p_x25519_asn1__60085c98`. |
+| `p_x25519_asn1__60085c98` | 100 | **`x25519_set_priv_raw` / raw key constructor**: validates the input is exactly 32 bytes (error `0x66`=`EVP_R_INVALID_KEY_LENGTH`), allocates a 0x41-byte internal key object (`FUN_600e092c`), copies the 32-byte key at `+0x20`, computes the public key via base-point multiplication (`FUN_600e1dde`), sets `has_private=1` at `+0x40`, and assigns the key to the `EVP_PKEY` (`FUN_600e0904`). |
 
 **Net:** a complete, structurally-parallel sibling of `p_ed25519_asn1.c`, sharing the same standing caveat as the rest of this document — the generic EVP/ASN.1 registry's dispatcher (see "Resolved: it's the generic BoringSSL algorithm registry" above) has an explicit case for NID `0x3b4` (X25519) wired to this file's `priv_decode` slot, but **no confirmed live caller** into any of these 4 functions was found, same status as ED25519's NID `0x3b5`.
 
-## Session 22: `tasn_new.c` — the ASN.1 template-based allocator, `tasn_dec.c`'s allocate-side counterpart (2/2 decompiled)
+## Session 23: `tasn_new.c` — the ASN.1 template-based allocator, `tasn_dec.c`'s allocate-side counterpart (2/2 decompiled)
 
 `tasn_new.c` was `bruce-decompile-status.md`'s §3a rank-8 cheap-win target (464 remaining bytes, 0/2). Both attributed functions are now decompiled (`analysis/decomp/tasn_new__*.c`). It's BoringSSL's `crypto/asn1/tasn_new.c` — the generic `ASN1_ITEM`-template-driven **allocator**, the exact allocate-side counterpart to the already-documented `tasn_dec.c` decoder: same `ASN1_ITEM`/`itype` switch shape (case 0 = raw-typedef recursion, 1/6 = SEQUENCE/NDEF_SEQUENCE member-array walk with per-member recursion, 2 = CHOICE — selects and constructs one member via a callback, 3/4 = external/callback-constructed types, 5 = primitive `ASN1_STRING`-shaped alloc via `FUN_600ecabe`), the same `ASN1_TFLG_*`-shaped bitmask tests (`&0x306`/`&0x300`/`&6`/`&0x400`), and the same `FUN_600e0552` (`ERR_put_error`, `lib=0xc`=`ERR_LIB_ASN1`) error idiom as `tasn_dec.c`.
 
@@ -188,6 +188,58 @@ All five share the crypto stack's uniform `FUN_600e0552` (`ERR_put_error`-shaped
 - **`tasn_new__60090c3c`** (98B, self-recursive) — the field-recursion body the outer entry point (and itself, for nested SEQUENCE members) calls per `ASN1_TEMPLATE` array entry.
 
 **Net:** closes out the ASN.1 template engine's other half — decode (`tasn_dec.c`) and allocate (`tasn_new.c`) are now both fully mapped and confirmed to call into each other directly, reinforcing the "unmodified upstream BoringSSL" read on this whole cluster. Same standing caveat as everywhere else in this doc: no confirmed live caller into `tasn_dec.c`'s own entry points has been traced from a real bruce entry point, so this doesn't change the "present in the link, not confirmed live" verdict for the ASN.1/EC/Ed25519/X25519 stack as a whole.
+
+## Wave 1: BoringSSL ASN.1 Codecs & Primitives (`asn1_lib.c`, `p_*_asn1.c`, `a_int.c`, `a_object.c`, `bn_asn1.c`)
+
+14 additional BoringSSL ASN.1 and cryptographic primitive functions across 7 translation units are now fully decompiled and mapped.
+
+| Function | Bytes | Source File | OpenSSL / BoringSSL Identification | Role |
+|---|---:|---|---|---|
+| `asn1_lib__6008f1bc` | 256 | `asn1_lib.c` | `ASN1_get_object` | Low-level BER/DER tag & length header parser. Handles multi-byte tags (`0x1F`) and length encodings. |
+| `asn1_lib__6008f2c0` | 116 | `asn1_lib.c` | `ASN1_STRING_set` | Allocates/reallocates string buffer, copies data, and appends null terminator. |
+| `asn1_lib__6008f338` | 50 | `asn1_lib.c` | `ASN1_STRING_type_new` | 16-byte `ASN1_STRING` struct allocator (`len=0`, `type=arg`, `data=NULL`). |
+| `p_dsa_asn1__600850bc` | 164 | `p_dsa_asn1.c` | `dsa_priv_encode` | Encodes DSA private key into PKCS#8 `OneAsymmetricKey` DER structure (`id-dsa` OID `1.2.840.10040.4.1`). |
+| `p_dsa_asn1__60085210` | 168 | `p_dsa_asn1.c` | `dsa_pub_encode` | Encodes DSA public key into SubjectPublicKeyInfo (SPKI) DER structure. |
+| `p_ed25519_asn1__600855e0` | 168 | `p_ed25519_asn1.c` | `ed25519_priv_encode` | Encodes Ed25519 private key (RFC 8410 PKCS#8) using 3-byte OID `1.3.101.112`. |
+| `p_ed25519_asn1__60085694` | 136 | `p_ed25519_asn1.c` | `ed25519_pub_encode` | Encodes Ed25519 public key (RFC 8410 SPKI) as a BIT STRING. |
+| `p_rsa_asn1__60085918` | 150 | `p_rsa_asn1.c` | `rsa_priv_encode` | Encodes RSA private key into PKCS#8 (`rsaEncryption` OID `1.2.840.113549.1.1.1`). |
+| `p_rsa_asn1__600859bc` | 148 | `p_rsa_asn1.c` | `rsa_pub_encode` | Encodes RSA public key into SPKI BIT STRING. |
+| `a_int__6008ef7c` | 286 | `a_int.c` | `c2i_ASN1_INTEGER` | Parses two's-complement BER/DER integer octets into `ASN1_INTEGER` struct. |
+| `a_object__6008f0a0` | 52 | `a_object.c` | `ASN1_OBJECT_new` | 24-byte `ASN1_OBJECT` struct allocator with `ASN1_OBJECT_FLAG_DYNAMIC`. |
+| `a_object__6008f0d8` | 222 | `a_object.c` | `c2i_ASN1_OBJECT` | Parses and validates DER OID octets into an `ASN1_OBJECT`. |
+| `bn_asn1__60090dd8` | 142 | `bn_asn1.c` | `BN_parse_asn1_unsigned` | Parses non-negative DER ASN.1 INTEGER from CBS into a `BIGNUM`. |
+| `bn_asn1__60090e6c` | 130 | `bn_asn1.c` | `BN_marshal_asn1` | Marshals a `BIGNUM` into an ASN.1 INTEGER in a CBB buffer, with DER zero-padding. |
+
+### Subsystem & Codec Breakdown:
+
+#### 1. Core ASN.1 Engine (`asn1_lib.c`):
+- **`asn1_lib__6008f1bc` (`ASN1_get_object`, 256B):**
+  The fundamental building block for all DER/BER decoding. Extracts tag class (`0x00` Universal, `0x40` Application, `0x80` Context-Specific, `0xC0` Private) and tag number. Supports multi-byte 7-bit continuation tags (`tag & 0x1F == 0x1F`). Parses length: short form ($L \le 127$), indefinite form ($0x80$), and long form (1 to 4 bytes). Enforces boundary checks: if $L > \text{omax} - \text{hdr\_len}$, sets error bit `0x80` and reports `ERR_put_error(ERR_LIB_ASN1=0xC, 0, ASN1_R_TOO_LONG=0xB1, "asn1_lib.c", line=0xA8)`.
+- **`asn1_lib__6008f2c0` (`ASN1_STRING_set`, 116B):**
+  Allocates/resizes `param_1[2]` via `FUN_600e092c`/`FUN_600e093e`, copies string octets with `memcpy`, and null-terminates.
+- **`asn1_lib__6008f338` (`ASN1_STRING_type_new`, 50B):**
+  Allocates a 16-byte `struct asn1_string_st { int length; int type; unsigned char *data; long flags; }`.
+
+#### 2. Key Marshalling & PKCS#8 / SPKI Codecs (`p_dsa_asn1.c`, `p_ed25519_asn1.c`, `p_rsa_asn1.c`):
+- **DSA Key Codecs:**
+  - `p_dsa_asn1__600850bc` (`dsa_priv_encode`, 164B): Constructs PKCS#8 `OneAsymmetricKey` sequence using CBB (`FUN_600ed1b4`), writes AlgorithmIdentifier OID `1.2.840.10040.4.1` (7 bytes), encodes `{p, q, g}` parameters via `FUN_600911d4`, and encodes private key `dsa->priv_key` (`*(int *)(dsa + 0x14)`) as an `ASN1_INTEGER` via `bn_asn1__60090e6c`.
+  - `p_dsa_asn1__60085210` (`dsa_pub_encode`, 168B): Constructs SPKI sequence with DSA AlgorithmIdentifier and writes `dsa->pub_key` (`+0x10`) into the SubjectPublicKey BIT STRING.
+- **Ed25519 Key Codecs (RFC 8410):**
+  - `p_ed25519_asn1__600855e0` (`ed25519_priv_encode`, 168B): Validates private key flag (`*(char *)(key + 0x40)`), writes 3-byte OID `1.3.101.112` (`0x2B 0x65 0x70`), and wraps 32-byte seed (`key + 0x00`) in an inner OCTET STRING inside the PKCS#8 `privateKey` field.
+  - `p_ed25519_asn1__60085694` (`ed25519_pub_encode`, 136B): Encodes AlgorithmIdentifier and writes 32-byte public key (`key + 0x20`) into the SPKI BIT STRING.
+- **RSA Key Codecs:**
+  - `p_rsa_asn1__60085918` (`rsa_priv_encode`, 150B): Encodes AlgorithmIdentifier with 9-byte OID `1.2.840.113549.1.1.1` (`rsaEncryption`) + ASN.1 NULL parameter (tag 5), and writes PKCS#1 `RSAPrivateKey` sequence `{n, e, d, p, q, dmp1, dmq1, iqmp}` via `FUN_600869ec`.
+  - `p_rsa_asn1__600859bc` (`rsa_pub_encode`, 148B): Encodes AlgorithmIdentifier and writes PKCS#1 `RSAPublicKey` sequence `{n, e}` via `FUN_600868a4` into the SPKI BIT STRING.
+
+#### 3. ASN.1 Primitive Encoders & Parsers (`a_int.c`, `a_object.c`, `bn_asn1.c`):
+- **`a_int__6008ef7c` (`c2i_ASN1_INTEGER`, 286B):**
+  Decodes two's-complement BER/DER integer octets. If negative (`*data < 0`), marks `type = V_ASN1_NEG_INTEGER` (`0x102`), strips leading `0xFF` sign-extension bytes, and performs two's-complement negation (`-*p` then `~*p`). If positive, marks `type = V_ASN1_INTEGER` (`2`) and strips leading `0x00` padding.
+- **`a_object__6008f0a0` (`ASN1_OBJECT_new`, 52B) & `a_object__6008f0d8` (`c2i_ASN1_OBJECT`, 222B):**
+  Allocates 24-byte `ASN1_OBJECT` and parses BER/DER Object Identifier octets. Enforces strict DER compliance: validates that the last byte has MSB=0 and rejects non-minimal `0x80` continuation bytes at component boundaries.
+- **`bn_asn1__60090dd8` (`BN_parse_asn1_unsigned`, 142B):**
+  Parses an unsigned `ASN1_INTEGER` from a `CBS` (Crypto ByteString) into a `BIGNUM`. Validates tag 2, rejects negative numbers (`BN_R_NEGATIVE_NUMBER = 0x6d`), rejects non-minimal leading zeros (`BN_R_BAD_ENCODING = 0x75`), and converts big-endian octets into `BIGNUM` limbs via `BN_bin2bn` (`FUN_600e7490`).
+- **`bn_asn1__60090e6c` (`BN_marshal_asn1`, 130B):**
+  Serializes a `BIGNUM` into an `ASN1_INTEGER` in a `CBB`. Rejects negative BIGNUMs. If the highest bit of the leading byte is set (`(num_bits & 7) == 0`), prepends a `0x00` sign-extension byte via `FUN_600ed12a(cbb, 0)`. Writes big-endian bytes via `BN_bn2bin` (`FUN_600ece3c`).
 
 ## Related, unexplored
 - HAB4 boot signing is RSA-4096 (confirmed via the CSF block, see project memory) and lives in NXP's boot ROM, **not** in this image — so any RSA/EC code found in bruce itself would be an *application-layer* use, separate from secure boot.

@@ -487,7 +487,7 @@ A `local_56a = 0x7d7b` field initialization near the top (little-endian bytes `0
 
 **Net:** a per-task CPU-state/stack-headroom/heap-usage diagnostic snapshot generator, streamed to a caller-supplied sink — plausibly feeding either the `bug_report.cc` subsystem (above) as an attached diagnostics blob, or a separate telemetry/logging channel; the exact consumer is not confirmed this session since its only caller (`FUN_600ce5cc`) sits in still-undecompiled territory. A natural, very cheap follow-on for whoever wants to close this thread: decompile `FUN_600ce5cc` and 2-3 of the `FUN_600ce4xx`/`FUN_600ce5xx` field-append helpers to confirm both the caller and the output framing.
 
-## Session 22: `battery_service.cc` — the BLE GATT-side battery/charging-status characteristic (3/3 decompiled)
+## Session 23: `battery_service.cc` — the BLE GATT-side battery/charging-status characteristic (3/3 decompiled)
 
 `battery_service.cc` was `bruce-decompile-status.md`'s §3a rank-3 cheap-win target (506 remaining bytes, 0/3). All 3 attributed functions are now decompiled (`analysis/decomp/battery_service__*.c`), confirming the plausibility note that doc's own commentary raised: this really is "a plausible BLE GATT-side counterpart to `battery_gauge_bq2742X.cc`'s I2C fuel-gauge driver" — except it turns out to drive the **BQ25601 charger chip** (the same one `thermal.cc`, session 20, already documents disabling on a thermal fault), not the BQ2742x fuel gauge.
 
@@ -499,10 +499,119 @@ A `local_56a = 0x7d7b` field initialization near the top (little-endian bytes `0
 
 **Net:** `battery_service.cc` is the **BLE GATT-side battery/charging-status characteristic** — periodically polls VBUS presence off the BQ25601 charger chip and, on a state change, notifies connected GATT clients of the new charging state, plus exposes a "long charge mode" (presumably a battery-longevity/reduced-current mode) toggle that writes directly to the charger chip. Confirms and closes the "plausible BLE GATT-side counterpart" open note `bruce-decompile-status.md`'s §3a table previously flagged for this file — and clarifies it's the charger chip (`battery_charger_bq25601.cc`, still undecompiled), not the fuel gauge (`battery_gauge_bq2742X.cc`, session 21), that it actually drives.
 
-## Session 22: `mpu.cc` — the Cortex-M7 MPU + I/D-cache bring-up routine (1/1 decompiled)
+## Session 23: `mpu.cc` — the Cortex-M7 MPU + I/D-cache bring-up routine (1/1 decompiled)
 
 `mpu.cc` was `bruce-decompile-status.md`'s §3a rank-10 cheap-win target (440 remaining bytes, its one attributed function). Now decompiled (`analysis/decomp/mpu__600cb030.c`). Genuinely new territory — the first piece of low-level ARM cache/MPU-management code mapped in this project, distinct from `bruce-itcm.md`'s ITCM-copy boot sequence (which runs even earlier and doesn't touch the MPU/cache at all).
 
-`mpu__600cb030` (440B) — the **Cortex-M7 MPU (Memory Protection Unit) + I/D-cache reconfiguration routine**, called from `xbara__600cbdc8` (the same function `bruce-io-paths.md` documents as the button/pin-registration bring-up routine — i.e. this runs once during early board bring-up, alongside GPIO/XBAR setup). Confirmed by its own log strings, `"Failed to disable MPU region %d!"` / `"Failed to enable default MPU region %d!"`. Saves/restores interrupt-enable state around the whole sequence, then: disables the I-cache and D-cache (clearing enable bits on two SCB-shaped registers), performs a full **invalidate-by-set/way loop** over the cache (the classic Cortex-M7 nested set/way-invalidate idiom, writing to a cache-maintenance register), disables any previously-configured MPU regions one at a time (`FUN_600cafcc`, logging per-region failures), fetches a **board-specific MPU region table** from `gotham_16mb_mimxrt10xx_mpu__6006f660` (an attributed-but-undecompiled sibling file — confirming that file really is a per-board MPU region-table provider, as its name suggests) and programs each entry (`FUN_600cafec`, RBAR/RASR-shaped region-base/attribute register writes, logging per-region failures), re-enables the MPU, re-invalidates and re-enables both caches, and finally restores the saved interrupt-enable state.
+`mpu__600cb030` (440B) — the **Cortex-M7 MPU (Memory Protection Unit) + I/D-cache reconfiguration routine**, called from `xbara__600cbdc8` (the same function `bruce-io-paths.md` documents as the button/pin-registration bring-up routine — i.e. this runs once during early board bring-up, alongside GPIO/XBAR setup). Confirmed by its own log strings, `"Failed to disable MPU region %d!"` / `"Failed to enable default MPU region %d!"`. Saves/restores interrupt-enable state around the whole sequence, then: disables the I-cache and D-cache (clearing enable bits on two SCB-shaped registers), performs a full **invalidate-by-set/way loop** over the cache (the classic Cortex-M7 nested set/way-invalidate idiom, writing to a cache-maintenance register), disables any previously-configured MPU regions one at a time (`FUN_600cafcc`, logging per-region failures), fetches a **board-specific MPU region table** from `gotham_16mb_mimxrt10xx_mpu__6006f660` (an attributed sibling file) and programs each entry (`FUN_600cafec`, RBAR/RASR-shaped region-base/attribute register writes, logging per-region failures), re-enables the MPU, re-invalidates and re-enables both caches, and finally restores the saved interrupt-enable state.
 
-**Net:** the firmware's one-time MPU + cache bring-up — disable caches, tear down any stale MPU config, invalidate cache, load and program the board's real MPU region table (the "16 MB" in `gotham_16mb_mimxrt10xx_mpu.cc`'s name almost certainly refers to the 16 MB QSPI flash's memory-map region, consistent with CLAUDE.md's hardware baseline), then re-enable everything. `gotham_16mb_mimxrt10xx_mpu.cc` (1 function, 132 bytes, still undecompiled) is the natural, very cheap next hop to see the actual region table (flash/RAM/peripheral memory-map split) this function programs.
+**Independent PMSAv7 MPU Region Table Verification:**
+Disassembly of `gotham_16mb_mimxrt10xx_mpu__6006f660` confirms it loads the region table embedded at flash `0x6010288c` and programs **7 concrete MPU regions** via `FUN_600cafec`:
+
+| Region | Base Address | Size | Access / Exec (XN) | Cacheability / Memory Type | Memory Map Role |
+|---|---|---|---|---|---|
+| **0** | `0x60000000` | 16 MB | RO, Executable | Outer/Inner WB Write-Allocate (TEX=1, C=1, B=1) | QSPI Flash (Firmware image & RO data) |
+| **1** | `0x00000000` | 128 KB | RO, Executable | Normal Non-cacheable (TEX=1, C=0, B=0) | Boot ROM / ITCM vector table alias |
+| **2** | `0x20000000` | 512 KB | Full Access (RW), XN | Normal Non-cacheable (TEX=1, C=0, B=0) | DTCM / OCRAM Non-cacheable (DMA/buffers) |
+| **3** | `0x20200000` | 512 KB | Full Access (RW), XN | Outer/Inner WB Write-Allocate (TEX=1, C=1, B=1) | OCRAM Cacheable (RAM, BSS, Heap) |
+| **4** | `0xE0000000` | 1 MB | Full Access (RW), XN | Strongly-Ordered Shareable (TEX=0, C=0, B=0) | System Control Space / PPB (SCB, MPU, NVIC) |
+| **5** | `0x40000000` | 32 MB | Full Access (RW), XN | Shared Device (TEX=0, C=0, B=1) | AIPS Peripherals / Hardware Registers |
+| **6** | `0x00200000` | 128 KB | RO, Executable | Outer/Inner WB Write-Allocate (TEX=1, C=1, B=1) | FlexRAM / Flash remap alias |
+
+**Net:** the firmware's one-time MPU + cache bring-up — disable caches, tear down any stale MPU config, invalidate cache, load and program the board's real 7-region MPU table (protecting and configuring 16 MB QSPI flash, 512 KB non-cacheable DMA RAM, 512 KB WB-cached RAM, peripherals, and PPB space), then re-enable everything.
+
+## Wave 1: `trigger_bug_report.cc` & `transfer_bug_report.cc` — Diagnostic Bug Report Subsystem
+
+`trigger_bug_report.cc` (2 functions, 438 bytes) and associated timer routines form the front door for device-level fault reporting and telemetry snapshots. They serialize structured diagnostics metadata into the circular flash store (`bug_report.cc`, Session 21) and queue the report for background transfer (`transfer_bug_report.cc`).
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `trigger_bug_report__6005d714` | 152 | `trigger_bug_report.cc` | **Bug report trigger entry point.** Throttled / rate-limited dispatch routine called across the system on faults. |
+| `trigger_bug_report__6005d844` | 286 | `trigger_bug_report.cc` | **Diagnostic metadata serializer.** Appends build info, hardware revision, timestamps, and flash partition status. |
+| `FUN_6005d694` (`0x6005d6e4`) | 92 | `trigger_bug_report.cc` | **Bug report timer / state-machine init.** Registers 5s one-shot and 10s periodic watchdog timers. |
+
+### `trigger_bug_report__6005d714` (152B) — Fault Trigger & Rate-Limiter
+Called directly from multiple subsystem fault handlers:
+- `thermal__6005d160` / `thermal__6005d3b4` (thermal shutoff and JEITA battery profile mismatches)
+- `http_flash_writer__6007991c` (OTA flash verification and write failures)
+- `timer__60074658`, `FUN_60071884`
+
+**Execution Flow:**
+1. Computes string length of `reason` (`param_1`), clamping to a maximum of 100 bytes (`uVar8 <= 100`).
+2. Checks RTOS state via `thunk_EXT_FUN_00007734()` (scheduler active check, state == 2) and system state bitmask `*(uint *)(DAT_6005d7ac + 4) & 0x1ff == 0`. If abnormal, logs `"Can't generate a bug report here!"` (`FUN_601016a2(DAT_6005d7b4, 0x25, DAT_6005d7b0)`).
+3. **60-Second Cooldown Throttling:** Reads current uptime in ms via `FUN_600d3618()`. Compares against next permitted timestamp at `*DAT_6005d7b8`. If `now < next_allowed`, logs `"Throttling this request for bug report: %s"` (`FUN_6010165c(0x28, DAT_6005d7b4, 0x2a, DAT_6005d7bc, reason)`) and rejects the request.
+4. **Dispatch:** If cooldown expired:
+   - Updates `*DAT_6005d7b8 = now + 60000` (60,000 ms = 60s cooldown).
+   - Logs `"Bug report triggered: %s"` (`FUN_6010165c(0x14, DAT_6005d7b4, 0x30, DAT_6005d7c0, reason)`).
+   - Formats log record via `FUN_600653f8()` and copies reason string via `FUN_60101198`.
+   - Dispatches background generation task via `thunk_EXT_FUN_00001834(FUN_6005bdac(), 5, param_2, 1, 0)`.
+
+### `trigger_bug_report__6005d844` (286B) — System Metadata Serializer
+Serializes system diagnostic headers into the bug report buffer using `FUN_600cc450(buffer, key, value)`:
+- Key `"build"` (`DAT_6005d970`) — firmware image version string.
+- Key `"dev_hw"` (`DAT_6005d974`) — hardware revision identifier.
+- Key `"internal"` (`DAT_6005d984`) — internal/production build flag evaluated from `FUN_600d7cc4()` and `FUN_600d7cdc()`.
+- **Hardware Model Resolution:** Reads hardware ID from `FUN_60061794()` and performs binary search over 20-entry table (`DAT_6005d98c`, 8-byte entries `{byte hw_id, ..., const char *hw_name}`), appending resolved model name (`DAT_6005d994`).
+- Key `"power_on_ts_sec_epoch"` (`DAT_6005d99c`) — boot epoch timestamp read via `FUN_6004cd58()`, formatted into 16-byte hex buffer `local_c8` via `FUN_6005d7c8`.
+- Key `"time_ms"` (`DAT_6005d9a4`) — current uptime ms read via `FUN_600d3618()`, formatted into 16-byte hex buffer `local_b0`.
+- Frees temporary stack buffers via `thunk_EXT_FUN_0000b52a` before returning.
+
+### `FUN_6005d694` (`0x6005d6e4`, 92B) — Bug Report Watchdog & Transfer Timers
+Initializes FreeRTOS software timers for report transfer and timeout supervision:
+- Timer 1: 5000 ms (5s) one-shot timer (`timer__600511c8(..., period=5000, reload=0)`), registered via `FUN_60101c48`.
+- Timer 2: 10000 ms (10s) periodic timer (`timer__600511c8(..., period=10000, reload=1)`), registered via `FUN_60101c48`.
+
+---
+
+## Wave 1: `battery_charger_bq25601.h` & `battery_charger_bq25601.cc` — TI BQ25601 I2C Battery Charger Driver
+
+All 6 attributed driver functions for Texas Instruments BQ25601 (I2C switchmode single-cell charger with Power Path) are now decompiled and analyzed.
+
+| Function | Bytes | Source File | Register / Role |
+|---|---:|---|---|
+| `battery_charger_bq25601__60068278` | 106 | `battery_charger_bq25601.h` | **REG00 / Input Current Limit (IINDPM)** or **REG03 Precharge.** Modifies upper 4 bits (bits 7:4), logs `"Battery charger %s set to %u, target %u (0x%02X)"`. |
+| `battery_charger_bq25601__600682f4` | 110 | `battery_charger_bq25601.h` | **REG02 / Fast Charge Current (ICHG).** Sets bits 5:0 (60mA steps, 0 to 3000mA), preserves bits 7:6. |
+| `battery_charger_bq25601__60068374` | 110 | `battery_charger_bq25601.h` | **REG03 / Precharge & Termination Current (IPRECHG/ITERM).** Sets bits 3:0 (60mA steps, 60 to 780mA), preserves bits 7:4. |
+| `battery_charger_bq25601__600683f4` | 106 | `battery_charger_bq25601.h` | **REG04 / Charge Voltage Limit (VREG / cutoff voltage).** Sets bits 7:3 (32mV steps, 3856mV to 4624mV), preserves bits 2:0. |
+| `battery_charger_bq25601__600684e0` | 58 | `battery_charger_bq25601.cc` | **REG0B / Device ID & Part Number Verification.** Verifies `PN[3:0] == 0x02` (BQ25601 signature). |
+| `battery_charger_bq25601__6006855c` | 56 | `battery_charger_bq25601.cc` | **REG08 / Power Good (PG) & Bus Status Check.** Queries VBUS presence and status. |
+
+### Register-Level Implementation Details:
+1. **Mathematical Parameter Scaling:**
+   All four `.h` inline configuration routines share a common template:
+   $$\text{RegVal} = \frac{\text{target\_val} - \text{min\_val}}{\text{step\_val}}$$
+   - `60068278`: Bits 7:4 $\rightarrow$ `reg = (reg & 0x0F) | (val << 4)`
+   - `600682f4`: Bits 5:0 $\rightarrow$ `reg = (reg & 0xC0) | (val & 0x3F)`
+   - `60068374`: Bits 3:0 $\rightarrow$ `reg = (reg & 0xF0) | (val & 0x0F)`
+   - `600683f4`: Bits 7:3 $\rightarrow$ `reg = (reg & 0x07) | (val << 3)`
+   Read via `FUN_600d8322(dev, reg_addr)` $\rightarrow$ bitfield combine $\rightarrow$ formatted logging $\rightarrow$ writeback via `FUN_600d835e(dev, reg_addr)`.
+2. **Device ID Check (`600684e0`):**
+   Reads Part Information register `REG0B` (`+0x0B`). Extracts Part Number bits: `PN = (REG0B & 0x7F) >> 3`. Checks `PN == 2` (TI BQ25601 part identifier). If mismatch, logs `"Invalid product Number 0x%04X != 0x%04X"` and returns error 5.
+3. **Power Good / Bus Status (`6006855c`):**
+   Calls `FUN_6006849c` to read `REG08` (`VBUS_STAT` bits 7:6 and `PG_STAT` bit 2). On I2C communication error, formats error via `FUN_600cbb14` and logs `"Error getting bus status: %s"`. Returns `true` if bus power is present and good (`cVar2 == 0 && PG != 0`).
+
+---
+
+## Wave 1: `battery_gauge_bq2742X.h` (`0x60068b80`) — TI BQ27421/BQ27425/BQ27426 Fuel Gauge Configuration
+
+`battery_gauge_bq2742X__60068b80` (290B) implements Data Flash Block **0x52** configuration (State of Charge subclass) for the TI BQ2742x family of Impedance Track fuel gauges.
+
+### Subclass 0x52 Configuration & Dual-Variant Flash Offsets:
+The function inspects the hardware gauge variant stored at `*(char *)(param_1 + 0x1b)`:
+- **Variant 1 (TI BQ27421):**
+  - Offset `10` (`0x0A`): **Design Capacity** (mAh) $\leftarrow$ `*(ushort *)(cfg + 4)`
+  - Offset `12` (`0x0C`): **Design Energy** (mWh) $\leftarrow$ Design Capacity $\times$ `DAT_60068cac` (float voltage scaling)
+  - Offset `16` (`0x10`): **Terminate Voltage** (mV) $\leftarrow$ `*(short *)(cfg + 6)`
+  - Offset `27` (`0x1B`): **Taper Rate** $\leftarrow$ $\frac{\text{Design Capacity}}{\text{Design Energy} \times \text{DAT\_60068cb0}}$
+- **Variant 2 (TI BQ27425 / BQ27426):**
+  - Offset `6` (`0x06`): **Design Capacity**
+  - Offset `8` (`0x08`): **Design Energy**
+  - Offset `10` (`0x0A`): **Terminate Voltage**
+  - Offset `21` (`0x15`): **Taper Rate**
+- **Unknown Variant:** Triggers assertion failure via `FUN_601016a2(DAT_60068ca8, line, DAT_60068ca4)` and traps into an infinite loop.
+
+### Flash Transaction & Checksum Commit:
+1. Opens Data Flash Subclass 0x52 block via `FUN_600d83e0(param_1, 0x52, 0, &checksum)`.
+2. Writes updated 16-bit big-endian words into the 32-byte block RAM mirror using `FUN_600d8518(dev, offset, value, &checksum)`.
+3. Commits the updated parameters and writes the recomputed block checksum to flash register `0x60` via `battery_gauge_bq2742X__60068ae0(dev, checksum, 0x52)`.
+
