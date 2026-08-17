@@ -1492,6 +1492,29 @@ Decompiled and documented 15 functions (1,808 bytes across `0x600a5670`–`0x600
 | `0x600a7e8c` |  86 | BTM / Security | **`btm_sec_find_next_serv_rec`** — Searches for next matching security service record with identical PSM `param_1+0xc` after `param_1`. | 1 caller / 0 callees |
 | `0x600a7ee8` | 194 | BTM / Security | **`btm_sec_find_serv_rec_by_handle`** — Searches 14 service records matching PSM `param_2`, MX channel `param_3`, and server/client channel `param_4`. | 1 caller / 0 callees |
 
+## Session 37 (Wave 7) — BTM Security Pairing State Transitions & Core GATT Client/Server APIs (15 functions, 1,536 bytes)
+
+Decompiled and documented 15 functions (1,536 bytes across `0x600a7fb4`–`0x600abbc4`): security pairing state transitions, 35-second pairing timer control, authentication cleanup lists, and core GATT registration, disconnection, and cache attribute retrieval APIs:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600a7fb4` |  72 | BTM / Security | **`btm_sec_encrypt_retry`** — Clears pending timer flag `+0x1160 = 0`, calls `FUN_600a7b44` on pending record; if result is not 1, invokes error handler `FUN_600f1f82`. | 0 callers / 2 callees |
+| `0x600a8000` |  72 | BTM / Security | **`btm_sec_auth_result`** — Authentication result notification: if callback `btm_sec_cb+0x1120` is non-zero, invokes `(*cback)(bd_addr, dev_class, link_key, pin_len, sec_state)`. | 2 callers / 0 callees |
+| `0x600a804c` |  98 | BTM / Security | **`btm_sec_restore_auth_settings`** — Restores auth and PIN configuration: if `+0x1178 != 0`, calls `btsnd_hcic_write_auth_enable` (`0x600b3790`, established appendix); if `+0x1179 != 0`, calls `btsnd_hcic_write_pin_type` (`0x600b33a4`, established appendix). | 4 callers / 2 callees |
+| `0x600a80b4` |  80 | BTM / Security | **`btm_sec_find_dev_by_sec_state`** — Scans 8 device records (stride `0xfc`, `+0x2a & 0x80 != 0`) matching security state byte `entry+0x50` against `param_1`. | 1 caller / 0 callees |
+| `0x600a8108` | 146 | BTM / Security | **`btm_sec_change_pairing_state`** — Central security pairing state machine transition: updates `btm_sec_cb+0x118c = param_1`; if idle, cancels timer `0x20022270` (`FUN_600aa3cc`), clears state flags, and restores auth settings via `0x600a804c`; if active, starts 35-second pairing watchdog timer (`FUN_600aa340(timer, 0xd, 35)`). | 17 callers / 7 callees |
+| `0x600a82a0` | 102 | BTM / Security | **`btm_sec_rmt_name_failed_cleanup`** — Walks list `DAT_600a8308` (via `0x600d92f8`/`0x600d92fc`); if BD_ADDR matches and event matches `+0x1c`, invokes callback `entry+0xc` with status 10, unlinking entry via `FUN_600d9290`. | 1 caller / 4 callees |
+| `0x600a830c` | 184 | BTM / Security | **`btm_sec_auth_complete_cleanup`** — Walks list `DAT_600a83c4` matching connection record BD_ADDR `param_1+0x10`; invokes callback `entry+0xc` with status `(param_3 == 0 ? 10 : 0)` and unlinks entry via `FUN_600d9290`. | 1 caller / 4 callees |
+| `0x600a83c8` |  68 | BTM / Security | **`btm_sec_is_pairing_possible`** — Checks pairing eligibility: returns 1 if `+0x1176 != 0 && +0x118c == 8 && (param_1+0x5b & 6) != 0`, else 0. | 1 caller / 0 callees |
+| `0x600a8410` | 126 | BTM / Security | **`btm_sec_set_serv_features`** — Updates local security feature flags at `btm_cb+0x19c` based on controller features at `btm_cb+299` (bit 8) and `btm_cb+0x134` (bit 2). | 1 caller / 0 callees |
+| `0x600ab088` |  72 | GATT / Core | **`GATT_Register`** — GATT client/server registration: allocates client control block via `FUN_600af390()`, copies 48-byte application callback structure (`param_1[0..11]`) into `cb+8`, registers via `FUN_600f67b2`. | 1 caller / 2 callees |
+| `0x600ab0d4` |  54 | GATT / Core | **`GATT_Deregister`** — GATT client deregistration: stores 8-byte application ID into `DAT_600ab10c+0x1554` and invokes deregistration worker `FUN_600adb54()`. | 1 caller / 1 callee |
+| `0x600ab564` | 180 | GATT / Core | **`GATT_Disconnect`** — GATT connection teardown: maps connection ID `param_1` to index via `FUN_600afb50()`; releases L2CAP buffer via `FUN_600bd730`, clears registration via `FUN_600f672a`, and zeroes 0x28-byte GATT CCB entry. | 3 callers / 4 callees |
+| `0x600ab88c` |  68 | GATT / Core | **`gatt_disconnect_all`** — Iterates 10 GATT connection records (stride 0x30); if active (`+0x2d != 0`), disconnects client `FUN_600ab9b8(entry+0x2c)`. | 1 caller / 1 callee |
+| `0x600abb14` | 172 | GATT / Core | **`gatt_notify_app_state`** — Iterates GATT service database entries via `FUN_600af610()`, looks up attribute record via `FUN_600af814()`, and invokes application callback `+0x14` (`(*cback)(app_id, bd_addr, handle, 1, 0, transport)`). | 3 callers / 3 callees |
+| `0x600abbc4` |  42 | GATT / Core | **`gatt_get_attribute_handle`** — Reads 2-byte attribute handle from GATT cache via `FUN_600f3e6a(cache, param_1, &handle, 2)`. | 1 caller / 1 callee |
+
+
 
 
 
