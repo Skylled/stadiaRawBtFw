@@ -527,8 +527,8 @@ Disassembly of `gotham_16mb_mimxrt10xx_mpu__6006f660` confirms it loads the regi
 | Function | Bytes | Source File | Role |
 |---|---:|---|---|
 | `trigger_bug_report__6005d714` | 152 | `trigger_bug_report.cc` | **Bug report trigger entry point.** Throttled / rate-limited dispatch routine called across the system on faults. |
-| `trigger_bug_report__6005d844` | 286 | `trigger_bug_report.cc` | **Diagnostic metadata serializer.** Appends build info, hardware revision, timestamps, and flash partition status. |
-| `FUN_6005d694` (`0x6005d6e4`) | 92 | `trigger_bug_report.cc` | **Bug report timer / state-machine init.** Registers 5s one-shot and 10s periodic watchdog timers. |
+| `trigger_bug_report__6005d844` | 286 | `trigger_bug_report.cc` | **Diagnostic metadata serializer.** Appends build info, hardware revision, timestamps, and active flash partition name. |
+| `FUN_6005d694` (`0x6005d6e4`) | 92 | `thermal.cc` / `trigger_bug_report.cc` | **Bug report timer / supervision init.** Registers `"charge_complete_timer"` (5s one-shot) and `"thermal_shutoff_timer"` (10s periodic) supervision timers. |
 
 ### `trigger_bug_report__6005d714` (152B) — Fault Trigger & Rate-Limiter
 Called directly from multiple subsystem fault handlers:
@@ -547,19 +547,21 @@ Called directly from multiple subsystem fault handlers:
    - Dispatches background generation task via `thunk_EXT_FUN_00001834(FUN_6005bdac(), 5, param_2, 1, 0)`.
 
 ### `trigger_bug_report__6005d844` (286B) — System Metadata Serializer
-Serializes system diagnostic headers into the bug report buffer using `FUN_600cc450(buffer, key, value)`:
-- Key `"build"` (`DAT_6005d970`) — firmware image version string.
-- Key `"dev_hw"` (`DAT_6005d974`) — hardware revision identifier.
-- Key `"internal"` (`DAT_6005d984`) — internal/production build flag evaluated from `FUN_600d7cc4()` and `FUN_600d7cdc()`.
-- **Hardware Model Resolution:** Reads hardware ID from `FUN_60061794()` and performs binary search over 20-entry table (`DAT_6005d98c`, 8-byte entries `{byte hw_id, ..., const char *hw_name}`), appending resolved model name (`DAT_6005d994`).
-- Key `"power_on_ts_sec_epoch"` (`DAT_6005d99c`) — boot epoch timestamp read via `FUN_6004cd58()`, formatted into 16-byte hex buffer `local_c8` via `FUN_6005d7c8`.
+Serializes 8 system diagnostic key-value pairs into the bug report buffer using `FUN_600cc450(buffer, key, value)`:
+- Key `"version"` (`DAT_6005d970`) — firmware image version string (`"337784"`, `DAT_6005d96c`).
+- Key `"app"` (`DAT_6005d974`) — application build profile string (`"user"`, `DAT_6005d980`).
+- Key `"build"` (`DAT_6005d984`) — build type string (`"user"`, `DAT_6005d980`).
+- Key `"dev_hw"` (`DAT_6005d988`) — development hardware boolean flag (`"true"` / `"false"`) evaluated from `FUN_600d7cc4()`.
+- Key `"internal"` (`DAT_6005d990`) — internal Google build boolean flag (`"true"` / `"false"`) evaluated from `FUN_600d7cdc()`.
+- Key `"partition"` (`DAT_6005d994`) — **Active Flash Partition Name**: reads active partition ID from `FUN_60061794()` and performs binary search over the 21-entry Partition Table (`0x60105188`, 8-byte entries `{byte id, ..., const char *name}`: `"Invalid"`, `"AppA"`, `"AppB"`, `"Bootloader"`, `"BootloaderMetaData"`, `"PersistentData"`, `"Recovery"`, `"Test"`, `"Tombstone"`, `"UserData"`, `"Reserved0..3"`, `"AppAMailbox"`, `"AppBMailbox"`, `"RecoveryMailbox"`, `"Analytics"`, `"ImageVectorTable"`, `"BootloaderB"`, `"MainExecutable"`), appending the resolved partition name.
+- Key `"power_on_ts_sec_epoch"` (`DAT_6005d9a0`) — boot epoch timestamp read via `FUN_6004cd58()`, formatted into 16-byte hex buffer `local_c8` via `FUN_6005d7c8`.
 - Key `"time_ms"` (`DAT_6005d9a4`) — current uptime ms read via `FUN_600d3618()`, formatted into 16-byte hex buffer `local_b0`.
 - Frees temporary stack buffers via `thunk_EXT_FUN_0000b52a` before returning.
 
-### `FUN_6005d694` (`0x6005d6e4`, 92B) — Bug Report Watchdog & Transfer Timers
-Initializes FreeRTOS software timers for report transfer and timeout supervision:
-- Timer 1: 5000 ms (5s) one-shot timer (`timer__600511c8(..., period=5000, reload=0)`), registered via `FUN_60101c48`.
-- Timer 2: 10000 ms (10s) periodic timer (`timer__600511c8(..., period=10000, reload=1)`), registered via `FUN_60101c48`.
+### `FUN_6005d694` (`0x6005d6e4`, 92B) — Thermal & Charging Supervision Timers
+Initializes FreeRTOS software timers for thermal monitoring and charge completion supervision:
+- Timer 1: 5000 ms (5s) one-shot `"charge_complete_timer"` (`timer__600511c8(..., name="charge_complete_timer", period=5000, callback=thermal__6005d0bd, reload=0)`), registered via `FUN_60101c48`.
+- Timer 2: 10000 ms (10s) periodic `"thermal_shutoff_timer"` (`timer__600511c8(..., name="thermal_shutoff_timer", period=10000, callback=thermal__6005d3b4, reload=1)`), registered via `FUN_60101c48`.
 
 ---
 
@@ -569,21 +571,21 @@ All 6 attributed driver functions for Texas Instruments BQ25601 (I2C switchmode 
 
 | Function | Bytes | Source File | Register / Role |
 |---|---:|---|---|
-| `battery_charger_bq25601__60068278` | 106 | `battery_charger_bq25601.h` | **REG00 / Input Current Limit (IINDPM)** or **REG03 Precharge.** Modifies upper 4 bits (bits 7:4), logs `"Battery charger %s set to %u, target %u (0x%02X)"`. |
-| `battery_charger_bq25601__600682f4` | 110 | `battery_charger_bq25601.h` | **REG02 / Fast Charge Current (ICHG).** Sets bits 5:0 (60mA steps, 0 to 3000mA), preserves bits 7:6. |
-| `battery_charger_bq25601__60068374` | 110 | `battery_charger_bq25601.h` | **REG03 / Precharge & Termination Current (IPRECHG/ITERM).** Sets bits 3:0 (60mA steps, 60 to 780mA), preserves bits 7:4. |
-| `battery_charger_bq25601__600683f4` | 106 | `battery_charger_bq25601.h` | **REG04 / Charge Voltage Limit (VREG / cutoff voltage).** Sets bits 7:3 (32mV steps, 3856mV to 4624mV), preserves bits 2:0. |
-| `battery_charger_bq25601__600684e0` | 58 | `battery_charger_bq25601.cc` | **REG0B / Device ID & Part Number Verification.** Verifies `PN[3:0] == 0x02` (BQ25601 signature). |
+| `battery_charger_bq25601__60068278` | 106 | `battery_charger_bq25601.h` | **REG03 / Precharge Current Limit (IPRECHG).** Sets bits 7:4 (60mA steps, 60 to 780mA), preserves bits 3:0. Logs `"Battery charger %s set to %u, target %u (0x%02X)"` with string `"precharge"`. |
+| `battery_charger_bq25601__600682f4` | 110 | `battery_charger_bq25601.h` | **REG02 / Fast Charge Current (ICHG).** Sets bits 5:0 (60mA steps, 0 to 3000mA), preserves bits 7:6. Logs with string `"fastcharge"`. |
+| `battery_charger_bq25601__60068374` | 110 | `battery_charger_bq25601.h` | **REG03 / Termination Current (ITERM).** Sets bits 3:0 (60mA steps, 60 to 780mA), preserves bits 7:4. Logs with string `"terminal charge"`. |
+| `battery_charger_bq25601__600683f4` | 106 | `battery_charger_bq25601.h` | **REG04 / Charge Voltage Limit (VREG / cutoff voltage).** Sets bits 7:3 (32mV steps, 3856mV to 4624mV), preserves bits 2:0. Logs with string `"cutoff voltage"`. |
+| `battery_charger_bq25601__600684e0` | 58 | `battery_charger_bq25601.cc` | **REG0B / Device ID & Part Number Verification.** Verifies `PN[3:0] == (REG0B & 0x7F) >> 3 == 0x02` (BQ25601 signature). |
 | `battery_charger_bq25601__6006855c` | 56 | `battery_charger_bq25601.cc` | **REG08 / Power Good (PG) & Bus Status Check.** Queries VBUS presence and status. |
 
 ### Register-Level Implementation Details:
 1. **Mathematical Parameter Scaling:**
    All four `.h` inline configuration routines share a common template:
    $$\text{RegVal} = \frac{\text{target\_val} - \text{min\_val}}{\text{step\_val}}$$
-   - `60068278`: Bits 7:4 $\rightarrow$ `reg = (reg & 0x0F) | (val << 4)`
-   - `600682f4`: Bits 5:0 $\rightarrow$ `reg = (reg & 0xC0) | (val & 0x3F)`
-   - `60068374`: Bits 3:0 $\rightarrow$ `reg = (reg & 0xF0) | (val & 0x0F)`
-   - `600683f4`: Bits 7:3 $\rightarrow$ `reg = (reg & 0x07) | (val << 3)`
+   - `60068278` (REG03 IPRECHG): Bits 7:4 $\rightarrow$ `reg = (reg & 0x0F) | (val << 4)` (60mA step, 60mA offset)
+   - `600682f4` (REG02 ICHG): Bits 5:0 $\rightarrow$ `reg = (reg & 0xC0) | (val & 0x3F)` (60mA step, 0mA offset, up to 3000mA)
+   - `60068374` (REG03 ITERM): Bits 3:0 $\rightarrow$ `reg = (reg & 0xF0) | (val & 0x0F)` (60mA step, 60mA offset, up to 780mA)
+   - `600683f4` (REG04 VREG): Bits 7:3 $\rightarrow$ `reg = (reg & 0x07) | (val << 3)` (32mV step, 3856mV offset, up to 4624mV)
    Read via `FUN_600d8322(dev, reg_addr)` $\rightarrow$ bitfield combine $\rightarrow$ formatted logging $\rightarrow$ writeback via `FUN_600d835e(dev, reg_addr)`.
 2. **Device ID Check (`600684e0`):**
    Reads Part Information register `REG0B` (`+0x0B`). Extracts Part Number bits: `PN = (REG0B & 0x7F) >> 3`. Checks `PN == 2` (TI BQ25601 part identifier). If mismatch, logs `"Invalid product Number 0x%04X != 0x%04X"` and returns error 5.
@@ -600,18 +602,397 @@ All 6 attributed driver functions for Texas Instruments BQ25601 (I2C switchmode 
 The function inspects the hardware gauge variant stored at `*(char *)(param_1 + 0x1b)`:
 - **Variant 1 (TI BQ27421):**
   - Offset `10` (`0x0A`): **Design Capacity** (mAh) $\leftarrow$ `*(ushort *)(cfg + 4)`
-  - Offset `12` (`0x0C`): **Design Energy** (mWh) $\leftarrow$ Design Capacity $\times$ `DAT_60068cac` (float voltage scaling)
+  - Offset `12` (`0x0C`): **Design Energy** (mWh) $\leftarrow$ $\text{Design Capacity} \times 3.8\text{V}$ (`DAT_60068cac` = `3.8f`)
   - Offset `16` (`0x10`): **Terminate Voltage** (mV) $\leftarrow$ `*(short *)(cfg + 6)`
-  - Offset `27` (`0x1B`): **Taper Rate** $\leftarrow$ $\frac{\text{Design Capacity}}{\text{Design Energy} \times \text{DAT\_60068cb0}}$
+  - Offset `27` (`0x1B`): **Taper Rate** $\leftarrow$ $\frac{\text{Design Capacity}}{\text{Taper Current} \times 0.1}$ (`*(ushort *)(cfg + 8)` = Taper Current, `DAT_60068cb0` = `0.1f`)
 - **Variant 2 (TI BQ27425 / BQ27426):**
-  - Offset `6` (`0x06`): **Design Capacity**
-  - Offset `8` (`0x08`): **Design Energy**
-  - Offset `10` (`0x0A`): **Terminate Voltage**
-  - Offset `21` (`0x15`): **Taper Rate**
-- **Unknown Variant:** Triggers assertion failure via `FUN_601016a2(DAT_60068ca8, line, DAT_60068ca4)` and traps into an infinite loop.
+  - Offset `6` (`0x06`): **Design Capacity** (mAh)
+  - Offset `8` (`0x08`): **Design Energy** (mWh)
+  - Offset `10` (`0x0A`): **Terminate Voltage** (mV)
+  - Offset `21` (`0x15`): **Taper Rate** (0.1 hr units)
+- **Unknown Variant:** Triggers assertion failure `"NOTREACHED"` via `FUN_601016a2(DAT_60068ca8, line, DAT_60068ca4)` and traps into an infinite loop.
 
 ### Flash Transaction & Checksum Commit:
 1. Opens Data Flash Subclass 0x52 block via `FUN_600d83e0(param_1, 0x52, 0, &checksum)`.
 2. Writes updated 16-bit big-endian words into the 32-byte block RAM mirror using `FUN_600d8518(dev, offset, value, &checksum)`.
-3. Commits the updated parameters and writes the recomputed block checksum to flash register `0x60` via `battery_gauge_bq2742X__60068ae0(dev, checksum, 0x52)`.
+3. Commits the updated parameters and writes the recomputed block checksum to flash register `0x60` via `battery_gauge_bq2742X__60088ae0(dev, checksum, 0x52)`.
+
+---
+
+## Wave 2: `bee.cc` — NXP i.MX RT Bus Encryption Engine (BEE) Controller
+
+The NXP i.MX RT1061 incorporates an on-the-fly hardware Bus Encryption Engine (BEE) that decrypts/encrypts QSPI flash memory traffic on AHB bus transactions with zero latency overhead. `bee.cc` (2 functions, 436 bytes) manages BEE region bounds checking, memory alignment, hardware fuse verification, and key slot programming.
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `bee__6005ee88` | 92 | `bee.cc` | **BEE region bounds & enablement validator.** Checks address ranges against hardware bounds registers. |
+| `bee__6005ef04` | 344 | `bee.cc` | **BEE region configuration & key programmer.** Verifies 16-byte alignment, checks OCOTP fused keys, configures BEE hardware control and key registers. |
+
+### `bee__6005ee88` (92B) — Region Range Validator
+- Queries lower and upper address bounds via ITCM thunk `thunk_EXT_FUN_000007b8`:
+  - Region 0 (`param_3 == 0`): queries `DAT_6005eee4 = 0x01120020` (bottom) and `DAT_6005eee8 = 0x01130020` (top). Tag string `"0"` (`DAT_6005eeec`).
+  - Region 1 (`param_3 == 1`): queries `DAT_6005eef0 = 0x01140020` (bottom) and `DAT_6005eef4 = 0x01150020` (top). Tag string `"1"` (`DAT_6005eef8`).
+- Validates if target range `[param_1, param_2]` falls completely within region bounds:
+  $$\text{param\_1} \ge \text{bottom} \quad \text{and} \quad \text{param\_2} < \text{top}$$
+- If out of bounds, formats error at `bee.cc:184` (`0xb8`): `"Region%s is not enabled for address range 0x%08x to 0x%08x"` (`DAT_6005eefc`) and returns error status `9` (`kOutOfRange` / `kInvalidArgument`). On success, returns `0` (`kOk`).
+
+### `bee__6005ef04` (344B) — Region Configuration & Fuse Validation
+Configures on-the-fly encryption/decryption for a specified BEE memory region:
+1. **16-Byte AES Block Alignment:** Computes `start = param_1[0]` and `end = start + param_1[1]`. Enforces 16-byte alignment:
+   $$(\text{start} \mid \text{end}) \ \& \ 0\text{x}0\text{F} == 0$$
+   On violation, logs `"bee.cc:101: Problem with region alignment, bottom=0x%08x, top=0x%08x"` (`DAT_6005f05c`) and returns error status `3`.
+2. **Region ID & Hardware Fuse Check:**
+   - Reads OCOTP fuse register at `0x401f4000 + 0x460` (`OCOTP->BEE_KEY_SEL` / `OCOTP->CFG4`).
+   - For Region 0 (`param_2 == 0`): extracts bits [13:12] via `(val << 18) >> 30`.
+   - For Region 1 (`param_2 == 1`): extracts bits [15:14] via `(val << 16) >> 30`.
+   - If region > 1: logs `"bee.cc:49: Invalid region provided"` (`DAT_6005f064`).
+   - If encryption enabled (`param_1[4] != 0`), cross-checks key descriptor (`param_1[2]`):
+     - Key type `0` (user/software key): requires fuse selector == 0.
+     - Key type `1` (fused hardware key): checks against boot mode key setting `FUN_600d4772()`. If fuse selector != 1/2/3, logs `"bee.cc:83: Region(%lu) key provided doesn't match BEE's fused key value(%lu)"` (`DAT_6005f074`) and `"bee.cc:107: BEE key doesn't match fused value"` (`DAT_6005f068`).
+     - Key type > 1: logs `"bee.cc:78: Key is unexpected type:%lu"` (`DAT_6005f070`).
+3. **Hardware Programming:**
+   - Prepares region structure via `FUN_600ce95c`.
+   - Programs BEE peripheral registers at base `0x403ec000` via `FUN_60052378(0x403ec000, param_2, region_cfg)`.
+   - Synchronizes BEE status via `thunk_EXT_FUN_00008996()`.
+   - Sets control bits `*BEE_CTRL |= 0x11` (BEE enable), programs key/lock configuration via `FUN_600ce96e`, and re-synchronizes hardware state.
+
+---
+
+## Wave 2: `types.h` — Bluetooth Low Energy (BLE) Advertising Data Structures
+
+`types.h` (3 functions, 424 bytes) implements Bluetooth Low Energy GAP advertising packet construction, UUID list encoding, and payload size validation according to the Bluetooth Core Specification (31-byte advertising payload limit).
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `types__6005da44` | 108 | `types.h` | **Advertising payload length validator.** Enforces strict $\le 31$ byte BLE advertising data limit. |
+| `types__60080e60` | 126 | `types.h` | **16-bit Service UUID list encoder.** Formats 16-bit UUIDs into GAP AD Type `0x02` (Incomplete) or `0x03` (Complete). |
+| `types__600810bc` | 190 | `types.h` | **Advertising packet assembler.** Constructs full BLE advertising descriptor for `advertiser__60081234`. |
+
+### `types__6005da44` (108B) — BLE Advertising Size Validator
+Calculates the aggregate length of all populated AD structures in the advertising buffer `param_1`:
+$$\text{TotalBytes} = \text{FlagsLen} + (\text{NameLen} + 1) + (\text{Num16BitUUIDs} \times 2 + 1) + (\text{MfgDataLen} + 2) + \text{ExtraDataLen}$$
+- Checks offsets: `+0x04` (local name length), `+0x28` (UUID count), `+0x4b` (manufacturer data length), `+0x6b` (extra data).
+- If $\text{TotalBytes} > 31$ (`0x1F`): triggers a critical assertion failure at `types.h:448` (`0x1c0`):
+  `"Advertising data must be <= 31 bytes. Data provided was <N> bytes"` (`PTR_s_Advertising_data_must_be_<__31_b_6005dab4` / `PTR_s_bytes_6005dab8`) via `FUN_60101740`.
+
+### `types__60080e60` (126B) — 16-Bit Service UUID Encoder
+- Validates that encoded UUIDs fit within AD structure capacity: `param_3 * 2 + 1 <= 31`. If exceeded, asserts at `types.h:455` (`0x1c7`).
+- Sets AD Type identifier at `param_1 + 0x2c`:
+  - `0x02` (Incomplete List of 16-bit Service Class UUIDs) if `param_4 == 0`.
+  - `0x03` (Complete List of 16-bit Service Class UUIDs) if `param_4 != 0`.
+- Serializes 16-bit little-endian UUID values into payload buffer `param_1 + 0x2c + offset`.
+- Stores UUID count at `*(int *)(param_1 + 0x28) = param_3` and calls `types__6005da44(param_1)` to verify total packet size.
+
+### `types__600810bc` (190B) — Advertising Packet Assembler
+Called directly from `advertiser__60081234` during BLE pairing and discovery advertisement setup:
+1. Clears stack advertising descriptor (`0x8c` bytes) via `thunk_EXT_FUN_0000b5ba` (memset 0).
+2. Adds Stadia service UUID (`0x6010b134`) via `types__60080e60(buffer, &kStadiaServiceUuid, 1, 0)`.
+3. Reads local device name string via `FUN_60080fb8(&local_name)`. Asserts `name_len + 1 <= 31` at `types.h:326` (`0x146`).
+4. Appends name bytes at offset `+9`, sets name length at `+4`, and validates size via `types__6005da44`.
+5. Copies packet to destination `param_2` (`0x8c` bytes) via `thunk_EXT_FUN_0000b572` (memcpy).
+6. Configures BLE advertising parameters:
+   - `param_2[0x8b] = 1` (advertising enabled)
+   - `param_2[0] = 1` (advertising type)
+   - `param_2[1] = 6` (General Discoverable / Connectable Undirected) if in pairing mode (`*(param_1 + 0x58) == 1`), else `5` (Limited Discoverable).
+
+---
+
+## Wave 2: `timers.c` — FreeRTOS Software Timer Daemon Task & Timer Core
+
+`timers.c` (5 functions, 344 bytes) contains the core FreeRTOS software timer subsystem implementation, including daemon task creation, timer control block (TCB) initialization, timer list expiry processing, period querying, and active-state queries.
+
+| Function | Bytes | Source File | FreeRTOS API / Role |
+|---|---:|---|---|
+| `timers__600cacb8` | 82 | `timers.c` | **`xTimerCreateTimerTask` / daemon bring-up.** Spawns `"Tmr Svc"` daemon task at priority 31 (`0x1F`). |
+| `timers__600cad24` | 88 | `timers.c` | **`xTimerCreateStatic` / `prvInitialiseNewTimer`.** Initializes `Timer_t` descriptor structure. |
+| `timers__600cae18` | 22 | `timers.c` | **`xTimerGetPeriod`.** Returns timer period in ticks from `Timer_t->xTimerPeriodInTicks` (`+0x18`). |
+| `timers__600cad94` | 114 | `timers.c` | **`prvProcessExpiredTimer` / timer wheel sweep.** Dispatches timer callbacks, handles auto-reload and overflow list swap. |
+| `timers__600cae38` | 38 | `timers.c` | **`xTimerIsTimerActive`.** Thread-safe critical section query checking if timer is in an active list (`+0x14`). |
+
+### `timers__600cacb8` (82B) — `xTimerCreateTimerTask`
+- Initializes active and overflow timer list structures via `FUN_600cac50()`.
+- Verifies timer message queue (`*DAT_600cad0c != 0`).
+- Retrieves daemon parameters via `FUN_600583d8`: stack depth, priority `0x1F` (31 - highest RTOS priority), name `"Tmr Svc"`.
+- Spawns daemon task via `tasks__600ca1f8` (`xTaskCreateStatic`). Stores task handle at `*DAT_600cad18` (`xTimerTaskHandle`).
+- If task creation fails, triggers `"timers.c:271: FreeRTOS CHECK failed"` (`DAT_600cad20` / `0x10f`).
+
+### `timers__600cad24` (88B) — `xTimerCreateStatic`
+Initializes static `Timer_t` control block (`param_6`):
+- `+0x00`: `pcTimerName` (`param_1`)
+- `+0x04`: `xTimerListItem` (`ListItem_t`, initialized via `FUN_601007b6`)
+- `+0x18`: `xTimerPeriodInTicks` (`param_2` / `param_6[6]`)
+- `+0x1c`: `uxAutoReload` (`param_3` / `param_6[7]`)
+- `+0x20`: `pvTimerID` (`param_4` / `param_6[8]`)
+- `+0x24`: `pxCallbackFunction` (`param_5` / `param_6[9]`)
+- `+0x2c` (byte): `ucStatus = 1` (static allocation flag)
+- Asserts `param_6 != NULL` (at `timers.c:330`, `0x14a`) and `period > 0` (at `timers.c:360`, `0x168`).
+
+### `timers__600cad94` (114B) — `prvProcessExpiredTimer`
+Processes timer list head entries until list is exhausted:
+1. Reads head item from active timer list `*pxCurrentTimerList` (`DAT_600cae08 = 0x20027734`).
+2. Extracts timer object `uVar7` (`Timer_t`) and scheduled expiry tick `uVar8`.
+3. Unlinks item from active list via `thunk_EXT_FUN_0000b344(uVar7 + 4)` (`uxListRemove`).
+4. Executes registered timer callback: `(**(code **)(uVar7 + 0x24))(uVar7)`.
+5. If auto-reload enabled (`*(int *)(uVar7 + 0x1c) == 1`):
+   - Computes next expiry `next_tick = uVar8 + period`.
+   - If no tick overflow (`uVar8 < next_tick`): inserts back into active list via `thunk_EXT_FUN_0000b316(pxCurrentTimerList, uVar7 + 4)`.
+   - On tick overflow: posts timer command to queue via `thunk_EXT_FUN_00007a2c(uVar7, 0, uVar8, ...)` and asserts queue status at `timers.c:878` (`0x36e`).
+6. Swaps `pxCurrentTimerList` (`0x20027734`) and `pxOverflowTimerList` (`DAT_600cae10 = 0x20027738`).
+
+### `timers__600cae38` (38B) — `xTimerIsTimerActive`
+- Enters FreeRTOS critical section via `thunk_EXT_FUN_00007d64()` (`taskENTER_CRITICAL()`).
+- Reads list container pointer `*(int *)(param_1 + 0x14)` (`xTimerListItem.pvContainer`).
+- Exits critical section via `thunk_EXT_FUN_00007dac()` (`taskEXIT_CRITICAL()`).
+- Returns `true` if `pvContainer != NULL`, `false` if unlinked.
+
+---
+
+## Wave 2: `partition_table.h` — Flash Partition Geometry & Descriptor Mapping
+
+`partition_table.h` (2 functions, 324 bytes) manages the controller's A/B flash layout, partition descriptor lookups by partition ID, and physical address boundary validation.
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `partition_table__6007818c` | 64 | `partition_table.h` | **`GetPartitionById`.** Looks up partition descriptor object by 8-bit partition ID. |
+| `partition_table__60061684` | 260 | `partition_table.h` | **`ValidatePartitionBounds`.** Resolves partition block geometry and validates physical flash address range. |
+
+### `partition_table__6007818c` (64B) — Partition Descriptor Lookup
+- Asserts `param_2 != 0` (`partition_id != 0`) at `partition_table.h:86` (`0x56`).
+- Iterates across partition table array `param_1[0]` (length `param_1[1]`):
+  - Reads entry `piVar1 = entries[i]`.
+  - Compares partition ID byte: `*(byte *)(*piVar1 + 8) == param_2`.
+  - On match, returns partition descriptor object pointer `piVar1[1]`.
+- Returns `NULL` (`0`) if not found.
+
+### `partition_table__60061684` (260B) — Physical Flash Boundary Validator
+1. Searches partition table for descriptor matching target ID `*param_3`. On failure, logs `"partition_table.h:130: No partition matching partition id:%u"` (`DAT_60061790`) and returns 0.
+2. Queries block count via virtual method `(*piVar3->vtable->GetBlockCount)(piVar3)` (`+0x14`) $\rightarrow \text{block\_count}$.
+3. Reads block size from partition geometry: $\text{block\_size} = \text{piVar3->geometry->block\_size}$ (`*(int *)(piVar3[1] + 4)`).
+4. Resolves start address: `start_addr = FUN_600d4752(piVar3, 0)`. Asserts `start_addr != 0` at line `0x8c`.
+5. Resolves end address: `end_addr = FUN_600d4752(piVar3, block_count * block_size - 1)`. Asserts `end_addr != 0` at line `0x90`.
+6. Checks if target physical address `*param_2` satisfies:
+   $$\text{start\_addr} \le *\text{param\_2} \le \text{end\_addr}$$
+   Returns 1 if within range, 0 otherwise.
+
+---
+
+## Wave 2: `private_heap.cc` — Isolated Memory Heap Pool with Block Checksums
+
+`private_heap.cc` (3 functions, 278 bytes) implements an isolated memory heap allocator featuring 16-byte (`0x10`) block headers with cryptographic/integrity checksumming on every chunk header, preventing heap corruption and buffer overflow tampering.
+
+```
++-------------------+-------------------+-------------------+-------------------+
+| prev_size (int32) | curr_size (int32) |   state (int32)   |  checksum (uint32)|
+|      +0x00        |       +0x04       |       +0x08       |       +0x0C       |
++-------------------+-------------------+-------------------+-------------------+
+|                             User Payload Data ...                             |
++-------------------------------------------------------------------------------+
+```
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `private_heap__60083534` | 42 | `private_heap.cc` | **`GetNextBlock`.** Advances to next block header and validates header checksum. |
+| `private_heap__60083568` | 56 | `private_heap.cc` | **`ValidateBlockHeader`.** Validates chunk state (`0x10` free, `0x01` in-use) and checksum. |
+| `private_heap__600835ac` | 180 | `private_heap.cc` | **`private_heap_free`.** Frees memory block, coalesces adjacent free chunks, and updates checksums. |
+
+### Block Header Fields & Constants:
+- `prev_size` (`+0x00`): size of preceding chunk (-1 if first chunk).
+- `curr_size` (`+0x04`): size of user payload (-1 if sentinel end block).
+- `state` (`+0x08`): `0x10` = `FREE_BLOCK`, `0x01` = `IN_USE_BLOCK`, `0xFF` = `TRANSFERRED_BLOCK`.
+- `checksum` (`+0x0C`): CRC/checksum computed over the first 12 bytes via `FUN_600dfd6a()`.
+
+### `private_heap__60083534` (42B) — `GetNextBlock`
+- If `curr_size == -1`: returns `NULL` (sentinel end of heap).
+- Computes expected checksum via `FUN_600dfd6a(param_1)`. If `param_1->checksum != expected`, triggers `"private_heap.cc:35: Corrupted heap: checksum is invalid"` (`DAT_60083560`).
+- Returns pointer to next block header: `param_1 + 0x10 + param_1->curr_size`.
+
+### `private_heap__60083568` (56B) — `ValidateBlockHeader`
+- Checks `header->state == 0x10` or `header->state == 0x01`. If invalid, asserts `"private_heap.cc:60: Invalid header state (neither free nor in use) at %p"` (`DAT_600835a0`).
+- Checks `header->checksum == FUN_600dfd6a(param_1)`. If mismatch, asserts `"private_heap.cc:63: Corrupted heap: checksum is invalid at %p"` (`DAT_600835a8`).
+
+### `private_heap__600835ac` (180B) — `private_heap_free` & Coalescing
+1. Computes header address: `header = param_1 - 0x10`. Validates via `private_heap__60083568(header)`.
+2. Sets state to free: `header->state = 0x10`. Updates `header->checksum = FUN_600dfd6a(header)`.
+3. **Coalesce with Previous Block:**
+   If `header->prev_size != -1`:
+   - Checks previous block `prev = header - header->prev_size - 0x10`.
+   - If `prev->state == 0x10` and `prev->curr_size != -1`:
+     - Merges current block: `prev->curr_size += 0x10 + header->curr_size`.
+     - Recomputes `prev->checksum`.
+     - Sets current header state to `0xFF`.
+     - Updates subsequent block's `prev_size`.
+4. **Coalesce with Next Block:**
+   - Obtains `next = private_heap__60083534(header)`.
+   - If `next != NULL`, `next->state == 0x10`, and `next->curr_size != -1`:
+     - Sets `next->state = 0xFF`.
+     - Merges next block: `header->curr_size += 0x10 + next->curr_size`.
+     - Recomputes `header->checksum`.
+     - Updates following block's `prev_size`.
+
+---
+
+## Wave 2: `usb_host_worker.cc` — USB Host Worker Thread & Queue Pump
+
+`usb_host_worker.cc` (3 functions, 268 bytes) coordinates the asynchronous USB Host event pipeline, background worker task lifecycle, and ISR-to-task event posting with Cortex-M PendSV interrupt synchronization.
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `usb_host_worker__6006525c` | 36 | `usb_host_worker.cc` | **`StartUsbHostTask`.** Spawns the `"USB host task"` FreeRTOS worker thread at priority 27 (`0x1B`). |
+| `usb_host_worker__600d56ae` | 64 | `usb_host_worker.cc` | **`QueueHostEvent`.** Posts event message to host worker queue from thread context. |
+| `usb_host_worker__600610d0` | 168 | `usb_host_worker.cc` | **`UsbHostWorker_ISR_Dispatch`.** ISR/Thread dual-mode event poster with Cortex-M PendSV trigger (`0xE000ED04`). |
+
+### `usb_host_worker__6006525c` (36B) — Task Bring-Up
+- Checks `*(int *)(DAT_60065280 + 0x58) == 0` (`0x2001bdd0` context).
+- If task not active: logs `"usb_host_worker.cc:89: starting host task"` (`DAT_60065288`).
+- Spawns task via `FUN_6010177a(0x2001bdd0, "USB host task", 0x1B)` (`xTaskCreate` priority 27).
+
+### `usb_host_worker__600d56ae` (64B) — Thread-Mode Event Queueing
+- Reads event fields from `param_1 + 0xe4` and `param_1 + 0xe8`.
+- Posts event to worker queue handle `*(0x2001bdd0 + 0xb0)` via `thunk_EXT_FUN_00006a74` (`xQueueSend`, timeout=0).
+- If queue full / send fails: logs `"usb_host_worker.cc:26: Unable to queue host event"` (`DAT_600652cc`).
+
+### `usb_host_worker__600610d0` (168B) — Dual-Mode ISR/Thread Event Dispatcher
+- Inspects USB state at `*(int *)(0x200064c0 + 0x3e78)`:
+  - If state == 2: invokes indirect callback trampoline `(*DAT_6013d1fc)(*(0x200064c0 + 16000))`.
+  - If state == 3:
+    - Cleans endpoint state via `FUN_60057e88(*(0x2000a2a8 + 0x9c))`.
+    - Formats event message (ID 9, handler `0x600d6c13`, `DAT_60065340`).
+    - **ISR vs Thread Mode Detection:** reads Cortex-M `ICSR` / CPUID at `0xE000ED00` (`DAT_60065348`).
+      - If `(IPSR & 0x1FF) == 0` (Thread Mode): sends via `thunk_EXT_FUN_00006a74` (`xQueueSend`).
+      - If `(IPSR & 0x1FF) != 0` (Interrupt / Handler Mode): sends via `thunk_EXT_FUN_00006bc8` (`xQueueSendFromISR`).
+        - If `higherPriorityTaskWoken` (`local_18 != 0`): writes `0x10000000` (`PENDSVSET`) to `ICSR` (`0xE000ED04`, `DAT_6006534c`) followed by `DataSynchronizationBarrier` and `InstructionSynchronizationBarrier` to trigger an immediate FreeRTOS context switch upon ISR exit.
+    - If send fails: logs `"usb_host_worker.cc:40: Unable to queue host event"` (`DAT_60065350`).
+
+---
+
+## Wave 2: `dcp_encryption_engine.cc` — NXP i.MX RT Data Co-Processor (DCP) Hardware Crypto
+
+`dcp_encryption_engine.cc` (2 functions, 266 bytes) implements hardware-accelerated AES-128 cryptographic operations (ECB, CBC, and CTR modes) utilizing the i.MX RT on-chip Data Co-Processor (DCP) peripheral engine.
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `dcp_encryption_engine__6005f418` | 48 | `dcp_encryption_engine.cc` | **Incompatible cipher error logger.** Logs diagnostic record for unsupported crypto modes. |
+| `dcp_encryption_engine__6005f450` | 218 | `dcp_encryption_engine.cc` | **`ExecuteDcpCrypto`.** Validates AES-128 key, locks engine mutex, configures channel, and executes hardware ECB/CBC/CTR. |
+
+### `dcp_encryption_engine__6005f450` (218B) — Hardware AES Execution
+Parameters:
+- `param_1`: DCP engine object pointer (`+0x04` = mutex, `+0x58` = init flag, `+0x5c` = channel config)
+- `param_2`: input buffer pointer
+- `param_3`: output buffer pointer
+- `param_4`: byte length
+- `param_5`: initialization vector (IV) pointer
+- `param_6`: key descriptor (`param_6 + 8` = key length, must equal 16 bytes `0x10`)
+- `param_7`: cipher mode (`0` = AES-ECB, `1` = AES-CBC, `2` = AES-CTR)
+
+**Control & Execution Flow:**
+1. **Key Length & Mode Validation:** Checks `param_7 <= 2` and `*(int *)(param_6 + 8) == 0x10`. On mismatch, calls `dcp_encryption_engine__6005f418()` (logs `"dcp_encryption_engine.cc:48: Incompatible cypher type"`) and logs `"dcp_encryption_engine.cc:298: Key Validation Failed"` (`DAT_6005f530`).
+2. **Mutex Acquisition:** Locks DCP hardware mutex via `thunk_EXT_FUN_0000b4c2(param_1 + 4)` (`xSemaphoreTake`).
+3. **Engine Ready Check:** Checks `*(char *)(param_1 + 0x58) != 0`.
+4. **Key Slot Programming:** Configures hardware key registers via `thunk_EXT_FUN_00001c30(param_6, &dcp_handle, param_1 + 0x5c)`.
+5. **DCP Channel 1 Dispatch:** Sets channel `local_c8 = 1`:
+   - Mode `1` (AES-CBC): executes `FUN_6005f310(&channel, &dcp_handle, in, out, len, iv)`.
+   - Mode `2` (AES-CTR): executes `thunk_EXT_FUN_00001e10(&dcp_handle, in, out, len, iv)`.
+   - Mode `0` (AES-ECB): executes `thunk_EXT_FUN_00001d6c(&channel, &dcp_handle, in, out, len)`.
+   - Releases channel via `thunk_EXT_FUN_00001d44(&channel)`.
+6. **Mutex Release:** Unlocks mutex via `thunk_EXT_FUN_00007d10(param_1 + 4)` (`xSemaphoreGive`).
+
+---
+
+## Wave 2: `sleep_lock.cc` — Low-Power Sleep Lock / Inhibitor
+
+`sleep_lock__60059d54` (238 bytes) implements the sleep coordination and deadline evaluation routine that mediates between system wakelock holders and the low-level `sleep_driver__6005990c` power management driver.
+
+### `sleep_lock__60059d54` (238B) — Sleep Coordinator
+- Checks sleep requested flag at `*DAT_60059e44` (`0x2001a470`). If 0, returns immediately.
+- Reads current uptime ticks via `thunk_EXT_FUN_0000714c()`. Rounds tick value to milliseconds:
+  $$\text{now\_ms} = \frac{(\text{ticks} \pmod{1000}) \times 1000 + 500}{1000} + \lfloor \frac{\text{ticks}}{1000} \rfloor \times 1000$$
+- **Deadline Expiry Guard:** Compares against target sleep end time `*(uint *)(0x2001a470 + 4)`. If $\text{end\_time} \le \text{now\_ms}$:
+  - Logs `"sleep_lock.cc:63: Did not attempt to sleep until after the sleep end time."` (`PTR_s_Did_not_attempt_to_sleep_until_a_60059e64`) and bails.
+- **Sleep Driver Invocation:** If driver pointer `*DAT_60059e48` (`0x2001a478`) is non-null:
+  - Calls `sleep_driver__6005990c(*driver, duration = end_time - now_ms, &actual_slept_ms)`.
+  - If return is `0x09` (`kDisabled`): logs `"sleep_lock.cc:53: Sleep disabled; skipping sleep attempt."` (`DAT_60059e50`).
+  - If return is `0x00` (`kOk`): logs `"sleep_lock.cc:59: Slept for %lu ms"` (`PTR_s_Slept_for__lu_ms_60059e60`) and subtracts slept time from remaining budget.
+  - On error: formats error name via `FUN_600cbb14` and logs `"sleep_lock.cc:57: Unable to sleep: <err>"` (`PTR_s_Unable_to_sleep__60059e5c`).
+- Clears sleep flag `*0x2001a470 = 0` and releases sleep lock mutex `0x2001a47c` via `FUN_60059cd8(mutex, &tag=0xb)`.
+
+---
+
+## Wave 2: `power_rpcs.cc` — Power Management & Wakelock RPC Query Handlers
+
+`power_rpcs__6005e020` (260 bytes) implements the protobuf RPC query handler for inspecting system wakelock status, power state, and component lock holders over the control interface.
+
+### `power_rpcs__6005e020` (260B) — `GetWakelockStatus` RPC Handler
+- Reads wakelock manager state from singleton `DAT_6005e104 = 0x2001fa38`:
+  - `+0x158` (char): wakelock enabled flag (`1` = `"enabled"`, `0` = `"disabled"`).
+  - `+0x150` (uint32): wakelock expiry timeout in milliseconds.
+- Logs debug trace: `"power_rpcs.cc:28: Wakelock %s. Timeout is %lu ms."` (`DAT_6005e114`).
+- Queries active wakelock holders: `FUN_600df072(0x2001fa38, &holders_list)`.
+- Populates response protobuf object via `FUN_60101a80(*(param_1 + 0x14))`:
+  - Field `"IsEnabled()"` (`DAT_6005e118`): writes `"true"` (`DAT_6005e11c`) or `"false"` (`DAT_6005e120`) via `FUN_600cdcc4` and `FUN_601019da`.
+  - Field `"Component holds"` (`DAT_6005e124`): serializes list of component names currently holding active wakelocks via `FUN_60101aa4`.
+  - Field `"ExpiryMillis()"` (`DAT_6005e128`): serializes timeout ms value via `FUN_60050c18` and `FUN_601019da`.
+- Returns RPC execution status code (`0` = success).
+
+---
+
+## Wave 2: `binary_build_metadata.cc` — Firmware Build Metadata Header Parser
+
+`binary_build_metadata__600678ec` (194 bytes) parses and validates the structured `BinBuildMetadata` firmware image header embedded in flash partitions.
+
+### `binary_build_metadata__600678ec` (194B) — `GetBinBuildMetadata`
+Parameters:
+- `param_1`: partition table manager object
+- `param_2`: partition ID (must be `0x13` = slot metadata, or `1..3` = Bootloader / App A / App B)
+
+**Validation & Parsing Flow:**
+1. **Partition ID Check:** Validates `param_2 == 0x13` or `1 <= param_2 <= 3`. On failure: logs `"binary_build_metadata.cc:38: Getting BinBuildMetadata failed, partition id not valid"` (`DAT_600679b0`).
+2. **Partition Lookup:** Scans partition table for matching partition descriptor. If not found: logs `"binary_build_metadata.cc:43: Getting BinBuildMetadata failed, couldn't find partition"` (`DAT_600679b8`).
+3. **IVT / Vector Table Header Detection:** Reads first 4 bytes of partition via virtual method `(*partition->Read)(partition, &first_word, 0, 4)`:
+   - If read fails: logs `"binary_build_metadata.cc:55: Getting BinBuildMetadata failed, reading first word failed"` (`DAT_600679bc`).
+   - If `first_word == 0x412000D1` (`DAT_600679c0`, Cortex-M Initial SP / IVT vector marker): sets metadata offset to `0x1400` (XIP signed application image offset).
+   - Else: sets metadata offset to `0x400` (standard partition offset).
+4. **Resolve MCU Physical Address:** Computes MCU memory mapped address via `(*partition->GetMcuAddress)(partition, offset)`. On failure: logs `"binary_build_metadata.cc:65: Getting BinBuildMetadata failed, couldn't get meta mcu addr"` (`DAT_600679c4`).
+5. **Magic Header & Size Validation:** Validates `BinBuildMetadata` struct (`0x100` = 256 bytes):
+   - Header magic: `header[0] == 0x747315A2` (`DAT_600679c8`, `'st\x15\xa2'`)
+   - Trailer magic: `header[0x3F] == 0x4786CD88` (`DAT_600679cc`, word 63 / byte offset `0xFC`)
+   - Header size: `header[2] == 0x100` (256 bytes)
+   - On match: returns pointer to `BinBuildMetadata` struct.
+   - On mismatch: logs `"binary_build_metadata.cc:71: Seems like no metadata exists, likely legacy binary"` (`DAT_600679d0`) and returns `NULL`.
+
+---
+
+## Wave 2: `hardware_timer.cc` — NXP i.MX RT General Purpose Timer (GPT1 / GPT2) Driver
+
+`hardware_timer__60061a98` (188 bytes) configures and brings up the i.MX RT General Purpose Timer (GPT1 at `0x401EC000` or GPT2 at `0x401F0000`) hardware peripherals, managing CCM clock gating, prescaler calculation, interrupt configuration, and singleton registration.
+
+### `hardware_timer__60061a98` (188B) — GPT Initialization Driver
+Parameters (`param_1` = `HardwareTimer` descriptor struct):
+- `param_1[0]`: GPT peripheral base address (`0x401EC000` = GPT1, `0x401F0000` = GPT2)
+- `param_1[1]`: timer callback / state sub-object
+- `param_1[5]`: clock source index
+- `param_1[6]`: clock gate enable bit
+- `param_1[7]`: prescaler divider value (0..63)
+- `param_1[8]` (byte): initialized flag
+- `param_1[10]`: output tick frequency in Hz
+
+**Hardware Register Configuration:**
+1. **Clock Controller Module (CCM):** Programs `CCM_CCGR1` (`0x400FC01C`, `DAT_60061b54`):
+   - Sets GPT clock gating: `*CCM_CCGR1 = (*CCM_CCGR1 & ~0x40) | ((param_1[6] & 1) << 6)`.
+   - Sets sub-clock bits: `*CCM_CCGR1 = (*CCM_CCGR1 & ~0x3F) | (param_1[7] & 0x3F)`.
+2. **Singleton Registration & Multi-Init Guards:**
+   - For GPT1 (`0x401EC000`): checks `*DAT_60061b5c` (`0x2001bdac`). If already set and != `param_1`, logs `"hardware_timer.cc:41: Multiple initializations of GPT1"` (`DAT_60061b60`).
+   - For GPT2 (`0x401F0000`): checks `*DAT_60061b6c` (`0x2001bdb0`). If duplicate, logs `"hardware_timer.cc:45: Multiple initializations of GPT2"` (`DAT_60061b70`).
+   - If invalid base: logs `"hardware_timer.cc:48: Invalid timer"` (`DAT_60061b74`).
+   - Stores singleton pointer: `*instance_ptr = param_1`.
+3. **Peripheral Control & Interrupt Setup:**
+   - Resets configuration structure via `FUN_600cedc2(&cfg)`.
+   - Configures GPT registers via `FUN_60053220(GPT_base, &cfg)`.
+   - Enables Output Compare 1 Interrupt in `GPT_IR`: `*(GPT_base + 0x0C) |= 0x20` (OF1IE bit).
+   - Registers ISR vector via `FUN_6005f534(param_1 + 1)`.
+   - Enables timer in `GPT_CR`: `*GPT_base |= 1` (EN bit).
+   - Resolves source clock frequency via `FUN_60052aa8((char)param_1[5])` $\rightarrow f_{\text{src}}$.
+   - Computes effective timer frequency:
+     $$f_{\text{timer}} = \frac{f_{\text{src}}}{\text{param\_1}[7] + 1}$$
+   - Stores frequency at `param_1[10]` and marks `param_1[8] = 1`.
+
 

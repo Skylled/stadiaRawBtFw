@@ -155,8 +155,8 @@ Called across system state machines: `application_state.cc` (`0x6005b794`, `0x60
 3. **Slot Update & Arbitration:** If the new pattern pointer `param_3` or priority `param_4` differs from the installed slot:
    - Updates slot fields: `+0x9c` (pattern ptr), `+0x98` (flags/priority), `+0xa0` (start param), `+0xa4` (duration).
    - If transitioning, logs `"Finishing transition before starting next pattern"` (`DAT_6007fa30`).
-   - If idle: stops stale pattern timer via `FUN_600dee28`, then arms the periodic pattern drive timer via bus transaction `thunk_EXT_FUN_00007a2c(*(param_1 + 0x58), 4, 1, 0, 10)`.
-   - On timer failure, logs `" Timer start failed"` (`DAT_6007fa34`) and verifies period configuration via `FUN_600dee00`, logging `"Set period failed"` (`DAT_6007fa38`) on error.
+   - If idle: stops stale pattern timer via `FUN_600dee28`, then sets the periodic pattern drive period via bus transaction `thunk_EXT_FUN_00007a2c(*(param_1 + 0x58), 4, 1, 0, 10)`.
+   - On period configuration failure, logs `"Set period failed"` (`DAT_6007fa34`) and verifies timer state via `FUN_600dee00`, logging `" Timer start failed"` (`DAT_6007fa38`) on error.
 
 ### `FUN_6007f7a0` (`0x6007f7ec`, 184B) — Gotham Pattern Step Sequencer
 Iterates across **30 distinct pattern channels/slots** (`0x1e` slots in circular array `DAT_6007f85c`).
@@ -180,3 +180,77 @@ Confirmed from string tables (`0x6011fe3b`–`0x601200bc`):
 - Extends `firmware-map.md`'s "shared base platform... USB host stack" note with a fully-mapped concrete example (this driver), reinforcing the working theory that a meaningful fraction of `bruce`'s image is compiled-in, complete, but inactive shared-platform code for a different physical product.
 - Not chased this session (natural follow-ons, all attributed-but-undecompiled siblings): `usb_device_audio.cc` (3 funcs, the feedback-endpoint SET_CUR transport used by `usb_audio_receive__6007a040`), `synapse_audio_processor.cc` (2 funcs, the actual AEC/AGC/NS object constructed by `audio_states__60075088`), `usb_host_worker.cc` (3 funcs, the generic per-device state-post/event-queue worker driving `usb_host_audio__6006318c`'s transitions), `recording_pipeline.cc`/`audio_tasks.cc`/`usb_audio_send.cc` (the capture/playback pipeline entry points called at the end of `audio_states__60075088`). None of these are large (a few hundred bytes each) — good small follow-on targets, but no longer top-10 by size after this session's completions (see `bruce-decompile-status.md` §3a).
 - No caller into `audio_states__60075088` (or any other entry point in this cluster) was found this session — consistent with the "shared but inactive on this SKU" theory above, but not proven either way. **Follow-up (session 19 review, verified without running Ghidra):** the empty "--- callers ---" section in the `Decompile.java` output is real (it reflects Ghidra's `Function.getCallingFunctions()`, i.e. direct-call xrefs only) and was independently corroborated by disassembling every function in `bruce_functions.csv` at its own address with Capstone and scanning for `BL`/`BLX` instructions targeting `audio_states__60075088` or `usb_host_audio__6006318c` — zero direct callers found either way (the method was sanity-checked against a known-true call, `audio_states__60075088` → `usb_audio_receive__6007a998`, which it correctly recovered). However, this only rules out *direct* calls. A raw-binary scan for `0x6006318c` as a literal 4-byte pointer (thumb-bit set) found it stored in a const pointer table at flash `0x6010619c`, which is itself loaded (as a literal) inside `FUN_600638f8` — a small (62-byte), currently-unattributed function sitting in the gap between `usb_host_audio.cc`'s and `usb_host_audio_topology.cc`'s address ranges — and `FUN_600638f8` **is** called, from `FUN_600d5b9a` (one of the `0x600d…` glue-veneer functions). So the 17-state driver's entry point *is* wired into some registration/dispatch structure via a real, confirmed call chain — it just doesn't originate from a plain `BL`, and no caller of `FUN_600d5b9a` itself was found within this session's time budget. This nuances rather than overturns the "possibly inactive" theory (the true root caller — e.g. a USB-host class-driver table matched by `bInterfaceClass`/`bInterfaceSubClass` on device arrival — is still unlocated), but it means "no caller" should not be read as "nothing anywhere references this code": `audio_states__60075088` (the top-level orchestrator) has zero hits under *both* the direct-call and the raw-pointer-table search, which is a materially stronger negative result than `usb_host_audio__6006318c` gets. **Next step:** decompile `FUN_600638f8`/`FUN_600d5b9a` and trace `FUN_600d5b9a`'s own callers to see if that chain terminates at a known-live USB host-stack entry point (e.g. near `main__60051240` or a device-arrival/hotplug callback) or dead-ends the same way.
+
+---
+
+## Wave 2: `sound_codec_wm8904.cc` — Wolfson Microelectronics WM8904 Audio Codec I2C Driver
+
+`sound_codec_wm8904.cc` (2 functions, 184 bytes) implements the hardware I2C driver for the onboard Cirrus Logic / Wolfson WM8904 ultra-low-power stereo audio DAC/ADC codec (connected to the controller's 3.5mm headset jack).
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `sound_codec_wm8904__6006b630` | 116 | `sound_codec_wm8904.cc` | **`WM8904_Probe`.** Probes codec over I2C, reads SW Reset/Device ID register `0x00`, verifies `0x8904` signature. |
+| `sound_codec_wm8904__6006b4dc` | 68 | `sound_codec_wm8904.cc` | **`WM8904_ExecuteCommand`.** Command sequence interpreter for register writes, millisecond delays, and log tracing. |
+
+### `sound_codec_wm8904__6006b630` (116B) — Codec Device Probe & ID Check
+Called during audio subsystem hardware bring-up (`timer__60074658`):
+1. Checks initialized flag at `*(char *)(param_1 + 0x0C)`. If already initialized, returns 0.
+2. Reads 16-bit register `0x00` (SW Reset and ID) over I2C via `FUN_600d903e(param_1, reg=0, &chip_id, timeout=200ms)`.
+3. **Communication Failure Path:** If I2C transaction fails (`uVar1 != 0`):
+   - Logs `"sound_codec_wm8904.cc:197: Failed to communicate with WM8904"` (`DAT_6006b6a8`) via `FUN_60051120`, `FUN_60101b76`, and `FUN_600d37b8`.
+4. **Device ID Validation:**
+   - Evaluates `chip_id == 0x8904` (represented as signed 16-bit `-0x76fc` in decompiled output).
+   - If match:
+     - Logs info: `"sound_codec_wm8904.cc:205: WM8904 Available"` (`DAT_6006b6b0`).
+     - Marks initialized: `*(char *)(param_1 + 0x0C) = 1`.
+     - Returns status `0` (`kOk`).
+   - If mismatch:
+     - Logs warning: `"sound_codec_wm8904.cc:201: I2C device is not a WM8094 device"` (`DAT_6006b6ac`).
+     - Returns status `5` (`kDeviceMismatch`).
+
+### `sound_codec_wm8904__6006b4dc` (68B) — Codec Command Dispatcher
+Executes structured configuration script tuples (`param_1`):
+- `param_1[0] == 0` (**Register Write**):
+  - `reg_addr = (char)param_1[1]`
+  - `reg_val = *(short *)((int)param_1 + 6)`
+  - Calls `FUN_600d8fa6(param_2, reg_addr, reg_val, timeout=200, param_1)`.
+- `param_1[0] == 1` (**Execution Delay**):
+  - `delay_ms = (short)param_1[1]`
+  - Delays task execution via `thunk_EXT_FUN_0000737c(delay_ms)` (`vTaskDelay`).
+- `param_1[0] == 2` (**Debug Log Trace**):
+  - Logs formatted debug message via `FUN_6010165c(0x14, "sound_codec_wm8904.cc", 0x3F, "%s", param_1[1], param_2)`.
+- Unrecognized opcode: returns error status `0x0D` (`kInvalidArgument`).
+
+---
+
+## Wave 2: `usb_audio_send.cc` — USB Audio Transmit Stream Endpoint
+
+`usb_audio_send__6007ad34` (230 bytes) implements the USB Audio transmit stream endpoint initialization and sender task creation, complementing the receive worker documented in `usb_audio_receive.cc`.
+
+### `usb_audio_send__6007ad34` (230B) — `StartUsbAudioSenderTask`
+Called from `audio_states__60075088` to create the USB Audio sink endpoint:
+1. **Singleton Concurrency Check:**
+   - Issues `DataMemoryBarrier(0x1B)`.
+   - Checks active sender instance pointer at `*DAT_6007ae1c` (`0x2001f780`).
+   - If non-null (task already active): logs `"usb_audio_send.cc:93: USB Audio send task already active"` (`PTR_s_USB_Audio_send_task_already_acti_6007ae20`) and returns null pointers `[0, 0]`.
+2. **Stream Context Allocation:**
+   - Allocates `0x1128` (4,392 bytes) heap buffer `puVar5` via `thunk_EXT_FUN_0000b532` (`pvPortMalloc`).
+   - Assigns stream interface vtables: `puVar5[0] = 0x6010a4a4`, `puVar5[1] = 0x60119844`.
+   - Initializes stream state flags: `*(char *)(puVar5 + 0x19) = 1`, `*(char *)(puVar5 + 0x214) = 1`.
+   - Configures Primary Isochronous Audio FIFO:
+     - Buffer pointer: `puVar5[0x31] = puVar5 + 0xce`
+     - Buffer capacity: `puVar5[0x32] = 0x3c0` (960 bytes = 10 ms of 48 kHz 16-bit stereo PCM audio)
+   - Configures Secondary DMA Bounce Buffer:
+     - Buffer pointer: `puVar5[0x248] = puVar5 + 0x24a`
+     - Buffer capacity: `puVar5[0x249] = 0x200` (512 bytes)
+3. **Sender Task Creation:**
+   - Allocates 20-byte (`0x14`) task argument descriptor `puVar6`.
+   - Populates task control fields:
+     - `puVar6[0] = 0x6010a548`
+     - `puVar6[1] = 1`
+     - `puVar6[2] = 1`
+     - `puVar6[3] = 0x6007ac8d` (worker function pointer `usb_audio_send_worker`)
+     - `puVar6[4] = puVar5` (stream context instance argument)
+   - Spawns FreeRTOS task via `FUN_6010177a(puVar5 + 1, "Usb Audio Sender", priority=0x1B)` (`xTaskCreate` priority 27).
+   - If task creation fails (`cVar4 != 0`): frees task block via `FUN_6005c44c(puVar6)`.
+   - Stores active instance `*0x2001f780 = puVar5` under memory barriers and returns `param_1[0] = puVar5, param_1[1] = puVar6`.

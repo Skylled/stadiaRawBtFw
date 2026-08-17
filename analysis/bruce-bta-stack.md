@@ -695,3 +695,66 @@ Net: a small, self-contained, power-loss-tolerant flash record store purpose-bui
 - **Report-packing / button-ADC threads (1, 2)**: nothing in this block touches HID reports, buttons, or ADC — it's purely the BT/BLE protocol stack. No new lead on those threads from this session.
 - **Ed25519/EVP crypto callers (thread 5) — closed for the P-256 half.** Traced a complete, non-speculative call chain from PDU-receive down to modular arithmetic: **`smp_data_ind`** (`0x600c1864`, reads the SMP opcode byte from an incoming PDU) → **`FUN_600c1a34`** (`smp_sm_event`-shaped: 2D `[state][event]` lookup table dispatching through a function-pointer table, 54 static callers — the SMP FSM's central event dispatcher). Working the other direction from the confirmed P-256 code: **`FUN_600c8798`** (EC scalar multiplication — windowed double-and-add over a NAF-style digit table, curve-parameterized by a word-count argument that selects between two constant sets, i.e. handles both P-256 and the P-192-shaped sibling) is called by **`FUN_600c1030`**, which copies a 32-byte accumulated value as a scalar, multiplies it by base point `DAT_600c10a0` (almost certainly the curve generator **G**), writes the 32+32-byte result as an EC-point public key into the SMP control block, and re-enters the FSM dispatcher (`FUN_600c1a34`) with event `0x1c`. `FUN_600c1030` in turn is called only from **`FUN_600c0f34`**, a 4-state state machine that accumulates 4×8=32 bytes of `btsnd_hcic_ble_rand` (**`0x600b1368`**, the real HCI LE-Rand command) output as private-key entropy across repeated HCI command completions, calling `FUN_600c1030` once the 32nd byte arrives. So: **incoming SMP pairing traffic drives the FSM; the FSM (elsewhere, via its function-pointer table — not statically provable which entry, but structurally consistent) drives local ECDH keypair generation using controller-sourced randomness; keypair generation calls the confirmed P-256/P-192 EC scalar-multiplication code; that code calls the same modular-reduction helpers (`FUN_601005ac`/`FUN_601005f6`) as the previously-confirmed standalone P-256 Solinas reduction.** This is SMP's LE Secure Connections local-keypair-generation step, and it is the P-256 stack's real runtime consumer — the Ed25519/X25519 stack in `bruce-crypto.md` remains uncalled from anywhere traced so far and is now the *less* likely "live" curve of the two. **Session 10 extended this thread with a second, independently-confirmed algorithm: AES-CMAC.** `FUN_600c09f0` (AES-CMAC top-level, block-padding + the confirmed block-chaining loop `FUN_600c07e4`) is called from the string-named `BTM_BleDataSignature` — a real, confirmed runtime caller, not just a plausible one — and from `FUN_600c12b0`, itself very likely SMP's `g2` numeric-comparison-value function (called during LE Secure Connections passkey-display pairing). A byte-for-byte-matching AES SubBytes+ShiftRows round function (`FUN_600c7fc8`) sits in the same immediate neighborhood, resolving what prior sessions had flagged as "not conclusively identified" (`0x600c74xx`–`0x600c80xx`) into a real, coherent AES subsystem. Unlike the Ed25519/X25519 stack, this AES-CMAC path has a confirmed, non-speculative caller — it's the strongest evidence yet of live symmetric-crypto usage in this image, alongside the already-confirmed P-256 ECDH.
 - **L2CAP (part of thread 4, "layers not yet touched")**: no longer untouched — see address-range map and the dedicated cluster in the session-8 table above (`l2c_csm_*`/`l2c_fcr_*`/`l2c_rcv_acl_data`/`l2c_link_*`, 14 functions). This also corrects session 7's read of `FUN_600ba1c4` (the TLV/PDU parser) from "ATT/GATT PDU parser" to more likely an L2CAP-internal PDU dispatcher, since it's called directly from `l2c_rcv_acl_data` rather than from anything GATT-named. **Session 9 deepened this further**: the channel state machine now looks structurally complete (`l2c_csm_open` and `l2cu_release_ccb` shape-identified, closing the gap next to session 8's 8 named states), both connection-creation triggers were found (`l2cu_create_conn`-shaped for classic, `btm_ble_create_conn`-shaped for LE — the latter technically a BTM function embedded in this address range, see the boundary-caveat note above), the FCR (flow-control/retransmission) internals got 3 more functions, and a probable `L2CA_SendFixedChnlData`-shaped sender was found in SMP's reject-unexpected-command path (**audit correction:** originally described as "called from SMP's own FSM action table" — that overstated the evidence, since the FSM's real action table dispatches through a runtime indirect call invisible to static xref tools; see the `0x600b5264` entry in the session-9 table for the corrected call chain) — weaker than originally framed, but still one consistent data point that SMP's PDUs transit L2CAP's fixed-channel path rather than a separate transport.
+
+---
+
+## Wave 2: `gki_ft.c` — Broadcom General Kernel Interface (GKI) FreeRTOS Adapter
+
+`gki_ft.c` (2 functions, 268 bytes) provides the OS-adaptation layer binding Broadcom's General Kernel Interface (GKI) to FreeRTOS. It implements GKI task creation, per-task synchronization primitives (mutexes, event queues), control-block tracking (`gki_cb.os`), and the central GKI exception/panic handler.
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `gki_ft__6006e790` | 68 | `gki_ft.c` | **`GKI_exception`.** Fatal error handler / panic logger for the Bluetooth stack. |
+| `gki_ft__6006e484` | 200 | `gki_ft.c` | **`GKI_create_task`.** Creates GKI tasks, allocates FreeRTOS event queues and mutexes, and spawns RTOS tasks (resolving `btu_task`'s spawner). |
+
+### `gki_ft__6006e790` (68B) — `GKI_exception`
+Called across BTA/BTE modules when an unrecoverable protocol violation or buffer corruption is detected:
+1. Prints standard Broadcom GKI panic banner to debug log via `FUN_6006be9c`:
+   - `"********************************************************************"` (`DAT_6006e7d8`)
+   - `"* GKI_exception(): 0x%02x %s"` (`DAT_6006e7dc`)
+   - `"********************************************************************"` (`DAT_6006e7d8`)
+2. Resolves currently executing GKI task ID via `FUN_6006e594()` (`GKI_get_taskid()`).
+3. Logs critical crash diagnostic: `"gki_ft.c:611: GKI Exception: Task %d, code %d, msg %s"` (`DAT_6006e7e0`) via `FUN_6010165c(0x28, "gki_ft.c", 0x263, msg, task_id, code, param_2)`.
+
+### `gki_ft__6006e484` (200B) — `GKI_create_task` (Task & Queue Spawner)
+This function directly resolves the open question from prior sessions (**"who calls xTaskCreate to spawn `btu_task`?"**). It is the generic GKI task creation interface:
+
+```
+gki_cb.os Control Block (Base 0x2001E65C):
++-------------------------------------------------------------------------------+
+| +0x04: FreeRTOS Task Handles (task_id * 4)                                    |
+| +0x24: Event Mutex Handles (task_id * 4)                                      |
+| +0x44: Event Queue Handles (task_id * 4)                                      |
+| +0xC4: Task Priority Array (task_id byte)                                     |
+| +0xCC: Task Name Pointers (task_id * 4)                                       |
+| +0xEC: Task State Flags (task_id byte)                                        |
++-------------------------------------------------------------------------------+
+```
+
+**Execution Flow:**
+1. **Task ID Validation:** Enforces `param_2 < 8` (`GKI_MAX_TASKS = 8`). On violation, logs `"ERROR: GKI task_id must be less than 8"` (`DAT_6006e54c`) and returns error status `1` (`GKI_FAILURE`).
+2. **Log Task Metadata:** Logs trace via `FUN_6006be9c`:
+   `"GKI_create_task func=0x%x  id=%d  name=%s  stack=0x%x  stackSize=%d"` (`DAT_6006e554`).
+3. **Event Mutex Creation:**
+   - Calls `FUN_601007e6(1)` (`xSemaphoreCreateMutex`).
+   - Stores mutex handle in GKI control table: `*(int *)(0x2001e65c + task_id * 4 + 0x24) = mutex`.
+   - If mutex creation fails: logs `"GKI_create_task create thread_evt_mutex failed %s!"` (`PTR_s_GKI_create_task_create_thread_ev_6006e55c`) and returns 1.
+4. **Event Queue Creation:**
+   - Calls `thunk_EXT_FUN_00006a20(depth=100, item_size=2, 0)` (`xQueueCreate(100, sizeof(uint16_t))`).
+   - Stores queue handle in GKI control table: `*(int *)(0x2001e65c + task_id * 4 + 0x44) = queue`.
+   - If queue creation fails: logs `"GKI_create_task create thread_evt_queue failed %s!"` (`PTR_s_GKI_create_task_create_thread_ev_6006e560`) and returns 1.
+5. **RTOS Task Spawning:**
+   - Enters critical section via `thunk_EXT_FUN_00007d64()` (`taskENTER_CRITICAL()`).
+   - Computes task priority: $\text{priority} = 20 - \text{task\_id}$ (Task 0 = Priority 20, Task 1 = Priority 19, etc.).
+   - Converts stack size from bytes to 32-bit words: $\text{stack\_words} = \text{param\_5} \gg 2$.
+   - Spawns task via `FUN_60100900(entry_fn, task_name, stack_words, param=0, priority, handle_ptr)` (`xTaskCreate`).
+   - Asserts task creation return code == 1 at `gki_ft.c:148` (`0x94`) (`PTR_s_FreeRTOS_CHECK_failed_6006e564`).
+   - Populates GKI task control block:
+     - Task active flag: `*(0x2001e65c + task_id + 0xec) = 1`
+     - Task priority: `*(0x2001e65c + task_id + 0xc4) = (char)(20 - task_id)`
+     - Task name pointer: `*(0x2001e65c + task_id * 4 + 0xcc) = param_3`
+     - Event bitmask: `*(0x2001e65c + (task_id + 0x4a) * 4 + 8) = 0`
+     - Timer counter: `*(0x2001e65c + (task_id + 0x78) * 2 + 4) = 0`
+   - Exits critical section via `thunk_EXT_FUN_00007dac()` (`taskEXIT_CRITICAL()`).
+   - Returns status `0` (`GKI_SUCCESS`).
+
