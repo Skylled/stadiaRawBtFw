@@ -254,3 +254,107 @@ Called from `audio_states__60075088` to create the USB Audio sink endpoint:
    - Spawns FreeRTOS task via `FUN_6010177a(puVar5 + 1, "Usb Audio Sender", priority=0x1B)` (`xTaskCreate` priority 27).
    - If task creation fails (`cVar4 != 0`): frees task block via `FUN_6005c44c(puVar6)`.
    - Stores active instance `*0x2001f780 = puVar5` under memory barriers and returns `param_1[0] = puVar5, param_1[1] = puVar6`.
+
+---
+
+## Wave 4: Audio Task Scheduling, Gap Interpolation & Pattern Sequencers (`audio_tasks.cc`, `linear_interpolation_source.h`, `pattern_player.h`, `gotham_patterns.cc`)
+
+4 additional audio processing, task scheduling, interpolation, and pattern generation functions across 4 source files are now fully decompiled and mapped.
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `audio_tasks__60079d28` | 158 | `audio_tasks.cc` | **Audio Playback Pipeline Pump & Task Scheduler.** Allocates 164-byte pipeline pump object, binds source/sink queues, and spawns playback thread. |
+| `linear_interpolation_source__6007a450` | 170 | `linear_interpolation_source.h` | **16-Bit PCM Stream Linear Gap Interpolator.** Smoothly repairs audio buffer discontinuities/gaps via endpoint delta interpolation. |
+| `pattern_player__6005af04` | 190 | `pattern_player.h` | **Pattern Player Sequencer State Machine Reset.** Resets keyframe sequence counters, clears 8-channel magnitude buffers, and initializes pattern engine. |
+| `gotham_patterns__600670f4` | 190 | `gotham_patterns.cc` | **Gotham Audio & Haptic Pattern Keyframe Lookup Table.** 39-case switch table mapping pattern IDs (0–38) to static keyframe descriptor structures. |
+
+### `audio_tasks__60079d28` (158B) — `audio_tasks.cc`: Audio Playback Pipeline Pump & Task Scheduler
+- **Role:** Connects an audio source (e.g. USB Audio or WebRTC/BT receive stream) to an audio sink (e.g. WM8904 I2S DAC output) and launches the playback pump worker task.
+- **Execution Flow:**
+  1. Validates audio source handle: checks `*param_1 != 0`. If null, logs error at line `0x27` (39) of `audio_tasks.cc` (`DAT_60079dcc`) at log level `0x28` and returns `false`.
+  2. Acquires pipeline configuration mutex `thunk_EXT_FUN_0000b4c2(DAT_60079dd0)`.
+  3. Prepares source and sink references:
+     - Extracts source handle: `local_20 = *param_1`.
+     - Increments source intrusive refcount via `FUN_600da478(auStack_1c, param_1 + 1)`.
+     - Extracts sink handle: `local_18 = *param_2`.
+     - Increments sink intrusive refcount via `FUN_600da478(auStack_14, param_2 + 1)`.
+  4. **Pump Context Allocation & Wiring:**
+     - Allocates 164-byte (`0xA4`) pipeline pump context `iVar2` via `thunk_EXT_FUN_0000b532` (`pvPortMalloc`).
+     - Constructs pipeline object: `FUN_6007eb8c(iVar2, DAT_60079dd8, DAT_60079dd4, &local_20, &local_18)`.
+     - Decrements temporary stack refcounts via `thunk_EXT_FUN_00001680`.
+     - Assigns playback callback / pump function pointer: `*(uint32_t *)(iVar2 + 0x68) = DAT_60079ddc`.
+  5. **Player Thread Activation:**
+     - Starts audio player worker thread via `cVar1 = FUN_6007e784(iVar2)`.
+     - If success (`cVar1 == '\0'`): registers active pump handle in global task table `FUN_60079c6c(DAT_60079de4, iVar2)` and returns `true`.
+     - If startup fails: logs error at line `0x3B` (59) of `audio_tasks.cc` (`DAT_60079de0`) and returns `false`.
+  6. Releases pipeline configuration mutex `thunk_EXT_FUN_00007d10(DAT_60079dd0)`.
+- **Caller:** `audio_states__60075088` (`audio_states.cc` — voice-path policy and audio routing initializer).
+
+### `linear_interpolation_source__6007a450` (170B) — `linear_interpolation_source.h`: 16-Bit PCM Stream Linear Interpolator
+- **Role:** Generates synthetic linear ramp samples across missing audio packet gaps or rate-drift discontinuities to prevent audible clicking/popping in the headphone output.
+- **State Structure (`param_1`):**
+  - `*param_1`: Remaining sample frames count to interpolate.
+  - `param_1[1]`: Channel sub-index / phase counter.
+  - `*(int16_t *)((int)param_1 + 8)`: Current start endpoint sample.
+  - `*(int16_t *)((int)param_1 + 0x0C)`: Target end endpoint sample.
+- **Execution Flow:**
+  1. Validates output buffer pointer: if `param_2 == NULL`, returns error code `3` (`kInvalidArgument`).
+  2. Enforces 16-bit PCM sample frame alignment: checks that byte length `param_3` is even (`(param_3 << 31) >= 0`). If odd, logs assertion at line `0x28` (40) of `linear_interpolation_source.h` (`DAT_6007a4fc`).
+  3. **Linear Sample Generation Loop:**
+     - Loops while output sample index `uVar3 < (param_3 >> 1)` and remaining frames `*param_1 != 0`:
+       ```c
+       int iVar5 = param_1[1];
+       int16_t cur_sample = *(int16_t *)((int)param_1 + iVar5 * 2 + 8);
+       int16_t tgt_sample = *(int16_t *)((int)param_1 + iVar5 * 2 + 0x0C);
+       int remaining = *param_1;
+       
+       int16_t interpolated = (int16_t)(((int)tgt_sample - (int)cur_sample) / (remaining + 1)) + cur_sample;
+       *(int16_t *)(param_2 + uVar3 * 2) = interpolated;
+       *(int16_t *)((int)param_1 + iVar5 * 2 + 8) = interpolated;
+       
+       if (iVar5 + 1 > 1) {
+           param_1[1] = 0;
+           *param_1 = remaining - 1;
+       }
+       uVar3++;
+       ```
+  4. Records total bytes written: if `param_4 != NULL`, sets `*param_4 = uVar3 << 1`.
+  5. Returns `0` (`kOk`).
+- **Caller:** `FUN_600dba6a` (audio jitter buffer / gap repair engine).
+
+### `pattern_player__6005af04` (190B) — `pattern_player.h`: Pattern Sequencer State Machine Reset
+- **Role:** Resets and configures the multi-channel pattern player state machine that drives synchronized haptic motor vibrations, audio chimes, and LED animation sequences.
+- **Execution Flow:**
+  1. Acquires pattern player lock `thunk_EXT_FUN_0000b4c2()`.
+  2. Checks running pattern state: `bVar1 = FUN_600d3d7c(*(uint32_t *)(param_1 + 0x58))`.
+  3. If previous pattern was active (`bVar1 != 0`), logs state transition at line `0x67` (103) of `pattern_player.h` (`DAT_6005afc4`).
+  4. **State Machine Reset & Buffer Clearing:**
+     - Sets player state: `*(uint32_t *)(param_1 + 0x94) = 7` (`kPatternStateArmed`).
+     - Clears sequence iteration flags: `*(uint8_t *)(param_1 + 300) = 0`, `*(uint32_t *)(param_1 + 0x11C) = 0`, `*(uint32_t *)(param_1 + 0x128) = 0`.
+     - Clears 8-channel target amplitude / frequency registers:
+       - `*(uint32_t *)(param_1 + 0x9C) = 0` (Channel 0 magnitude)
+       - `*(uint32_t *)(param_1 + 0xAC) = 0` (Channel 1 magnitude)
+       - `*(uint32_t *)(param_1 + 0xBC) = 0` (Channel 2 magnitude)
+       - `*(uint32_t *)(param_1 + 0xCC) = 0` (Channel 3 magnitude)
+       - `*(uint32_t *)(param_1 + 0xDC) = 0` (Channel 4 magnitude)
+       - `*(uint32_t *)(param_1 + 0xEC) = 0` (Channel 5 magnitude)
+       - `*(uint32_t *)(param_1 + 0xFC) = 0` (Channel 6 magnitude)
+       - `*(uint32_t *)(param_1 + 0x10C) = 0` (Channel 7 magnitude)
+  5. Invokes pattern player initialization: `pattern_player__6007f8e4(param_1, param_2, param_3, 1, DAT_6005afd0, 0)`.
+  6. Logs trace at line `0x70` (112) of `pattern_player.h` (`DAT_6005afd4`).
+  7. Releases pattern player lock `thunk_EXT_FUN_00007d10(param_1)`.
+- **Caller:** `application_state__6005b8dc` (application state manager — invoked when triggering feedback cues on button events, pairing status, and power transitions).
+
+### `gotham_patterns__600670f4` (190B) — `gotham_patterns.cc`: Gotham Keyframe Pattern Definitions Table
+- **Role:** Central pattern definition registry mapping abstract pattern enumeration IDs to compiled keyframe animation structures for LED rings, audio chimes, and dual-motor rumble pulses.
+- **Pattern Table Architecture:**
+  - Implements a 39-case dispatch table for Pattern IDs `0x00` through `0x26` (39 distinct pattern presets):
+    - `0x00`: `DAT_6006727c` (Default / Idle Pattern)
+    - `0x01`–`0x0D`: `DAT_600671dc`–`DAT_6006720c` (Power On, Power Off, Battery Low, Pairing Mode, Connected, Disconnected, BLE Advertising, etc.)
+    - `0x0E`–`0x10`: `DAT_60067228`–`DAT_60067230` (Button Confirmation / Click Pulses)
+    - `0x11`: `DAT_60067210` (Assistant Button Wakeup Pattern)
+    - `0x12`–`0x13`: `DAT_60067234`–`DAT_60067238` (Capture / Screenshot Feedback)
+    - `0x14`–`0x18`: `DAT_6006721c`–`DAT_60067224` (Error, Warning, Factory Reset Countdown)
+    - `0x19`–`0x26`: `DAT_6006723c`–`DAT_60067270` (Custom Gamepad Haptic Effects, Rumble Envelopes, Diagnostic Sweeps)
+  - **Error Path:** If `param_1 > 0x26`, logs unrecognized pattern ID error at line `0x396` (918) of `gotham_patterns.cc` (`DAT_60067278`) at log level `0x28` and returns `NULL` (`0`).
+- **Callers:** `main__60051240` (system startup self-test chime/blink), `application_state__6005b8dc`, `application_state__6005b794`.

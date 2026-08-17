@@ -760,36 +760,37 @@ gki_cb.os Control Block (Base 0x2001E65C):
 
 ---
 
-## Wave 3: `adapter.h` — Bluetooth Adapter State & Connection Parameter Configuration Helper
+## Wave 3: `adapter.h` — Bluetooth Adapter State Listener Registration Helper
 
-`adapter__60080424` (72 bytes, `src: adapter.h`) is an inline / member helper method of Google's first-party `Adapter` C++ class that manages connection parameter / timeout updates with runtime mode verification.
+`adapter__60080424` (72 bytes, `src: adapter.h`) is an inline / member helper method of Google's first-party `Adapter` C++ class that registers event / state listener objects onto the active Bluetooth adapter with runtime mode verification.
 
 | Function | Bytes | Source File | Role |
 |---|---:|---|---|
-| `adapter__60080424` | 72 | `adapter.h` | **`Adapter::SetConnectionTimeout` / `SetConnectionInterval`.** Updates adapter connection interval or timeout parameters based on active adapter mode (`+0x11C`), falling back to a default constant if zero, returning the previous setting. |
+| `adapter__60080424` | 72 | `adapter.h` | **`Adapter::SetListener` / `SetStateListener`.** Registers an event/state listener (`param_2`, e.g. `StateMachine *`) onto the `Adapter` instance based on active adapter mode (`+0x11C`), falling back to default listener `0x20003454` if NULL, asserting if BLE is disabled (`mode == -1`), returning the previous listener pointer. |
 
-### `adapter__60080424` (72B) — Connection Interval / Timeout Mutator
-- **Signature:** `uint32_t adapter__60080424(Adapter *this, uint32_t new_timeout_or_interval, uint32_t arg3, uint32_t arg4)`
+### `adapter__60080424` (72B) — State / Event Listener Mutator (`Adapter::SetListener`)
+- **Signature:** `void *adapter__60080424(Adapter *this, void *pListener, uint32_t arg3, uint32_t arg4)`
 - **Object State Fields (`this = 0x20007BF8`):**
   - `this + 0x11C` (int8): Active Adapter Mode (`1` = Advertising/Connectable, `2` = Connected/Active, `-1` = Disabled/Uninitialized).
-  - `this + 0x110` (uint32): Mode 2 connection interval / supervisory timeout.
-  - `this + 0x118` (uint32): Mode 1 connection interval / advertising timeout.
-  - Default constant: `DAT_6008046C` (default fallback timeout / connection interval).
+  - `this + 0x110` (void *): Mode 2 (Connected/Active) event listener pointer.
+  - `this + 0x118` (void *): Mode 1 (Advertising/Connectable) event listener pointer.
+  - Default constant: `DAT_6008046C = 0x20003454` (pointer to static default/no-op listener object).
 - **Execution & Validation Flow:**
   1. **Mode Check:** Inspects `cVar1 = *(char *)(this + 0x11C)`:
-     - **Mode `2` (Active Connected Mode):**
-       - Reads previous value: `uVar2 = *(uint32_t *)(this + 0x110)`.
-       - If `new_timeout_or_interval == 0`, substitutes default constant `DAT_6008046C`.
-       - Writes new value: `*(uint32_t *)(this + 0x110) = new_timeout_or_interval`.
-       - Returns previous value `uVar2`.
-     - **Mode `1` (Advertising / Connection Pending Mode):**
-       - Reads previous value: `uVar2 = *(uint32_t *)(this + 0x118)`.
-       - If `new_timeout_or_interval == 0`, substitutes default constant `DAT_6008046C`.
-       - Writes new value: `*(uint32_t *)(this + 0x118) = new_timeout_or_interval`.
-       - Returns previous value `uVar2`.
-     - **Mode `-1` / Invalid State:**
-       - Formats diagnostic error trace via `FUN_6010165c(0x28, DAT_60080474, 0xCE, DAT_60080470, arg4)` asserting line `0xCE` (206) of `adapter.h` (`"Invalid adapter state for setting connection timeout"`).
-       - Returns `0`.
-- **Callers & Integration:** Invoked from `state_machine__600df264` (`state_machine.cc`) when transitioning between BLE connection states (e.g. negotiation of fast vs low-power connection intervals).
+     - **Mode `2` (Connected / Active Mode):**
+       - Reads previous listener: `uVar2 = *(void **)(this + 0x110)`.
+       - If `pListener == NULL` (`0`), substitutes default static listener `DAT_6008046C` (`0x20003454`).
+       - Stores new listener: `*(void **)(this + 0x110) = pListener`.
+       - Returns previous listener `uVar2`.
+     - **Mode `1` (Advertising / Connectable Mode):**
+       - Reads previous listener: `uVar2 = *(void **)(this + 0x118)`.
+       - If `pListener == NULL` (`0`), substitutes default static listener `DAT_6008046C` (`0x20003454`).
+       - Stores new listener: `*(void **)(this + 0x118) = pListener`.
+       - Returns previous listener `uVar2`.
+     - **Mode `-1` / Disabled / Uninitialized State:**
+       - Formats diagnostic error trace via `FUN_6010165c(0x28, DAT_60080474, 0xCE, DAT_60080470, arg4)` asserting line `0xCE` (206) of `adapter.h` with literal message `"BLE is not enabled. Cannot set listener."` (`0x60125FEC`).
+       - Returns `NULL` (`0`).
+- **Callers & Integration:** Invoked directly from `state_machine__600df264` (`state_machine.cc`, line 61: `adapter__60080424(DAT_60080970, param_1)`) to register the `StateMachine` instance (`param_1`) as the active adapter event listener during BLE connection state machine setup and transitions.
+
 
 

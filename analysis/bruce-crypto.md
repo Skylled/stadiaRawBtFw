@@ -241,6 +241,100 @@ All five share the crypto stack's uniform `FUN_600e0552` (`ERR_put_error`-shaped
 - **`bn_asn1__60090e6c` (`BN_marshal_asn1`, 130B):**
   Serializes a `BIGNUM` into an `ASN1_INTEGER` in a `CBB`. Rejects negative BIGNUMs. If the highest bit of the leading byte is set (`(num_bits & 7) == 0`), prepends a `0x00` sign-extension byte via `FUN_600ed12a(cbb, 0)`. Writes big-endian bytes via `BN_bn2bin` (`FUN_600ece3c`).
 
+## Wave 4: BoringSSL ASN.1 Bitstrings, BIO Streams, ExData & Memory Buffers (`a_bitstr.c`, `bio.c`, `ex_data.c`, `buf.c`)
+
+7 additional BoringSSL I/O abstraction, ASN.1 parsing, and memory management functions across 4 translation units are now fully decompiled and mapped.
+
+| Function | Bytes | Source File | OpenSSL / BoringSSL Identification | Role |
+|---|---:|---|---|---|
+| `a_bitstr__6008ee9c` | 218 | `a_bitstr.c` | `c2i_ASN1_BIT_STRING` | Decodes BER/DER Bit String octets, validates unused bits ($< 8$), and masks padding bits. |
+| `bio__60084bec` | 80 | `bio.c` | `BIO_new` | Allocates and initializes a 44-byte `BIO` stream object, assigns `BIO_METHOD`, and calls method constructor. |
+| `bio__60084c40` | 74 | `bio.c` | `BIO_read` | Reads up to `size` bytes from a `BIO` via `method->bread`, enforcing initialization and updating byte counters. |
+| `bio__60084c90` | 46 | `bio.c` | `BIO_ctrl` | Dispatches control commands (`cmd`, `larg`, `parg`) to `method->ctrl` vtable slot. |
+| `ex_data__600919d4` | 160 | `ex_data.c` | `CRYPTO_free_ex_data` / `CRYPTO_cleanup_all_ex_data` | Thread-safe invocation of per-class `free_func` callbacks and reclamation of `CRYPTO_EX_DATA` vector. |
+| `buf__60090ef4` | 44 | `buf.c` | `BUF_MEM_new` | Allocates a 12-byte `BUF_MEM` expandable memory buffer (`length=0, data=NULL, max=0`). |
+| `buf__60090f24` | 78 | `buf.c` | `BUF_MEM_grow` | Reallocates `BUF_MEM` buffer with $4/3$ exponential growth factor and 4-byte alignment. |
+
+### Detailed Function Breakdowns:
+
+#### 1. ASN.1 Bit String Parsing (`a_bitstr.c`):
+- **`a_bitstr__6008ee9c` (`c2i_ASN1_BIT_STRING`, 218B):**
+  - **Signature:** `ASN1_BIT_STRING * c2i_ASN1_BIT_STRING(ASN1_BIT_STRING **a, const unsigned char **pp, long len)`
+  - **Validation:**
+    - Checks `len >= 1`. If $len < 1$, reports `ERR_put_error(ERR_LIB_ASN1=0xC, 0, ERR_R_NESTED_ASN1_ERROR=0xAE, "a_bitstr.c", line=0x8B=139)`.
+    - If `*a == NULL`, allocates a new 16-byte `ASN1_BIT_STRING` via `asn1_lib__6008f338(V_ASN1_BIT_STRING=3)`.
+  - **DER Bit-Padding Enforcement:**
+    - Reads initial octet: `pad_bits = **pp`.
+    - Enforces `pad_bits < 8`. If $\ge 8$, reports `ERR_put_error(0xC, 0, ASN1_R_INVALID_BIT_STRING_BITS_LEFT=0x8D, "a_bitstr.c", line=0x9D=157)`.
+    - Sets bit string flags: `ret->flags = (ret->flags & ~0x0F) | pad_bits | ASN1_STRING_FLAG_BITS_LEFT=8`.
+  - **Memory Allocation & Data Masking:**
+    - Allocates payload buffer: `OPENSSL_malloc(len - 1)` via `FUN_600e092c`.
+    - Copies $(len - 1)$ bytes from `*pp + 1` into buffer.
+    - Zeroes unused bits in the final octet: `data[len - 2] &= (0xFF << pad_bits)`.
+    - Advances input stream pointer: `*pp += len`.
+    - Returns `ASN1_BIT_STRING *` pointer.
+  - **Caller:** `tasn_dec__6008f5e8` (`tasn_dec.c` — ASN.1 DER template engine).
+
+#### 2. Abstract I/O Streams (`bio.c`):
+- **`bio__60084bec` (`BIO_new`, 80B):**
+  - **Signature:** `BIO * BIO_new(const BIO_METHOD *method)`
+  - Allocates 44-byte (`0x2C`) `struct bio_st` via `OPENSSL_malloc(0x2C)` (`FUN_600e092c`). On allocation failure: `ERR_put_error(ERR_LIB_BIO=0x11, 0, ERR_R_MALLOC_FAILURE=0x41, "bio.c", line=0x4B=75)`.
+  - Clears remaining 40 bytes. Initializes fields: `bio->method = method`, `bio->references = 1`, `bio->init = 1`, `bio->shutdown = 1`.
+  - If `method->create != NULL` (offset `+0x1C`), invokes `method->create(bio)`. If creation fails (returns 0), frees `bio` via `thunk_EXT_FUN_0000ac5e` and returns `NULL`.
+  - **Caller:** `gotham__60067d14`.
+- **`bio__60084c40` (`BIO_read`, 74B):**
+  - **Signature:** `int BIO_read(BIO *b, void *buf, int size)`
+  - Verifies stream and method integrity: checks `b != NULL && b->method != NULL && b->method->bread != NULL` (offset `+0x14`). If invalid, reports `ERR_put_error(0x11, 0, BIO_R_UNSUPPORTED_METHOD=0x73, "bio.c", line=0x91=145)` and returns `-2`.
+  - Enforces initialization: if `b->init == 0`, reports `ERR_put_error(0x11, 0, BIO_R_UNINITIALIZED=0x72, "bio.c", line=0x95=149)` and returns `-2`.
+  - If `size < 1`, returns `0`.
+  - Invokes driver read callback: `bytes_read = b->method->bread(b, buf, size)`.
+  - If `bytes_read > 0`, accumulates total read counter: `b->num_read += bytes_read` (`param_1[9] += iVar1`).
+  - Returns `bytes_read`.
+  - **Caller:** `pem_lib__600861c0`.
+- **`bio__60084c90` (`BIO_ctrl`, 46B):**
+  - **Signature:** `long BIO_ctrl(BIO *b, int cmd, long larg, void *parg)`
+  - Validates `b != NULL && b->method != NULL && b->method->ctrl != NULL` (offset `+0x18`).
+  - Calls `b->method->ctrl(b, cmd, larg, parg)`.
+  - If method or ctrl callback is missing, reports `ERR_put_error(0x11, 0, BIO_R_UNSUPPORTED_METHOD=0x73, "bio.c", line=0xD0=208)` and returns `-2`.
+  - **Callers:** `gotham__60067a68`, `FUN_600e028e`.
+
+#### 3. Crypto Extra Data Lifecycle (`ex_data.c`):
+- **`ex_data__600919d4` (`CRYPTO_free_ex_data` / `CRYPTO_cleanup_all_ex_data`, 160B):**
+  - **Signature:** `void CRYPTO_free_ex_data(int class_index, void *obj, CRYPTO_EX_DATA *ad)`
+  - Checks `ad->sk != NULL` (`*param_3 != 0`).
+  - Acquires global ex_data mutex via `FUN_600e0c82()`.
+  - Retrieves registered class callbacks list via `FUN_600e0bfe(*(param_1 + 4))`.
+  - Releases global ex_data mutex via `FUN_600e0c94(param_1)`.
+  - Iterates through registered `CRYPTO_EX_DATA_FUNCS` structures (`uVar6 < num_funcs`):
+    - If `free_func` (offset `+0x08` on callback descriptor) is non-NULL:
+      - Retrieves stored pointer via `ptr = sk_value(ad->sk, idx)` (`FUN_600edafe`).
+      - Invokes callback: `free_func(obj, ptr, ad, idx, argl, argp)`.
+  - Frees ex_data vector storage via `FUN_600e0ae2(*param_3)` and clears `*param_3 = 0`.
+  - Reports memory error `ERR_put_error(ERR_LIB_CRYPTO=0xE, 0, ERR_R_MALLOC_FAILURE=0x41, "ex_data.c", line=0xDD=221)` on allocation fault.
+  - **Callers:** `bcm__600ea868`, `bcm__600ebf76`, `FUN_6008ce00`, `FUN_6008ea5c`, `FUN_600910dc`.
+
+#### 4. Dynamic Memory Buffer (`buf.c`):
+- **`buf__60090ef4` (`BUF_MEM_new`, 44B):**
+  - **Signature:** `BUF_MEM * BUF_MEM_new(void)`
+  - Allocates 12-byte (`0x0C`) `struct buf_mem_st { size_t length; char *data; size_t max; }` via `OPENSSL_malloc(12)` (`FUN_600e092c`).
+  - On failure: reports `ERR_put_error(ERR_LIB_BUF=7, 0, ERR_R_MALLOC_FAILURE=0x41, "buf.c", line=0x48=72)` and returns `NULL`.
+  - Initializes fields: `ret->length = 0`, `ret->data = NULL`, `ret->max = 0`.
+  - **Caller:** `pem_lib__600861c0`.
+- **`buf__60090f24` (`BUF_MEM_grow`, 78B):**
+  - **Signature:** `size_t BUF_MEM_grow(BUF_MEM *str, size_t len)`
+  - If current capacity `str->max >= len`, returns `len` (success).
+  - Enforces integer overflow boundary: checks `len < 0xFFFFFFFD`.
+  - Calculates geometric growth capacity:
+    ```c
+    size_t n = (len + 3) / 3;
+    size_t new_alloc = n << 2; // 4/3 expansion factor, 4-byte aligned
+    ```
+  - Reallocates buffer via `OPENSSL_realloc(str->data, new_alloc)` (`FUN_600e093e`).
+  - Updates fields: `str->data = new_data`, `str->max = new_alloc`.
+  - On allocation error or overflow, reports `ERR_put_error(ERR_LIB_BUF=7, 0, ERR_R_MALLOC_FAILURE=0x41, "buf.c", line=0x61/0x68/0x6E)` and returns `0`.
+  - **Caller:** `FUN_600ece78`.
+
 ## Related, unexplored
 - HAB4 boot signing is RSA-4096 (confirmed via the CSF block, see project memory) and lives in NXP's boot ROM, **not** in this image — so any RSA/EC code found in bruce itself would be an *application-layer* use, separate from secure boot.
 - ~~BoringSSL's X25519 (`p_x25519.c`...) shares the same field/point arithmetic core... not yet traced whether X25519 has a live caller~~ — **resolved (session 22, above):** `p_x25519_asn1.c` (the ASN.1-layer wrapper, not `p_x25519.c`'s raw ECDH primitives) is now fully decompiled; same "registered, not confirmed live" status as ED25519.
+

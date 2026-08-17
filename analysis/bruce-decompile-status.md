@@ -2,7 +2,7 @@
 
 Data-driven status doc for the "decompile all of `bruce` to source-reconstruction quality" effort. Regenerate the numbers here whenever `bruce_functions.csv`, `bruce_srcmap.csv`, or `analysis/decomp/` change materially — don't hand-edit stale tables into new prose, just re-run the join described in [Methodology](#methodology) below.
 
-**Snapshot: 2026-08-17 (full regeneration, session 24 / Wave 1).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a single `analysis/decomp/` directory listing taken at the conclusion of Wave 1 (1219 decomp files, 1079 in-census). Decompiled census functions grew from 1,006 to **1079** (+73 functions, +10,500 bytes), and fully decompiled attributed source files grew from 67 to **80 of 139**.
+**Snapshot: 2026-08-17 (full regeneration, session 24 / Wave 1).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a single `analysis/decomp/` directory listing taken at the conclusion of Wave 1 (1244 decomp files, 1104 in-census). Decompiled census functions grew from 1,006 to **1104** (+98 functions, +13,616 bytes), and fully decompiled attributed source files grew from 67 to **80 of 139**.
 
 ## 1. Top-line stats
 
@@ -10,7 +10,7 @@ Data-driven status doc for the "decompile all of `bruce` to source-reconstructio
 |---|---:|---:|---:|---:|
 | **Total functions (census)** | 4,995 | 100% | 660,570 | 100% |
 | **Attributed** (leaked `__FILE__` → 139 src files) | 448 | 8.97% | 97,450 | 14.75% |
-| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 1,079 | 21.60% | 301,463 | 45.64% |
+| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 1,104 | 22.10% | 304,579 | 46.11% |
 | **Attributed ∪ Decompiled** (understood in *some* way) | 1,126 | 22.54% | 306,091 | **46.34%** |
 | **Totally unknown** (no attribution, no decompile) | 3,869 | 77.46% | 354,479 | **53.66%** |
 
@@ -123,35 +123,35 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 | `board.cc` | 2 | 2 | 230 | 230 | 0 |
 | `power_rpcs.cc` | 1 | 1 | 228 | 228 | 0 |
 | `dynamic_buffer.h` | 2 | 2 | 226 | 226 | 0 |
-| `a_bitstr.c` | 1 | 0 | 218 | 0 | 218 |
+| `a_bitstr.c` | 1 | 1 | 218 | 218 | 0 |
 | `logger.cc` | 1 | 1 | 216 | 216 | 0 |
-| `bio.c` | 3 | 0 | 200 | 0 | 200 |
+| `bio.c` | 3 | 3 | 200 | 200 | 0 |
 | `binary_build_metadata.cc` | 1 | 1 | 194 | 194 | 0 |
-| `pattern_player.h` | 1 | 0 | 190 | 0 | 190 |
-| `gotham_patterns.cc` | 1 | 0 | 190 | 0 | 190 |
+| `pattern_player.h` | 1 | 1 | 190 | 190 | 0 |
+| `gotham_patterns.cc` | 1 | 1 | 190 | 190 | 0 |
 | `hardware_timer.cc` | 1 | 1 | 188 | 188 | 0 |
 | `append_buffer.h` | 2 | 2 | 186 | 186 | 0 |
 | `sound_codec_wm8904.cc` | 2 | 2 | 184 | 184 | 0 |
-| `external_controller.cc` | 1 | 0 | 180 | 0 | 180 |
-| `led_calibration.cc` | 1 | 0 | 178 | 0 | 178 |
+| `external_controller.cc` | 1 | 1 | 180 | 180 | 0 |
+| `led_calibration.cc` | 1 | 1 | 178 | 178 | 0 |
 | `hid_input_target.cc` | 1 | 1 | 172 | 172 | 0 |
-| `linear_interpolation_source.h` | 1 | 0 | 170 | 0 | 170 |
+| `linear_interpolation_source.h` | 1 | 1 | 170 | 170 | 0 |
 | `platform.h` | 1 | 1 | 164 | 164 | 0 |
-| `ex_data.c` | 1 | 0 | 160 | 0 | 160 |
-| `audio_tasks.cc` | 1 | 0 | 158 | 0 | 158 |
-| `reset.cc` | 2 | 0 | 148 | 0 | 148 |
-| `accessory_detect_ts3a227e.cc` | 1 | 0 | 140 | 0 | 140 |
-| `snvs.h` | 1 | 0 | 138 | 0 | 138 |
-| `parser.cc` | 1 | 0 | 136 | 0 | 136 |
-| `get_device_data.cc` | 1 | 0 | 134 | 0 | 134 |
-| `wakelock.cc` | 1 | 0 | 132 | 0 | 132 |
-| `util.cc` | 1 | 0 | 132 | 0 | 132 |
-| `gotham_16mb_mimxrt10xx_mpu.cc` | 1 | 0 | 132 | 0 | 132 |
+| `ex_data.c` | 1 | 1 | 160 | 160 | 0 |
+| `audio_tasks.cc` | 1 | 1 | 158 | 158 | 0 |
+| `reset.cc` | 2 | 2 | 148 | 148 | 0 |
+| `accessory_detect_ts3a227e.cc` | 1 | 1 | 140 | 140 | 0 |
+| `snvs.h` | 1 | 1 | 138 | 138 | 0 |
+| `parser.cc` | 1 | 1 | 136 | 136 | 0 |
+| `get_device_data.cc` | 1 | 1 | 134 | 134 | 0 |
+| `wakelock.cc` | 1 | 1 | 132 | 132 | 0 |
+| `util.cc` | 1 | 1 | 132 | 132 | 0 |
+| `gotham_16mb_mimxrt10xx_mpu.cc` | 1 | 1 | 132 | 132 | 0 |
 | `adapter.h` | 2 | 2 | 132 | 132 | 0 |
-| `flash_memory.h` | 1 | 0 | 130 | 0 | 130 |
-| `event_groups.c` | 2 | 0 | 128 | 0 | 128 |
+| `flash_memory.h` | 1 | 1 | 130 | 130 | 0 |
+| `event_groups.c` | 2 | 2 | 128 | 128 | 0 |
 | `buffer.h` | 1 | 1 | 128 | 128 | 0 |
-| `buf.c` | 2 | 0 | 122 | 0 | 122 |
+| `buf.c` | 2 | 2 | 122 | 122 | 0 |
 | `pwm.h` | 3 | 0 | 116 | 0 | 116 |
 | `uart.cc` | 1 | 1 | 114 | 114 | 0 |
 | `battery_charger_bq25601.cc` | 2 | 2 | 114 | 114 | 0 |
@@ -184,16 +184,16 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 
 | Rank | Src file | Remaining funcs | Remaining bytes | Already decompiled |
 |---:|---|---:|---:|---:|
-| 1 | `a_bitstr.c` | 1 | 218 | 0/1 |
-| 2 | `bio.c` | 3 | 200 | 0/3 |
-| 3 | `pattern_player.h` | 1 | 190 | 0/1 |
-| 4 | `gotham_patterns.cc` | 1 | 190 | 0/1 |
-| 5 | `external_controller.cc` | 1 | 180 | 0/1 |
-| 6 | `led_calibration.cc` | 1 | 178 | 0/1 |
-| 7 | `linear_interpolation_source.h` | 1 | 170 | 0/1 |
-| 8 | `ex_data.c` | 1 | 160 | 0/1 |
-| 9 | `audio_tasks.cc` | 1 | 158 | 0/1 |
-| 10 | `reset.cc` | 2 | 148 | 0/2 |
+| 1 | `pwm.h` | 3 | 116 | 0/3 |
+| 2 | `usb_configuration_handler.cc` | 1 | 112 | 0/1 |
+| 3 | `reboot_reason.cc` | 1 | 108 | 0/1 |
+| 4 | `obj.c` | 1 | 102 | 0/1 |
+| 5 | `tasn_utl.c` | 1 | 100 | 0/1 |
+| 6 | `persistent_crash_register.cc` | 1 | 100 | 0/1 |
+| 7 | `i2c_device.h` | 1 | 100 | 0/1 |
+| 8 | `logging.cc` | 1 | 98 | 0/1 |
+| 9 | `ecdsa_asn1.c` | 1 | 92 | 0/1 |
+| 10 | `pem_oth.c` | 1 | 88 | 0/1 |
 
 ### 3b. Unattributed contiguous address ranges — candidate whole modules
 
@@ -222,8 +222,8 @@ Of **4,995 total functions** (the current census):
 | | Functions | Bytes |
 |---|---:|---:|
 | Attributed to a source file | 448 | 97,450 |
-| Decompiled (in census) | 1,079 | 301,463 |
-| — of which both attributed AND decompiled | 401 | 92,822 |
+| Decompiled (in census) | 1,104 | 304,579 |
+| — of which both attributed AND decompiled | 426 | 95,938 |
 | — of which in the identified-but-not-formally-attributed BTA/BTE stack (§1a) | 490 | 148,991 |
 | **Understood in some way (union)** | **1,126 (22.5%)** | **306,091 (46.3%)** |
 | **Completely unknown — no attribution, no decompile, no module ID** | 3,869 (77.5%), or **3,283 (65.7%) excluding BTA-identified** | 354,479 (53.7%), or **299,021 (45.3%) excluding BTA-identified** |

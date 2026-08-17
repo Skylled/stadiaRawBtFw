@@ -1029,15 +1029,15 @@ Parameters (`param_1` = `HardwareTimer` descriptor struct):
 - **Context:** Executed from board management thread / periodic timer callback (`FUN_600cbd68`).
 - **Execution Flow & Component Diagnostic Sweep:**
   1. **Uptime Stamp & State Sync:** Reads high-resolution timestamp `FUN_600d7d1c()`, issues `DataMemoryBarrier`, and stores to `*(param_1 + 0xE38)`. Queries component state via `FUN_600d6e14(0x14)` and `FUN_600d72ec(0x14, &local_b1)`.
-  2. **Accessory Detection:** Checks TI TS3A227E headset detector at `param_1 + 0x433C` via `accessory_detect_ts3a227e__6006816c`. Asserts status via `board__60071580(status, DAT_60074878)`.
-  3. **I2C Bus Health:** Probes I2C bus 3 at `param_1 + 0x433C` via `i2c_device__6006820c(..., 3)`.
-  4. **Audio Codec Health:** Queries Wolfson/Cirrus WM8904 audio codec at `param_1 + 0x432C` via `sound_codec_wm8904__6006b630`.
-  5. **Audio Pipeline & Subsystems:** Probes I2S audio driver at `param_1 + 0x3A68` (`FUN_60061e98`), accessory subsystem at `param_1 + 0x431C` (`FUN_600d9414`), and power rail helper at `param_1 + 0x4364` (`FUN_600686e4`).
-  6. **Battery Gauge (BQ2742X):** Queries battery gauge status via `battery_gauge_bq2742X__60068cb4(param_1 + 0x4348, 1)`. On failure, logs diagnostic record `FUN_6010165c(0x28, DAT_60074894, 0x14B, DAT_60074890)` and checks battery mutex.
-  7. **Haptics Cluster:** Probes haptic actuator drivers at `param_1 + 0x6B10` via `haptics_cluster__6006581c`.
+  2. **Accessory Detection:** Checks TI TS3A227E headset detector at `param_1 + 0x433C` via `accessory_detect_ts3a227e__6006816c`. Asserts status via `board__60071580(status, DAT_60074878)` with string `"Accessory detect"` (`0x60123330`).
+  3. **I2C Bus Health:** Probes I2C bus 3 at `param_1 + 0x433C` via `i2c_device__6006820c(..., 3)` with status verified by `board__60071580(status, DAT_6007487C)` (`"Accessory detect micbias voltage"`, `0x60123341`).
+  4. **Audio Codec Health:** Queries Wolfson/Cirrus WM8904 audio codec at `param_1 + 0x432C` via `sound_codec_wm8904__6006b630`, verified with string `"Sound codec"` (`0x60123362`).
+  5. **Audio Pipeline & Subsystems:** Probes I2S audio volume at `param_1 + 0x3A68` (`FUN_60061e98`, string `"Usb audio volume"`, `0x6012336E`), exit-shipping-mode detector at `param_1 + 0x431C` (`FUN_600d9414`, string `"Exit shipping mode detector"`, `0x6012337F`), and BQ25601 battery charger at `param_1 + 0x4364` (`FUN_600686e4`, string `"Charger"`, `0x6012339B`).
+  6. **Battery Gauge (BQ2742X):** Queries battery gauge status via `battery_gauge_bq2742X__60068cb4(param_1 + 0x4348, 1)`. On failure, logs diagnostic record `FUN_6010165c(0x28, DAT_60074894, 0x14B, DAT_60074890)` with `"Gauge Init failed"` (`0x601233A3`) at `board.cc:331` (`0x14B`) and handles battery mutex.
+  7. **Haptics Cluster:** Probes haptic actuator drivers at `param_1 + 0x6B10` via `haptics_cluster__6006581c`, verified with string `"Haptics cluster"` (`0x601233B5`).
   8. **USB & Type-C Subsystem:** Initializes USB device core at `param_1 + 0x3DE8` (`usb_device__60060f28`), USB OTG PHY at `param_1 + 0x39C0` (`FUN_600d4ec8`), and TI TUSB320 Type-C Port Controller at `param_1 + 0x3F04` (`usb_port_controller_tusb320__6006b2e8`, `6006b3e8`).
-  9. **Supervision Periodic Timer:** If timer not yet initialized (`*DAT_600748BC & 1 == 0`), allocates 1000ms periodic timer via `timers__600cad24(..., 1000, 1, ...)` and registers handle in subsystem registry (`FUN_60101c48`).
-  10. **Gotham Framework & Fault Trigger:** Queries `gotham__600679d4()`. If any composite error flag is non-zero (`uVar13 != 0 || cVar5 != 0 || iVar6 != 0`), immediately captures system dump via `trigger_bug_report__6005d714(DAT_600748E8, 0)`.
+  9. **Supervision Periodic Timer:** If timer not yet initialized (`*DAT_600748BC & 1 == 0`), allocates 1000ms periodic timer with name `"Heap trace"` (`0x601233C5`) via `timers__600cad24("Heap trace", 1000, 1, ...)` and registers handle in subsystem registry (`FUN_60101c48`).
+  10. **Gotham Framework & Fault Trigger:** Queries `gotham__600679d4()`, verified against `"Gotham Bio init failed"` (`0x601233D0`). If any composite error flag is non-zero (`uVar13 != 0 || cVar5 != 0 || iVar6 != 0`), immediately captures system dump via `trigger_bug_report__6005d714(DAT_600748E8, 0)` with error reason `"INIT_ERROR"` (`0x60123325`).
 
 ### `timer__6007fb34` (164B) — `Timer` Constructor with Structured CHECK Assertion
 - Initializer for standard `Timer` instance with comprehensive diagnostic message formatting.
@@ -1048,17 +1048,17 @@ Parameters (`param_1` = `HardwareTimer` descriptor struct):
 - Returns `this` pointer. Called by `FUN_6007fbe4`.
 
 ### `timer__6005afd8` (298B) — Application State Supervisor Construction (Dual Timers)
-- Instantiates state-machine supervision object (`param_1`) with two embedded FreeRTOS software timers:
-  - **Timer 1 (Supervision / State Periodic Timer):**
+- Instantiates state-machine supervision object (`param_1`) under `"GothamApp"` context (`0x6011C24E`) with two embedded FreeRTOS software timers:
+  - **Timer 1 (Supervision Periodic Timer — `"Gamepad check"`):**
     - Embedded at offset `param_1 + 0x22` (control block at `+0x22`, handle at `+0x23`, callback context at `+0x24`, static buffer at `+0x26`).
-    - Period: `DAT_6005b134` (configurable), one-shot mode (`autoReload = 0`).
-    - Creates timer via `timers__600cad24(DAT_6005b138, DAT_6005b134, 0, param_1 + 0x22, DAT_6005b14C, param_1 + 0x26)`.
+    - Name: `"Gamepad check"` (`0x6011C258`), Period: `DAT_6005b134` (`0x0F731400` ticks = 259,200,000 ms / 72 hours), one-shot mode (`autoReload = 0`).
+    - Creates timer via `timers__600cad24("Gamepad check", DAT_6005b134, 0, param_1 + 0x22, DAT_6005b14C, param_1 + 0x26)`.
     - Asserts at `timer.h:79` on failure.
-  - **Timer 2 (Inactivity / Sleep Watchdog Timer):**
+  - **Timer 2 (Connection Watchdog Timer — `"BLE Connect timeout"`):**
     - Embedded at offset `param_1 + 0x32` (control block at `+0x32`, handle at `+0x33`, static buffer at `+0x36`).
-    - Period: **`30,000` ms (30 seconds)**.
+    - Name: `"BLE Connect timeout"` (`0x6011C266`), Period: **`30,000` ms (30 seconds)**.
     - Callback: `PTR_LAB_6005ab5c_1_6005b144`.
-    - Creates timer via `timers__600cad24(DAT_6005b148, 30000, 0, param_1 + 0x32, DAT_6005b14C, param_1 + 0x36)`.
+    - Creates timer via `timers__600cad24("BLE Connect timeout", 30000, 0, param_1 + 0x32, DAT_6005b14C, param_1 + 0x36)`.
     - Asserts at `timer.h:79` on failure.
 - Initializes object metadata: flags at `param_1 + 0x47 = 1`, `param_1 + 0x62 = 1`, context pointer `param_1[0x46] = param_2`.
 - Direct caller: `FUN_6005bc74`.
@@ -1067,7 +1067,7 @@ Parameters (`param_1` = `HardwareTimer` descriptor struct):
 - Implements the delayed flash commit timer for bonded Bluetooth peer security records in `remote_device_db.cc`.
 - Cancels any existing pending writeback timer via `FUN_60074ec8()`.
 - Programs FreeRTOS one-shot timer:
-  - Name: `"BleDbWriteTmr"` (`PTR_s_BleDbWriteTmr_60083074`)
+  - Name: `"BleDbWriteTmr"` (`PTR_s_BleDbWriteTmr_60083074`, `0x60127506`)
   - Period: **`2000` ms (2.0 seconds)**
   - Auto-Reload: `0` (one-shot)
   - Callback: `PTR_LAB_600dfc56_1_60083070` (serializes bonded device records to flash)
@@ -1174,7 +1174,7 @@ Parameters (`param_1` = `HardwareTimer` descriptor struct):
 | `heap_5_improved__600521b8` | 254 | `heap_5_improved.c` | **`vPortDefineHeapRegions` Multi-Region Initializer.** Probes hardware configuration, validates ascending region layout, initializes 8-byte aligned free blocks and end sentinels. |
 
 ### `heap_5_improved__600cc6a0` (50B) — `xPortGetLargestFreeBlockSize`
-- **Validation:** Asserts `pxEnd != NULL` (heap initialized) at line `0xDD` (221).
+- **Validation:** Asserts `pxEnd != NULL` (heap initialized) at line `0xDD` (221) of `heap_5_improved.c` (`DAT_600cc6dc`).
 - **Execution Flow:**
   1. Suspends FreeRTOS task scheduler via `thunk_EXT_FUN_0000713c` (`vTaskSuspendAll()`).
   2. Obtains head of free block list `xStart` (`DAT_600cc6e0`).
@@ -1192,9 +1192,9 @@ Parameters (`param_1` = `HardwareTimer` descriptor struct):
 
 ### `heap_5_improved__600521b8` (254B) — `vPortDefineHeapRegions`
 - **Hardware Profile Detection:**
-  - Evaluates system memory config at `*(int *)(DAT_600521ec + 0x260)`:
-    - If flash/RAM configuration matches `0x6C0000` (7MB partition boundary) or `DAT_600521f0`, and `FUN_600d4698() == 0`: selects alternate `HeapRegion_t` region table `DAT_600521F8` / `DAT_600521F4`.
-    - Otherwise selects standard multi-region table `DAT_600521FC`.
+  - Evaluates system memory / shadow fuse configuration at `*(int *)(DAT_600521ec + 0x260)` (`DAT_600521ec = 0x400D8000` is the NXP i.MX RT On-Chip OTP Controller / OCOTP peripheral base; `+0x260` is `OCOTP_CFG3`/`OCOTP_MEM3` register `0x400D8260`):
+    - If flash/RAM configuration matches `0x6C0000` (7MB partition boundary) or `DAT_600521f0` (`0x006C0001`), and `FUN_600d4698() == 0`: selects alternate `HeapRegion_t` region table `DAT_600521F8` (`0x20003024`) / `DAT_600521F4` (`0x2000303C`).
+    - Otherwise selects standard multi-region table `DAT_600521FC` (`0x20003054`).
 - **Validation & Region Initialization (`configASSERT` via `FUN_601016a2`):**
   - Line `0x2AA` (682): `configASSERT(pxEnd == NULL)` (verifies heap regions are defined only once at boot).
   - Loops over `HeapRegion_t pxHeapRegions[]` until `xSizeInBytes == 0`:
@@ -1219,30 +1219,235 @@ Parameters (`param_1` = `HardwareTimer` descriptor struct):
 
 ## Wave 3: `xbara.h` — NXP i.MX RT Crossbar Switch (XBARA1) Signal Routing Driver
 
-`xbara__60060170` (74 bytes) provides the low-level signal routing primitive for the on-chip Crossbar Switch (XBARA1 at `0x403B0000`) peripheral on the NXP i.MX RT1050/1060 MCU.
+`xbara__60060170` (74 bytes) provides the low-level signal routing primitive for the on-chip Crossbar Switch (XBARA1 at `0x403BC000`) peripheral on the NXP i.MX RT1050/1060 MCU.
 
 | Function | Bytes | Source File | Role |
 |---|---:|---|---|
 | `xbara__60060170` | 74 | `xbara.h` | **`XBARA_SetSignalsConnection`.** Connects internal hardware trigger sources (GPT timers, PWMs, GPIOs) to destination peripherals (ADC ETC, DMA, DAC). |
-
 ### `xbara__60060170` (74B) — `XBARA_SetSignalsConnection`
 - **Signature:** `void xbara__60060170(XBARA_Type *base, uint8_t input_signal, uint16_t output_index, uint32_t arg4)`
-- **Peripheral Base:** `DAT_600601a0 = 0x403B0000` (XBARA1 Peripheral Base Address).
+- **Peripheral Base:** `DAT_600601a0 = 0x403BC000` (XBARA1 Peripheral Base Address on i.MX RT1060).
 - **Register Architecture:**
   - The i.MX RT XBARA peripheral features 30 16-bit Signal Select registers (`XBARA_SEL0` through `XBARA_SEL29`, memory offsets `0x00` through `0x3A`):
     - Each 16-bit register configures **two** output channels:
       - Low byte (bits 7:0): `SEL(2*n)` selects input signal for Output `2*n`.
       - High byte (bits 15:8): `SEL(2*n + 1)` selects input signal for Output `2*n + 1`.
 - **Register Programming Logic:**
-  1. Validates base pointer: if `*param_1 != 0`, calls `FUN_601016a2` asserting line `0x17` (23) of `xbara.h`.
+  1. Validates base pointer: if `*param_1 != 0`, calls `FUN_601016a2` with `"Invalid XBAR base: %d"` (`0x6011DC82`) asserting line `0x17` (23) of `xbara.h`.
   2. Computes register byte offset: `reg_offset = output_index & 0xFE`.
   3. Computes bit shift within 16-bit register: `bit_shift = (output_index & 1) << 3` (0 for even output index, 8 for odd output index).
   4. Performs read-modify-write on target `XBARA_SELx` register:
      ```c
-     uint16_t *p_sel = (uint16_t *)(0x403B0000 + (output_index & 0xFE));
+     uint16_t *p_sel = (uint16_t *)(0x403BC000 + (output_index & 0xFE));
      *p_sel = (*p_sel & ~(0xFF << bit_shift)) | ((uint16_t)input_signal << bit_shift);
      ```
 - **System Role:** Called by `FUN_600d49fc` during boot-time hardware interconnect configuration to wire timer compare output pulses (e.g. GPT1 / PIT) to ADC External Trigger Control (ADC_ETC) inputs for synchronized analog stick sampling without CPU intervention.
+
+---
+
+## Wave 4: System Infrastructure, Hardware Drivers & FreeRTOS Primitives
+
+14 additional system infrastructure, hardware driver, power management, and synchronization functions across 12 source files are now decompiled and mapped.
+
+| Function | Bytes | Source File | Role |
+|---|---:|---|---|
+| `snvs__60059f00` | 138 | `snvs.h` | **NXP i.MX RT SNVS Low-Power General Purpose Registers (`SNVS_LPGPR`).** Accesses persistent hardware scratchpad registers across system resets. |
+| `reset__6006044c` | 126 | `reset.cc` | **System Reset / Reboot Trigger.** Flushes peripherals, logs reset reason, arms watchdog or triggers Cortex-M `NVIC_SystemReset()`. |
+| `reset__600604dc` | 22 | `reset.cc` | **Fatal Error Panic Reset Wrapper.** Immediate forced reboot trigger on unrecoverable system bring-up faults. |
+| `accessory_detect_ts3a227e__6006816c` | 140 | `accessory_detect_ts3a227e.cc` | **TI TS3A227E Autonomous Audio Jack Detector Driver.** I2C device probe (Device ID `0x11`), configuration, and autonomous accessory detection. |
+| `gotham_16mb_mimxrt10xx_mpu__6006f660` | 132 | `gotham_16mb_mimxrt10xx_mpu.cc` | **Gotham 16MB Flash MPU Region Configuration Provider.** Populates 8 MPU memory protection regions (RBAR/RASR pairs) for i.MX RT10xx. |
+| `wakelock__60080180` | 132 | `wakelock.cc` | **System Wakelock Acquire Coordinator.** Atomic refcounting (`LDREX`/`STREX`) with hardware power manager sleep-inhibit dispatch. |
+| `event_groups__600c9d44` | 60 | `event_groups.c` | **`xEventGroupCreateStatic`.** FreeRTOS static event group initializer (`uxEventBits = 0`, `vListInitialise`, `ucStaticallyAllocated = pdTRUE`). |
+| `event_groups__600c9d88` | 68 | `event_groups.c` | **`vEventGroupDelete`.** FreeRTOS event group deletion, unblocking pending tasks (`0x02000000`), and dynamic memory reclamation. |
+| `flash_memory__60067e8c` | 130 | `flash_memory.h` | **Flash Address & Capacity Range Validator.** Queries sector geometry and validates operational bounds before erase/write. |
+| `parser__600834a4` | 136 | `parser.cc` | **Structured Command / RPC Packet Parser.** Decodes incoming command frames, formats error telemetry, and translates return codes. |
+| `get_device_data__60078b4c` | 134 | `get_device_data.cc` | **Device Data / Key Store Telemetry Extractor.** Probes device state and verifies parameter existence in typed config storage. |
+| `util__60092128` | 132 | `util.cc` | **Multi-TLV Descriptor Sequence Walker.** Validates TLV packet headers, iterates 16-byte descriptors, and dispatches validator callbacks. |
+| `external_controller__6007053c` | 180 | `external_controller.cc` | **External Haptic / Motor Controller Driver.** Packs 16-bit L/R rumble magnitudes into 32-bit packets, manages retries, and invokes recovery. |
+| `led_calibration__600d4596` | 178 | `led_calibration.cc` | **TI LP5562 RGB LED Calibration & Color Trim Loader.** Reads RGB trim constants, applies float gain scaling, and programs LED driver currents. |
+
+### `snvs__60059f00` (138B) — `snvs.h`: NXP i.MX RT SNVS LPGPR Register Access
+- **Peripheral Architecture:**
+  - Base Address: `0x400D4000` (`SNVS` Peripheral Base on NXP i.MX RT1050/1060).
+  - Register Target: `SNVS_LPGPR[0..3]` (SNVS Low Power General Purpose Registers 0 through 3).
+  - Hardware Offset: `0x400D4000 + (reg_index + 0x40) * 4` $\rightarrow$ `0x400D4100` (`SNVS_LPGPR0`), `0x400D4104` (`SNVS_LPGPR1`), `0x400D4108` (`SNVS_LPGPR2`), `0x400D410C` (`SNVS_LPGPR3`).
+  - Characteristics: Powered by SNVS coin-cell / battery domain, retains 32-bit scratchpad values across software resets, warm boots, and core power-gating.
+- **Validation & Flow:**
+  1. Asserts `param_3 != NULL` (`out_val`) at line `0x2B` (43) of `snvs.h` (`DAT_60059f90`).
+  2. Asserts `reg_index <= 3` at line `0x2C` (44) of `snvs.h`.
+  3. Checks handle initialized: `if (*param_1 == '\0') return 9;` (error `kNotReady` / `kUninitialized`).
+  4. Reads 32-bit register value into caller buffer: `*param_3 = *(uint32_t *)(0x400D4000 + (reg_index + 0x40) * 4);`.
+  5. Returns `0` (`kOk`).
+- **Callers:** `reboot_reason__60059f98` (reads persistent boot flags and watchdog reset reasons across reboots), `FUN_600d512e`.
+
+### `reset__6006044c` (126B) & `reset__600604dc` (22B) — `reset.cc`: System Reboot & Panic Handlers
+- **`reset__6006044c` (Main Reset Trigger):**
+  - **Parameters:** `(undefined4 target, int mode)`.
+  - **Reason Persistence:** If `mode == 1`, writes reset reason `4` (`kSoftwareReset`) to retention state `*(int *)(DAT_600604cc + 0x30) = 4`.
+  - **Peripheral Teardown:** If `mode == 0` or `mode == 1`, calls `FUN_60060368()` to flush hardware queues and quiesce active DMA channels. If `mode == 2`, teardown is bypassed for emergency reboot.
+  - **Logging:** Logs reset notice at line `0x45` (69) of `reset.cc` (`DAT_600604d0`).
+  - **Hardware Reset Dispatch:**
+    - Evaluates watchdog controller state via `FUN_600d4772()`.
+    - If watchdog active: calls `FUN_6005f18c(0, 1, 0)` (forces watchdog timeout / external reset pulse), logs failure at line `0x49` (73) (`"Failed to reset MCU"`), and enters infinite spinloop `while(true)`.
+    - If direct core reset: calls `FUN_6005f164()` (`NVIC_SystemReset()` $\rightarrow$ writes `0x05FA0004` to Cortex-M `AIRCR` register at `0xE000ED0C`), logs failure at line `0x4C` (76), and enters infinite spinloop `while(true)`.
+- **`reset__600604dc` (Fatal Panic Reset Wrapper):**
+  - Invokes `reset__6006044c(DAT_600604f4, mode=2)` (immediate forced reset bypass).
+  - Logs panic trace at line `0x71` (113) of `reset.cc` (`DAT_600604fc`) and enters infinite spinloop.
+  - **Caller:** `xbara__600cbdc8` (invoked when hardware crossbar / clock tree initialization fails fatally during early boot).
+
+### `accessory_detect_ts3a227e__6006816c` (140B) — `accessory_detect_ts3a227e.cc`: TI TS3A227E Audio Switch Driver
+- **Hardware Profile:** Texas Instruments TS3A227E Autonomous Audio Accessory Detection and Configuration Switch (manages 3.5mm headset ground/mic pin auto-routing, OMTP vs. CTIA standard detection, and hook/send key presses).
+- **Execution Flow:**
+  1. Checks initialized byte at `*(char *)(param_1 + 10)`. If already configured, returns `0` (`kOk`).
+  2. Probes TS3A227E over I2C: reads 8-bit Device ID register `0x00` via `FUN_600d81f8(param_1, reg=0, &dev_id, timeout=200ms)`.
+  3. **Device ID Validation:**
+     - Validates `dev_id == 0x11` (fixed TS3A227E Silicon ID).
+     - If mismatch (`dev_id != 0x11`): logs warning at line `0x3E` (62) of `accessory_detect_ts3a227e.cc` (`DAT_600681f8`) and returns error status `5` (`kDeviceMismatch`).
+  4. **Accessory Configuration:**
+     - Marks initialized: `*(char *)(param_1 + 10) = 1`.
+     - Invokes configuration routine `FUN_600d8226(param_1)` (enables auto-detection, interrupt mask, and mic bias switching).
+     - On configuration success: logs status line `0x46` (70) and returns `0`.
+     - On I2C error: logs line `0x3A` (58) or `0x43` (67) with error code.
+- **Caller:** `timer__60074658` (audio accessory periodic detection supervisor).
+
+### `gotham_16mb_mimxrt10xx_mpu__6006f660` (132B) — `gotham_16mb_mimxrt10xx_mpu.cc`: Gotham 16MB MPU Config Provider
+- **Role:** Supplies the ARM Cortex-M7 Memory Protection Unit (MPU) table definitions tailored for the Gotham 16MB Flash memory architecture on NXP i.MX RT10xx.
+- **Execution Flow:**
+  1. Copies 8 MPU region definitions (each 8 bytes: RBAR base address + RASR attribute/size word) from static table `DAT_6006f6e4` (16 32-bit words) into caller-supplied region array `param_2`.
+  2. Populates region tracking metadata: `*param_1 = 8` (active regions count), `param_1[1] = 9` (default MPU type identifier).
+  3. Validates region limits: if region index $> 15$, triggers assertion at line `0xBB` (187) of `gotham_16mb_mimxrt10xx_mpu.cc` (`DAT_6006f6ec`).
+  4. Returns region count `8`.
+- **Caller:** `mpu__600cb030` (`mpu.cc` — system boot MPU initialization pass).
+
+### `wakelock__60080180` (132B) — `wakelock.cc`: System Wakelock Acquisition Coordinator
+- **Role:** Coordinates power management wakelocks that inhibit deep sleep and low-power CPU states during active gameplay, haptics, and audio streaming.
+- **Concurrency & Reference Counting:**
+  1. Issues data memory barrier `DataMemoryBarrier(0x1B)`.
+  2. Pointer `piVar5 = param_1 + 2` points to 32-bit reference counter `wakelock->ref_count`.
+  3. Checks valid state: if `param_1[2] == -1`, logs error at line `0x13` (19) of `wakelock.cc` (`DAT_600801d8`) and returns error `8` (`kInvalidState`).
+  4. Atomic Increment: Uses Cortex-M `LDREX` (`ExclusiveAccess`) and `STREX` (`hasExclusiveAccess`) loop to increment `ref_count`:
+     ```c
+     do {
+         ExclusiveAccess(piVar5);
+         prev_count = *piVar5;
+     } while (!hasExclusiveAccess(piVar5));
+     *piVar5 = prev_count + 1;
+     ```
+  5. **First Acquisition Dispatch (`prev_count == 0`):**
+     - Obtains power manager lock `thunk_EXT_FUN_0000b4c2(pwr_mgr + 0xBC)`.
+     - Reads wakelock bit index: `lock_id = *(uint8_t *)(param_1 + 1)`.
+     - Updates active wakelocks bitmask: `*(uint32_t *)(pwr_mgr + 0x14C) |= (1 << lock_id)`.
+     - Invokes hardware low-power inhibitor: `FUN_600df014(pwr_mgr)` (adjusts clock gating and low-power sleep modes).
+     - Releases power manager lock `thunk_EXT_FUN_00007d10(pwr_mgr + 0xBC)`.
+  6. Returns `0` (`kOk`).
+- **Caller:** `application_state__6005b8dc`.
+
+### `event_groups__600c9d44` (60B) & `event_groups__600c9d88` (68B) — `event_groups.c`: FreeRTOS Event Groups
+- **`event_groups__600c9d44` (`xEventGroupCreateStatic`):**
+  - Takes `StaticEventGroup_t *pxEventGroupBuffer` (`param_1`).
+  - Enforces `configASSERT(pxEventGroupBuffer != NULL)` at line `0x62` (98) of `event_groups.c` (`DAT_600c9d84`).
+  - Initializes event bits: `pxEventGroup->uxEventBits = 0` (`*param_1 = 0`).
+  - Initializes waiting task list: `thunk_EXT_FUN_0000b2e8(param_1 + 1)` (`vListInitialise(&pxEventGroup->xTasksWaitingForBits)`).
+  - Marks static allocation flag: `*(uint8_t *)(param_1 + 7) = 1` (`ucStaticallyAllocated = pdTRUE`).
+  - Returns `EventGroupHandle_t` pointer.
+  - **Callers:** `FUN_6006e854`, `FUN_600765a4`, `FUN_60055730`, `FUN_6005cd20`.
+- **`event_groups__600c9d88` (`vEventGroupDelete`):**
+  - Suspends scheduler: `thunk_EXT_FUN_0000713c()` (`vTaskSuspendAll()`).
+  - Unblocks pending waiting tasks: while list count `*(int *)(param_1 + 4) != 0`:
+    - Asserts list item integrity at line `0x263` (611) of `event_groups.c`.
+    - Unblocks task: `thunk_EXT_FUN_000075ec(item, 0x02000000)` (`xTaskRemoveFromEventList` with `eventUNBLOCKED_DUE_TO_BIT_SET = 0x02000000`).
+  - Dynamic Memory Reclamation: if `ucStaticallyAllocated == pdFALSE` (`*(char *)(param_1 + 0x1C) == 0`), frees buffer via `thunk_EXT_FUN_000080d8(param_1)` (`vPortFree`).
+  - Resumes scheduler: `thunk_EXT_FUN_0000728c()` (`xTaskResumeAll()`).
+  - **Callers:** `FUN_6006e854`, `FUN_6006e9b0`, `FUN_600d15f8`.
+
+### `flash_memory__60067e8c` (130B) — `flash_memory.h`: Flash Bounds & Capacity Verification
+- **Role:** Protects NOR flash physical memory by enforcing strict boundary and capacity checks before read, write, or erase operations.
+- **Execution Flow:**
+  1. Queries flash driver sector/block size via vtable call `(**(code **)(*param_1 + 0x14))()`.
+  2. Computes total flash storage capacity: `total_capacity = block_size * *(int *)(param_1[1] + 4)`.
+  3. **Boundary Verification:**
+     - Checks `if (total_capacity < offset + length)`:
+       - Formats error message with `offset` (`param_2`), `length` (`param_3`), and `total_capacity`.
+       - Logs out-of-bounds error at line `0x132` (306) of `flash_memory.h` (`DAT_60067f10`) at log level `0x28`.
+       - Returns error code `3` (`kOutOfRange` / `kInvalidArgument`).
+     - Otherwise returns `0` (`kOk`).
+- **Callers:** `mimxrt10xx_flash_memory__60068024`, `FUN_600d8052`, `FUN_600d808e`, `FUN_600d9b8e`, `FUN_600d9bc6`.
+
+### `parser__600834a4` (136B) — `parser.cc`: Command / RPC Packet Parser
+- **Role:** Decodes and validates structured command framing received over Bluetooth LE and USB endpoints.
+- **Execution Flow:**
+  1. Initializes parser context on stack: `FUN_600edfcc(auStack_b4)`.
+  2. Invokes frame decoder: `iVar1 = FUN_600edcd6(auStack_b4, param_1[0], param_1[1], param_1[2], param_1[3])`.
+  3. Records return code: `param_1[4] = iVar1`.
+  4. **Error Handling:**
+     - If `iVar1 < 0`:
+       - Formats error string containing numeric parse error code via `FUN_60101b0c`.
+       - Logs parsing failure at line `0x1F` (31) of `parser.cc` (`DAT_6008352c`).
+       - Resets status word: `param_1[4] = 0`.
+       - Returns error status `8` if `iVar1 == -1` (`kBufferUnderflow`), else `0x0F` (`kMalformedPacket`).
+     - If `iVar1 >= 0`: returns `0` (`kOk`).
+- **Caller:** `FUN_600d4664`.
+
+### `get_device_data__60078b4c` (134B) — `get_device_data.cc`: Device Config & Telemetry Query
+- **Role:** Extracts system serial numbers, hardware revision codes, and factory calibration blocks from the persistent key-value configuration store.
+- **Execution Flow:**
+  1. Probes telemetry store availability via `FUN_600d6e14()`. If uninitialized (`0`), sets `*param_3 = 0` (absent).
+  2. Queries config key: calls `keys__60065eb8(param_1, param_2, type=0x20)`.
+  3. If key exists (returns `\0`): sets `*param_3 = 1` (present/valid).
+  4. If key lookup fails:
+     - Formats key name via `FUN_600d736c(param_1, ...)`.
+     - Logs missing key trace at line `0x14` (20) of `get_device_data.cc` (`DAT_60078bd4`).
+     - Sets `*param_3 = 0`.
+- **Caller:** `FUN_60078be0`.
+
+### `util__60092128` (132B) — `util.cc`: Multi-TLV Descriptor Sequence Walker
+- **Role:** Parses and validates concatenated Type-Length-Value (TLV) descriptor blocks (e.g. BLE GATT characteristic descriptors, USB report descriptors).
+- **Execution Flow:**
+  1. Validates stream header magic: `if (*param_1 != '\x01') return 3;`.
+  2. Iterates over `param_2` descriptor entries (index `iVar2 = 1 .. param_2`):
+     - Extracts descriptor fields and invokes descriptor validator: `FUN_600edc9c(*(param_1 + 0x10), *(param_1 + 0x14), *(param_1 + 0x18), *(param_1 + 0x1c), param_3, param_4)`.
+     - If validator returns non-zero:
+       - If descriptor subtype is `0`: logs info at line `0x97` (151) of `util.cc` (`DAT_600921b0`).
+       - If descriptor subtype $> 1$: logs warning at line `0x9F` (159) of `util.cc`.
+       - If `param_5 != NULL`: sets `*param_5 = iVar2` (matched descriptor sequence index) and returns `0`.
+     - Advances descriptor pointer by 16 bytes: `param_1 += 0x10`.
+  3. Returns error code `5` (`kNotFound`) if no matching descriptor is found.
+- **Caller:** `FUN_600dfcf2`.
+
+### `external_controller__6007053c` (180B) — `external_controller.cc`: External Haptic / Motor Controller Driver
+- **Role:** Transmits dual-motor rumble magnitudes (Left/Right) to the dedicated external haptics controller IC.
+- **Execution Flow:**
+  1. Issues double memory barrier `DataMemoryBarrier(0x1B)`.
+  2. Checks enabled status: if `*DAT_600705f0 == '\0'`, returns immediately.
+  3. Packs Left and Right 16-bit rumble magnitudes into a single 32-bit word: `local_14 = CONCAT22((short)param_2, (short)param_1);`.
+  4. Acquires controller mutex `thunk_EXT_FUN_0000b4c2(DAT_600705f4)`.
+  5. Obtains controller handle `iVar2 = FUN_6007014c(0)`.
+  6. Transmits rumble command packet via `FUN_6006543c(*(iVar2 + 4), DAT_600705f8, &local_14, ...)`.
+  7. **Error Tracking & Recovery:**
+     - If transfer returns `0x0E` (`kBusy` / `kTimeout`): increments consecutive error count `*(int *)(iVar2 + 8)++`.
+     - If transfer succeeds: resets error count `*(int *)(iVar2 + 8) = 0`.
+     - If consecutive errors persist and recovery check `FUN_600d7cdc()` passes:
+       - Logs error trace at line `0xCA` (202) of `external_controller.cc` (`DAT_600705fc`).
+       - Triggers hardware recovery callback `(*DAT_60070604)(DAT_60070604[1], DAT_60070608)` (power-cycles or resets motor driver).
+  8. Releases controller mutex `thunk_EXT_FUN_00007d10(DAT_600705f4)`.
+- **Caller:** `haptics_cluster__600658b4` (`haptics_cluster.cc` — the per-tick haptic drive loop).
+
+### `led_calibration__600d4596` (178B) — `led_calibration.cc`: TI LP5562 RGB LED Calibration & Color Trim
+- **Role:** Computes and applies factory color-balance calibration trims to the TI LP5562 4-channel LED driver.
+- **Execution Flow:**
+  1. Checks if calibration was already applied (`*DAT_6005e008`).
+  2. If first execution:
+     - Probes calibration validity: `FUN_6005ded8()`. If valid, marks `*DAT_6005e008 = 1`.
+     - Logs calibration constants at line `0x35` (53) of `led_calibration.cc` (`DAT_6005e00c`) with raw Red (`*DAT_6005e018`), Green (`*DAT_6005e014`), and Blue (`*DAT_6005e010`) trim words.
+  3. **Floating Point Gain Calculation:**
+     - Red: converts `*DAT_6005e018` to float, multiplies by scale factor `1.0f`, converts to unsigned integer `uVar5`.
+     - Green: converts `*DAT_6005e014` to float, multiplies by `1.0f`, converts to unsigned integer `uVar6`.
+     - Blue: converts `*DAT_6005e010` to float, multiplies by `1.0f`, converts to unsigned integer `uVar7`.
+  4. Obtains LP5562 driver instance `uVar3 = FUN_600653e0()`.
+  5. Programs LED driver current registers: `led_driver_lp5562__6006b1d0(uVar3, r=uVar5 & 0xFF, g=uVar6 & 0xFF, 0, b=uVar7 & 0xFF);`.
+- **Caller:** `main__60051240` (system startup sequence).
+
+
 
 
 
