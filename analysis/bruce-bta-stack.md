@@ -1448,6 +1448,29 @@ Decompiled and documented 17 functions (1,646 bytes across `0x600a2180`–`0x600
 | `0x600a333c` |  54 | BTM / Security | **`btm_sec_init`** — Security subsystem control block initializer: zeroes `btm_sec_cb` (0x1ae4 bytes at `0x20021ad0`), restores default security mask `+0x1abc`, and calls `FUN_600a24a8`, `FUN_60098ea0`, `FUN_600a5840(4)`, and `btm_init` (`0x600a0060`). | 0 callers / 5 callees |
 | `0x600a337c` | 164 | BTM / Security | **`BTM_SecRegister`** — Security service registration: manages service records at `btm_sec_cb.sec_serv_rec` (stride 8 bytes); allocates slot, sets service callback `param_3` and flags `param_1`, returning index into `*param_2` (or frees record if deregister flag `param_1 & 4` set). | 2 callers / 0 callees |
 
+## Session 35 (Wave 5) — BTM Link Power Management & Security Pairing / Confirmation Engine (15 functions, 1,588 bytes)
+
+Decompiled and documented 15 functions (1,588 bytes across `0x600a35e4`–`0x600a4bb8`): the ACL link power management state machine, security mode configuration, remote name notifications, pairing state accessors, user confirmation request handling, and security procedure evaluation:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600a35e4` |  68 | BTM / PM | **`BTM_ReadPowerMode`** — Reads power mode of ACL connection matching BD_ADDR `param_1` using `0x600a3724`; stores mode byte `*(btm_cb + link*0x24 + 0x66c) & 0x7f` into `*param_2`. | 3 callers / 1 callee |
+| `0x600a362c` | 174 | BTM / PM | **`btm_pm_reset`** — Power management reset invoked during stack startup (`0x600a02b4`); clears PM registration records at `+0xdb*8 + 8`, resets active link index `+0x6ec = 4`, and notifies PM callback with status `0xc`. | 1 caller / 0 callees |
+| `0x600a36e4` |  58 | BTM / PM | **`btm_pm_sm_alloc`** — Zeroes PM state machine control block for link index `param_1` (0x24 bytes at `+0x64c + param_1*0x24`) and clears mode byte `+0x66c = 0`. | 1 caller / 1 callee |
+| `0x600a3724` |  92 | BTM / PM | **`btm_pm_find_link_by_addr`** — Scans 4 ACL connection records (stride `0x14c`, `0x20021ad0 + link*0x14c`); matches BD_ADDR at `entry+6` when `entry+0x128 != 0 && entry+0x12e == 1`. Returns link index 0..3 (or 4 if not found). | 2 callers / 1 callee |
+| `0x600a3c54` | 118 | BTM / PM | **`btm_pm_check_next_link`** — Scans 4 links for pending PM requests (`+0x66c < 0`, bit 7 set); clears pending bit and calls `FUN_600a3a38(0x80, link_idx, 0)` to execute mode change. | 1 caller / 1 callee |
+| `0x600a3cd0` | 182 | BTM / PM | **`btm_pm_proc_mode_change`** — Handles power mode change notification: updates mode `+0x66c`, notifies registered PM callback with event 5 (success) or 6 (failure), resets active link `+0x6ec = 4`, and advances via `0x600a3c54`. | 1 caller / 1 callee |
+| `0x600a3f40` | 114 | BTM / Security | **`BTM_SetSecurityMode`** — Configures security mode: checks LE support in `btm_cb+0x81b & 2`; copies 10 32-bit security parameters (`param_1[0..9]`, 40 bytes) into `btm_sec_cb + 0x1118..+0x113c`. | 1 caller / 3 callees |
+| `0x600a3fc0` |  74 | BTM / Security | **`BTM_SecAddRmtNameNotifyCallback`** — Registers remote name notification callback into 2-slot array at `btm_sec_cb + (slot + 0x450)*4`. | 1 caller / 0 callees |
+| `0x600a4010` |  76 | BTM / Security | **`BTM_SecDeleteRmtNameNotifyCallback`** — Unregisters remote name notification callback matching `param_1` from the 2-slot array. | 2 callers / 0 callees |
+| `0x600a4060` |  24 | BTM / Security | **`BTM_GetPairingState`** — Returns current pairing state byte `*(btm_sec_cb + 0x1174)`. | 2 callers / 0 callees |
+| `0x600a407c` |  66 | BTM / Security | **`BTM_SetPairingState`** — Sets pairing mode flags: `*(btm_sec_cb + 0x1175) = (param_1 == 0)` and `*(btm_sec_cb + 0x1177) = param_2`. | 1 caller / 0 callees |
+| `0x600a4270` |  90 | BTM / Security | **`btm_sec_l2c_cleanup`** — Scans 14 L2CAP security registration records (stride 0x14, `+0xe & 0x80 != 0`); if PSM matches `param_1`, clears record `*(entry+0xe) = 0` and increments count. | 1 caller / 0 callees |
+| `0x600a4984` | 146 | BTM / Security | **`BTM_ConfirmReqReply`** — Handles user confirmation request reply: validates pairing state `btm_sec_cb+0x118c == 4` and matching BD_ADDR; calls `FUN_600a8108(9)`, sets security flags, and issues `btsnd_hcic_user_conf_reply` (`0x600b45b4`, established appendix). | 2 callers / 4 callees |
+| `0x600a4b1c` | 148 | BTM / Security | **`btm_sec_check_security_req`** — Evaluates security requirements for connection: checks security bitmask `entry+0x2a & 0x10`, required flags `entry+0x54`, link state `entry+0x57`, and device record index `entry+0x5a`. | 3 callers / 0 callees |
+| `0x600a4bb8` | 158 | BTM / Security | **`btm_sec_execute_procedure`** — Security procedure executor: evaluates security requirement via `0x600a4b1c`; if required, invokes security callback `btm_sec_cb+0x1134` with event 9, and updates security flags `entry+0x59 |= 4`, `entry+0x2a &= 0xffcf`. | 2 callers / 2 callees |
+
+
 
 
 
