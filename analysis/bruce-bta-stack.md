@@ -1424,5 +1424,30 @@ Decompiled and documented 16 functions (1,702 bytes across `0x600a13f0`–`0x600
 | `0x600a1edc` |  26 | BTM / Inquiry | **`BTM_IsInquiryActive`** — Returns inquiry active status byte `*(btm_cb + 0x1112)`. | 1 caller / 0 callees |
 | `0x600a1efc` | 200 | BTM / Inquiry | ~~**`BTM_CancelPeriodicInquiry`** — Verifies `BTM_IsDeviceUp` and state byte `+0x61e`, stops inquiry filter/timer via `FUN_6009e70c()`, clears inquiry control block fields (`+0x61e=0, +0x61d=0, +0x38=0, +0x34=0`), increments sequence counter `+0x44`, and invokes `FUN_600a25f8()`.~~ ⚠️ Calls `FUN_600b1ef8`, already established (appendix, and this doc's own `0x6009e4d0` entry) as the *real* **`btsnd_hcic_inq_cancel`** (Inquiry Cancel, `0x0402`) — plus conditionally calls `FUN_6009e70c` on a separate mode bit, consistent with a general "stop whichever inquiry mode is active" role. **Likely swapped with `0x600a1cac` above** — this function (`0x600a1efc`) is more likely the real `BTM_CancelInquiry`. *(corrected, QA)* | 1 caller / 4 callees |
 
+## Session 34 (Wave 4) — BTM Inquiry Database, Remote Name Cancel, Filter Configuration & Security Bootstrap (17 functions, 1,646 bytes)
+
+Decompiled and documented 17 functions (1,646 bytes across `0x600a2180`–`0x600a337c`): the 30-entry inquiry database management layer, remote name cancellation, inquiry event filter configuration, and the security subsystem initialization and service record registrar:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600a2180` |  94 | BTM / Name | **`BTM_CancelRemoteName`** — Validates pending request state (`btm_cb+0x32 != 0`); if BR/EDR (`FUN_600f0910` returns 0), issues `btsnd_hcic_rmt_name_req_cancel` (`0x600b28b0`, established appendix), else cancels BLE name request via `FUN_6009decc`. | 1 caller / 3 callees |
+| `0x600a21e4` |  82 | BTM / InqDB | **`BTM_InqDbRead`** — Scans the 30-entry inquiry database (stride `0x30`, active flag `entry+0x2e != 0`) matching 6-byte BD_ADDR at `entry+10` against `param_1` using `thunk_EXT_FUN_0000b554` (memcmp). Returns pointer to entry data `entry+8` (or NULL). | 7 callers / 1 callee |
+| `0x600a223c` |  64 | BTM / InqDB | **`BTM_InqDbFirst`** — Scans 30-entry database from index 0; returns pointer to data (`entry+8`) of first valid entry with `entry+0x2e != 0` (or NULL if empty). | 2 callers / 0 callees |
+| `0x600a2280` | 116 | BTM / InqDB | **`BTM_InqDbNext`** — Inquiry database iterator. If `param_1 == 0`, delegates to `BTM_InqDbFirst()`; otherwise derives current index from `param_1` and returns next active entry (`entry+8`). | 1 caller / 1 callee |
+| `0x600a2300` |  52 | BTM / InqDB | **`BTM_ClearInqDb`** — Validates inquiry inactive (`btm_cb+0x61e == 0 && btm_cb+0x61a == 0`), delegates to worker `0x600a2578(param_1)` to clear entries matching `param_1` (or all if NULL). | 1 caller / 1 callee |
+| `0x600a24a8` |  26 | BTM / Inquiry | **`btm_inq_init`** — Initializes inquiry control flag `*(btm_cb + 0x1113) = 1`. | 1 caller / 0 callees |
+| `0x600a24c8` | 122 | BTM / Inquiry | **`btm_inq_stop_on_conn`** — Inquiry pause on connection creation: if `btm_cb+0x1113 != 0 && btm_cb+0x1111 == 3`, checks `btm_cb+0x1112 & 8`; calls `btsnd_hcic_inq_cancel` (`0x600b1ef8`) if standard inquiry or `btsnd_hcic_exit_per_inq` (`0x600a1cac`) if periodic; sets pause bit `btm_cb+0x1112 |= 4`. | 1 caller / 2 callees |
+| `0x600a2548` |  42 | BTM / Inquiry | **`btm_inq_resume`** — Clears pause bit in inquiry state: `*(btm_cb + 0x1112) &= 0xfb`. | 1 caller / 0 callees |
+| `0x600a2578` | 120 | BTM / InqDB | **`btm_clr_inq_db`** — Inquiry DB clear worker: iterates 30 entries starting at `btm_cb+0x68`; for active entries (`+0x2e != 0`) matching `param_1`, clears `+0x2e = 0` and notifies callback `btm_cb+0xb34` (`(*cback)(entry+8, 0)`). | 2 callers / 1 callee |
+| `0x600a2640` | 168 | BTM / InqDB | **`btm_inq_db_filter_check`** — Duplicate inquiry result filter: searches filter table at `btm_cb+0x60` for matching BD_ADDR and sequence number `btm_cb+0x44`; returns 1 if duplicate; appends BD_ADDR if new. | 2 callers / 2 callees |
+| `0x600a26ec` |  80 | BTM / InqDB | **`btm_inq_find_raw_entry`** — Scans 30 entries for matching 6-byte BD_ADDR at `entry+10` (`+0x2e != 0`); returns raw entry base pointer `local_10` without offset. | 3 callers / 1 callee |
+| `0x600a2740` | 180 | BTM / InqDB | **`btm_inq_alloc_entry`** — Inquiry DB slot allocator: searches 30 entries for free slot (`+0x2e == 0`), tracking LRU entry (`min *entry`). Evicts LRU entry if full (notifying callback `btm_cb+0xb34`), memsets 0x30 bytes to 0, copies BD_ADDR, and marks `+0x2e = 1`. | 2 callers / 2 callees |
+| `0x600a27fc` | 132 | BTM / Filter | **`BTM_SetInquiryFilter`** — Configures HCI inquiry result event filter: formats filter params, sets `btm_cb+0x110e = 1`, and calls `btsnd_hcic_set_event_filter` (`0x600b3240`, HCI `0x0c05` with filter type 1). | 2 callers / 2 callees |
+| `0x600a3294` |  54 | BTM / Security | **`btm_sec_abort_all`** — Aborts active security operations on connection teardown: invokes `FUN_600a30f0` (with `0x1f` status) and `FUN_600a59d0(0, 0, 0x1f)`. | 1 caller / 2 callees |
+| `0x600a32d4` |  96 | BTM / Security | **`btm_sec_auth_complete`** — Authentication complete event handler: clears callback `btm_cb+0x7a8`, stops timer `0x20022270` (`FUN_600aa3cc`), formats event struct `{status, encr_enable}`, and dispatches to registered callback. | 1 caller / 1 callee |
+| `0x600a333c` |  54 | BTM / Security | **`btm_sec_init`** — Security subsystem control block initializer: zeroes `btm_sec_cb` (0x1ae4 bytes at `0x20021ad0`), restores default security mask `+0x1abc`, and calls `FUN_600a24a8`, `FUN_60098ea0`, `FUN_600a5840(4)`, and `btm_init` (`0x600a0060`). | 0 callers / 5 callees |
+| `0x600a337c` | 164 | BTM / Security | **`BTM_SecRegister`** — Security service registration: manages service records at `btm_sec_cb.sec_serv_rec` (stride 8 bytes); allocates slot, sets service callback `param_3` and flags `param_1`, returning index into `*param_2` (or frees record if deregister flag `param_1 & 4` set). | 2 callers / 0 callees |
+
+
 
 
