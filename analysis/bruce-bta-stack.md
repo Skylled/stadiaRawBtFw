@@ -830,7 +830,7 @@ With this wave, **SEVEN major Broadcom BTA/BTE subsystems are now 100% fully dec
 1. **`btsnd_hcic_*` HCI Command Send Layer** (`0x600b0700`–`0x600b5000`): **122 / 122 functions (100.0%)** — 18,094 / 18,094 bytes
 2. **L2CAP Channel State Machine (CSM), FCR & Link** (`0x600b5000`–`0x600ba000`): **56 / 56 functions (100.0%)** — 18,685 / 18,685 bytes
 3. **L2CAP PDU Reassembly & Buffer Management** (`0x600ba000`–`0x600bd000`): **38 / 38 functions (100.0%)** — 11,326 / 11,326 bytes
-4. **SDP Service Discovery Protocol** (`0x600bd000`–`0x600c0000`): **36 / 36 functions (100.0%)** — 11,772 / 11,772 bytes
+4. **SDP Service Discovery Protocol** (`0x600bd000`–`0x600c0000`): **34 distinct functions / 36 census entries (100.0%)** — 11,772 / 11,772 bytes (Note: `sdpu_get_len_from_type` accounts for 3 adjacent census entries due to a jump-table split)
 5. **BTU Task & GATT Core Helpers** (`0x600a9000`–`0x600ab000`): **34 / 34 functions (100.0%)** — 5,444 / 5,444 bytes
 6. **SMP Security Manager Protocol** (`0x600c0000`–`0x600c2600`): **71 / 71 functions (100.0%)** — 8,742 / 8,742 bytes
 7. **EC Crypto, Field Arithmetic & BTA Tail** (`0x600c7000`–`0x600c9cc4`): **31 / 31 functions (100.0%)** — 10,980 / 10,980 bytes
@@ -851,8 +851,8 @@ With this wave, **SEVEN major Broadcom BTA/BTE subsystems are now 100% fully dec
 - State 7 (`CST_W4_L2CAP_DISCONNECT_RSP`): `FUN_600b6fcc` (`l2c_csm_w4_l2cap_disconnect_rsp`)
 - State 8 (`CST_W4_L2CA_DISCONNECT_RSP`): `FUN_600b70f4` (`l2c_csm_w4_l2ca_disconnect_rsp`)
 
-#### 2. Bluetooth SDP Data Element Sequence (DES) Wire Codec
-`FUN_600bfb4c` (14 bytes) and `FUN_600bfe2c` (126 bytes) implement exact Bluetooth Core Spec SDP Data Element Sequence wire encoding/decoding. `FUN_600bfb4c` (`sdpu_get_len_from_type`) extracts data element byte lengths from the 3-bit size descriptor field:
+#### 2. Bluetooth SDP Data Element Sequence (DES) Wire Codec & Jump-Table Split
+`FUN_600bfb4c` (`0x600bfb4c`–`0x600bfc10`, ~196 bytes total; split in census across `0x600bfb4c` 14B, `0x600bfb5a` 8B, and `0x600bfb62` 174B at jump-table boundary) and `FUN_600bfe2c` (126 bytes) implement exact Bluetooth Core Spec SDP Data Element Sequence wire encoding/decoding. `sdpu_get_len_from_type` (`0x600bfb4c`) extracts data element byte lengths from the 3-bit size descriptor field:
 - `0` -> 1 byte (nil/uint8/int8/bool)
 - `1` -> 2 bytes (uint16/int16/uuid16)
 - `2` -> 4 bytes (uint32/int32/uuid32)
@@ -864,15 +864,15 @@ With this wave, **SEVEN major Broadcom BTA/BTE subsystems are now 100% fully dec
 
 #### 3. GAP Service Characteristic Value Mutator (`gap_set_attrib_value`)
 `FUN_600aad90` (156 bytes) is confirmed as the runtime attribute mutator for the GAP Generic Access service (`0x1800`), matching the 4 characteristics registered by `FUN_600aac04`:
-- `0x2a00` (Device Name): updates name string via `FUN_600a10e0`
+- `0x2a00` (Device Name): updates name string via `FUN_600a10e0` (`cmp.w r3, #0x2A00` opcode `b3 f5 28 5f`)
 - `0x2a01` (Appearance): stores 16-bit appearance category code at `local_c + 4`
 - `0x2a04` (Peripheral Preferred Connection Parameters): copies 8-byte connection parameter struct (min interval, max interval, slave latency, supervision timeout) via `memcpy` (`thunk_EXT_FUN_0000b572`)
 - `0x2aa6` (Central Address Resolution): stores 1-byte boolean flag at `local_c + 4`
 
 #### 4. SMP Security Manager Protocol State Machine & LE Secure Connections
 The full SMP Security Manager Protocol (`0x600c0000`–`0x600c2600`, 71 functions) is now 100% decompiled. It includes:
-- SMP Application / BTM Interface API & State Routers: `SMP_Pair` (`0x600c0578`), `SMP_SecurityGrant` (`0x600c05e4`), `SMP_PasskeyReply` (`0x600c0640`), `SMP_ConfirmReply` (`0x600c0698`), `SMP_NumericComparisonReply` (`0x600c073c`), `smp_proc_pairing_req` (`0x600c0114`), `smp_proc_pairing_confirm` (`0x600c01b8`), `smp_proc_rand` (`0x600c03d8`), and `smp_check_pairing_in_progress` (`0x600c0434`). (Note: Low-level wire PDU serializers are located in the `0x600faaxx` / `0x600f06xx` library cluster).
-- Cryptographic Toolbox: AES-CMAC confirmation calculation `f4` (`0x600c0e14`), key generation `f5` (`0x600c0e7c`), check value generation `f6` (`0x600c1204`), and 6-digit numeric comparison passkey computation (`0x600c0cb4`, bounded by `DAT_600c0dac = 999999` / `0xF423F`).
+- SMP Application / BTM Interface API & State Routers: `SMP_Pair` (`0x600c0578`), `SMP_SecurityGrant` (`0x600c05e4`), `SMP_PasskeyReply` (`0x600c0640`), `SMP_ConfirmReply` (`0x600c0698`), `SMP_NumericComparisonReply` (`0x600c073c`), `smp_proc_pairing_req` (`0x600c0114`), `smp_proc_pairing_confirm` (`0x600c01b8`), `smp_proc_rand` (`0x600c03d8`), and `smp_check_pairing_in_progress` (`0x600c0434`). (Note: Low-level wire PDU serializers reside in the `0x600faaxx` / `0x600f06xx` library cluster).
+- Cryptographic Toolbox & Orchestrators: AES-CMAC confirmation calculation `f4` wrapper (`0x600c0e14`), key generation state wrapper (`0x600c0e7c`, invoking `FUN_600f0ac8`), numeric comparison `g2` orchestrator (`0x600c1204`, invoking `FUN_600c12b0` and thresholding $\le 999999$ via `DAT_600c12ac = 0xF423F` before firing event `0x22`), and 6-digit numeric comparison passkey computation (`0x600c0cb4`). (Note: The core cryptographic primitives $f4, f5, f6$ reside in the un-decompiled `0x600f0xxx` library block).
 - FCR Frame Check Sequence: `0x600b72cc` (`l2cu_crc16` / `l2c_fcr_calc_fcs`) and `0x600b72f0` (`l2cu_check_crc16` / `l2c_fcr_check_fcs`) implement the 16-bit CRC table lookup (`0x60117ad0`, polynomial `0xA001`) for L2CAP ERTM/FCR frame validation.
 
 #### 5. Finite Field Modular Arithmetic Primitives for EC Cryptography
@@ -880,7 +880,7 @@ The full SMP Security Manager Protocol (`0x600c0000`–`0x600c2600`, 71 function
 - `FUN_600c89e0` (`ec_field_double_mod_p`): Modular field element doubling ($r = (2a) \pmod p$).
 - `FUN_600c8a54` (`ec_field_add_mod_p`): Modular field element addition ($r = (a + b) \pmod p$).
 - `FUN_600c8acc` (`ec_field_sub_mod_p`): Modular field element subtraction ($r = (a - b) \pmod p$).
-These primitives underpin the higher-level Jacobian projective coordinate point scalar multiplication routines (`0x600fffbc`, `0x600ffe42`) used by SMP LE Secure Connections ECDH key agreement.
+These primitives operate on single field scalars and underpin the higher-level Jacobian projective coordinate point scalar multiplication routines (`0x600fffbc`, `0x600ffe42`) used by SMP LE Secure Connections ECDH key agreement.
 
 ### Complete Table of 142 Functions Decompiled in Session 29 (Wave 1)
 
@@ -888,8 +888,8 @@ These primitives underpin the higher-level Jacobian projective coordinate point 
 |---|---:|---|---|---|
 | `0x600a9308` | 164 | BTU / HCI Event | **`btu_hcif_conn_comp_evt`** — HCI Connection Complete / LE Enhanced Connection Complete event parser; routes to BTM link connect (`0x600a6d70`) and L2CAP `l2c_link_hci_conn_comp` (`0x600b89b8`). | 1 caller / 2 callees |
 | `0x600a93b0` | 136 | BTU / HCI Event | **`btu_hcif_conn_req_evt`** — HCI Connection Request event parser; parses BD_ADDR and Class of Device / link type; routes to connection evaluation (`0x600a5540`) or rejects/accepts via HCI (`0x600b22a8`). | 1 caller / 2 callees |
-| `0x600a9e74` | 92 | BTU / HCI Queue | **`btu_hcif_ack_event`** — HCI Command Complete / Status credit acknowledgement processor. | 1 caller / 1 callee |
-| `0x600a9ed8` | 36 | BTU / HCI Queue | **`btu_hcif_reset`** — Clears BTU HCI command queue state and resets credit counters. | 1 caller / 0 callees |
+| `0x600a9e74` | 92 | BTU / Control Block | **`btu_init_core`** / **`btu_cb_init`** — Parameterless static control block initializer (memsets 0xd8 struct at `DAT_600a9ed0` and configures default buffer parameters `0x2a4`, `0x1f`). | 1 caller / 1 callee |
+| `0x600a9ed8` | 36 | BTU / Control Block | **`btu_reset_timer`** / **`btu_cb_reset`** — Clears BTU control block timers and state. | 1 caller / 0 callees |
 | `0x600aa4c4` | 38 | BTU / Timer | **`btu_stop_quick_timer`** — Cancels active BTU quick timer node. | 6 callers / 2 callees |
 | `0x600aa534` | 114 | GATT Server | **`gatt_init_database`** — Initializes primary GATT server attribute database root record. | 2 callers / 4 callees |
 | `0x600aa5ac` | 46 | GATT Server | **`gatt_free_attr_buffer`** — Deallocates attribute value buffer to GKI memory pool (`FUN_6006ddd8`). | 2 callers / 1 callee |
@@ -941,7 +941,7 @@ These primitives underpin the higher-level Jacobian projective coordinate point 
 | `0x600bb760` | 62 | L2CAP PDU | **`l2cu_reject_connection`** — Formats and transmits L2CAP Connection Reject signaling packet. | 1 caller / 1 callee |
 | `0x600bb8f8` | 8 | L2CAP PDU | **`l2cu_no_op_return`** — No-op stub returning input register. | 2 callers / 0 callees |
 | `0x600bb904` | 2 | L2CAP PDU | **`l2cu_reassemble_pdu`** — Basic-mode PDU reassembly entry stub. | 1 caller / 0 callees |
-| `0x600bbb2c` | 200 | L2CAP PDU | **`l2cu_allocate_ccb`** — Allocates new CCB, assigns dynamic local CID (`0x0040`–`0x007f`). | 1 caller / 4 callees |
+| `0x600bbb2c` | 200 | L2CAP PDU | **`l2cu_send_peer_echo_rsp`** — L2CAP signaling Echo Response builder and transmitter; invoked from `FUN_600ba1c4` case 8 (Echo Request), formats Echo Rsp PDU (opcode 9 via `FUN_600bb7e4`), copies echo payload, and sends via `FUN_600b9408`. | 1 caller / 4 callees |
 | `0x600bc158` | 76 | L2CAP PDU | **`l2cu_find_ccb_by_local_cid`** — Look up CCB by local channel ID (CID). | 1 caller / 0 callees |
 | `0x600bc1a8` | 74 | L2CAP PDU | **`l2cu_find_ccb_by_remote_cid`** — Look up CCB by peer/remote channel ID (CID). | 3 callers / 0 callees |
 | `0x600bc1f8` | 162 | L2CAP PDU | **`l2cu_copy_config_params`** — Copies L2CAP configuration parameter structure into CCB. | 1 caller / 0 callees |
@@ -961,9 +961,9 @@ These primitives underpin the higher-level Jacobian projective coordinate point 
 | `0x600be060` | 154 | SDP Client | **`sdp_conn_timeout`** — Manages SDP transaction watchdog timer (30s = `0x1e`) and connection response. | 0 callers / 4 callees |
 | `0x600bf2d8` | 74 | SDP Utils | **`sdpu_find_ccb_by_cid`** — Searches 3-entry SDP CCB table (stride 60B) matching L2CAP CID at `+0x22`. | 4 callers / 0 callees |
 | `0x600bf328` | 72 | SDP Utils | **`sdpu_allocate_ccb`** — Allocates unused SDP CCB slot and clears control block. | 1 caller / 1 callee |
-| `0x600bfb4c` | 14 | SDP Codec | **`sdpu_get_len_from_type`** — Spec-verified SDP Data Element Sequence (DES) length header decoder. | 1 caller / 0 callees |
-| `0x600bfb5a` | 8 | SDP Codec | **`sdpu_extract_attr_seq_len`** — DES attribute sequence length parser helper. | 1 caller / 0 callees |
-| `0x600bfb62` | 174 | SDP Codec | **`sdpu_process_attribute_rsp`** — Attribute response PDU parser jump table dispatcher. | 1 caller / 0 callees |
+| `0x600bfb4c` | 14 | SDP Codec | **`sdpu_get_len_from_type` (head)** — Spec-verified SDP Data Element Sequence (DES) length header decoder (head of ~196B function spanning `0x600bfb4c`–`0x600bfc10`; split across 3 adjacent census entries at jump-table boundary). | 1 caller / 0 callees |
+| `0x600bfb5a` | 8 | SDP Codec | **`sdpu_get_len_from_type` (switch fragment 1)** — Jump-table case fragment for `sdpu_get_len_from_type` (census split artifact). | 1 caller / 0 callees |
+| `0x600bfb62` | 174 | SDP Codec | **`sdpu_get_len_from_type` (switch fragment 2)** — Jump-table case body for `sdpu_get_len_from_type` (census split artifact). | 1 caller / 0 callees |
 | `0x600bfe2c` | 126 | SDP Codec | **`sdpu_calculate_attr_size`** — Computes total wire bytes (header + payload) for given DES attribute. | 4 callers / 0 callees |
 | `0x600bff84` | 94 | SDP Utils | **`sdpu_cb_event_dispatcher`** — Dispatches SDP connection callback through 4-entry table at `DAT_600bffe4`. | 1 caller / 0 callees |
 | `0x600c0114` | 142 | SMP FSM | **`smp_proc_pairing_req`** — Evaluates incoming/outgoing Pairing Request/Response parameters, initializes pairing context, and transitions to Phase 1/2. | 0 callers / 5 callees |
@@ -987,14 +987,14 @@ These primitives underpin the higher-level Jacobian projective coordinate point 
 | `0x600c0d3c` | 112 | SMP Crypto | **`smp_pack_passkey_u32_alt`** — Alternative passkey packing entry point. | 1 caller / 1 callee |
 | `0x600c0db4` | 44 | SMP FSM | **`smp_set_state_phase2_confirm`** — SMP state transition to Phase 2 confirm wait (sub-state 7). | 1 caller / 2 callees |
 | `0x600c0de4` | 44 | SMP FSM | **`smp_set_state_phase2_rand`** — SMP state transition to Phase 2 random wait (sub-state 8). | 1 caller / 2 callees |
-| `0x600c0e14` | 98 | SMP Crypto | **`smp_compute_aes_cmac_f4`** — Wrapper for AES-CMAC confirmation calculation `f4` (`FUN_600f0ac8`). | 0 callers / 5 callees |
-| `0x600c0e7c` | 84 | SMP Crypto | **`smp_compute_aes_cmac_f5`** — Wrapper for AES-CMAC key generation calculation `f5`. | 0 callers / 4 callees |
+| `0x600c0e14` | 98 | SMP Crypto | **`smp_compute_aes_cmac_f4_wrapper`** — FSM wrapper calling `FUN_600f0ac8` for AES-CMAC confirmation calculation. (Core f4 primitive resides in `0x600f0xxx`). | 0 callers / 5 callees |
+| `0x600c0e7c` | 84 | SMP Crypto | **`smp_cmac_key_gen_wrapper`** — FSM state wrapper calling `FUN_600f0ac8` (sets state byte `0x1f2 = 4`; actual f5 primitive with salt/counter resides in `0x600f0xxx`). | 0 callers / 4 callees |
 | `0x600c0ed4` | 44 | SMP FSM | **`smp_set_state_phase2_check`** — SMP state transition to DHKey check wait (sub-state 5). | 1 caller / 2 callees |
 | `0x600c0f04` | 44 | SMP FSM | **`smp_set_state_phase2_ltk`** — SMP state transition to LTK calculation (sub-state 9). | 0 callers / 2 callees |
 | `0x600c10a4` | 156 | SMP Crypto | **`smp_sc_compute_confirm`** — Computes LE Secure Connections confirmation value (`FUN_600fc542`). | 1 caller / 2 callees |
 | `0x600c1158` | 80 | SMP Crypto | **`smp_sc_compute_dhkey_check`** — Computes LE Secure Connections DHKey check value. | 1 caller / 2 callees |
 | `0x600c11bc` | 40 | SMP Crypto | **`smp_sc_compute_dhkey_check_alt`** — DHKey check calculation trailing helper. | 1 caller / 1 callee |
-| `0x600c1204` | 166 | SMP Crypto | **`smp_sc_compute_numeric_compare`** — Derives 6-digit user confirmation code from DHKey and nonces (`f6`). | 0 callers / 2 callees |
+| `0x600c1204` | 166 | SMP Crypto | **`smp_sc_numeric_compare_orchestrator`** — Orchestrator invoking `g2` numeric comparison (`0x600c12b0`), verifying result $\le 999999$ (`DAT_600c12ac = 0xF423F`), and dispatching event `0x22` to `smp_sm_event`. (f6 DHKey-check MAC resides in `0x600f0xxx`). | 0 callers / 2 callees |
 | `0x600c13e8` | 168 | SMP Crypto | **`smp_aes_cmac_kdf`** — AES-CMAC based Key Derivation Function (KDF) for LE Secure Connections. | 1 caller / 2 callees |
 | `0x600c1494` | 176 | SMP Crypto | **`smp_aes_cmac_hash`** — Generates 128-bit AES-CMAC cryptographic hash block. | 1 caller / 1 callee |
 | `0x600c1548` | 42 | SMP FSM | **`smp_set_state_phase3_enc`** — SMP state transition to Phase 3 link encryption start (sub-state 13). | 3 callers / 2 callees |
