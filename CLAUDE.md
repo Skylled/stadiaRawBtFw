@@ -1,6 +1,6 @@
 # CLAUDE.md — Stadia Controller firmware RE
 
-Orientation for working in this repo. Deep technical findings live in `analysis/*.md`; read those for detail rather than duplicating them here.
+Orientation for working in this repo. Deep technical findings live in `analysis/*.md`; read those for detail rather than duplicating them here. If you're picking this project up fresh (e.g. a different model taking over for a stretch), also read `HANDOFF.md` — it explains the multi-session orchestration workflow that's been producing progress here, not just the technical state.
 
 ## What this is
 This started as a dump of the Google Stadia Controller's official firmware (`bruce_*` = Bluetooth-mode, plus flashloaders). The active work is **reverse-engineering and documenting that firmware** — a preservation effort the owner cares about in its own right. The original "make it work on a PS5 (spoofing a DualShock 4)" idea is now a secondary/aspirational angle: it's blocked at the **PlayStation console-authentication layer**, not by anything in the Stadia firmware (see `analysis/` + the detailed reasoning in Claude memory). Don't relitigate the PS5 feasibility question without new information.
