@@ -45,7 +45,19 @@ public class FixSignatures extends GhidraScript {
             fcefde.setReturnType(new IntegerDataType(), SourceType.USER_DEFINED);
             fcefde.updateFunction(null, null, Function.FunctionUpdateType.DYNAMIC_STORAGE_ALL_PARAMS, true, SourceType.USER_DEFINED);
         }
+
+        // Fix 0x600cf0ca: int i2c_transfer_submit(void *ctx, void *param_2, void *src_struct)
+        Function fcf0ca = getFunctionAt(toAddr(0x600cf0ca));
+        if (fcf0ca != null) {
+            fcf0ca.setReturnType(new IntegerDataType(), SourceType.USER_DEFINED);
+            java.util.List<ParameterImpl> params = new java.util.ArrayList<>();
+            params.add(new ParameterImpl("ctx", new PointerDataType(new VoidDataType()), currentProgram));
+            params.add(new ParameterImpl("param_2", new PointerDataType(new VoidDataType()), currentProgram));
+            params.add(new ParameterImpl("src_struct", new PointerDataType(new VoidDataType()), currentProgram));
+            fcf0ca.updateFunction(null, null, params, Function.FunctionUpdateType.DYNAMIC_STORAGE_ALL_PARAMS, true, SourceType.USER_DEFINED);
+        }
         println("Signatures updated.");
     }
 }
+
 

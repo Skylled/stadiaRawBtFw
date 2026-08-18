@@ -1808,6 +1808,34 @@ Added `0x600cefde` signature typing in `FixSignatures.java`, plus decompiled and
 | `0x600cfc70` |  30 | Bluetooth / Events | **`bt_event_cback_notify_3`** — Bluetooth event notification helper 3: clears flag `param_3 + 0x1c`, invokes callback `(*callback)(param_3, 3, param_2)`. Called from `FUN_600cfc8e`. | 1 caller / 0 callees |
 | `0x600cfc8e` | 164 | Bluetooth / Events | **`bt_packet_dispatcher`** — Bluetooth packet event dispatcher: walks packet header array `*param_2`, parses packet type descriptors via `FUN_600d10f6`, and dispatches corresponding notification handlers `FUN_600cfc34`, `FUN_600cfc52`, `FUN_600cfc70`. Called from `FUN_600d0332` and `FUN_600d0590`. | 2 callers / 4 callees |
 
+## Session 55 (Wave 25) — USB Audio, USB CDC-ACM, USB HID Class & Endpoint State Engines (20 functions, 1,370 bytes)
+
+Resolved Session 54 QA finding by adding 3-parameter signature typing to `0x600cf0ca` in `FixSignatures.java`, plus decompiled and documented 20 functions (1,370 bytes across `0x600cfe6a`–`0x600d0e38`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600cfe6a` |  46 | USB / Core | **`usb_ep_queue_cancel_single`** — USB endpoint queue cancel helper: walks queue `param_1[2]` and aborts all pending descriptors via `FUN_600d10f6`. Called from `FUN_600d0332` and `FUN_600d0590`. | 2 callers / 1 callee |
+| `0x600d0590` |  80 | USB / Audio | **`usb_audio_endpoints_reset`** — USB Audio Class endpoints reset: cancels transfer queues on endpoint descriptors `param_1[3]` and `param_1[4]`, flushes buffers via `FUN_600cfe6a`, and enters critical section `thunk_EXT_FUN_00008802` to clear state bytes. | 0 callers / 4 callees |
+| `0x600d05e0` |  34 | USB / Audio | **`usb_audio_stream_ep_recv_enable`** — USB Audio stream endpoint receive enable: sets active flag `param_1 + 0x1b = 1` and arms endpoint via `FUN_600d1090`. Called from `usb_device_audio__60061ed4`. | 1 caller / 1 callee |
+| `0x600d0602` |  34 | USB / Audio | **`usb_audio_stream_ep_send_enable`** — USB Audio stream endpoint transmit enable: sets active flag `param_1 + 0x1d = 1` and arms endpoint via `FUN_600d1090`. Called from `usb_device_audio__60061fc0`. | 1 caller / 1 callee |
+| `0x600d0624` |  52 | USB / Audio | **`usb_audio_stream_ep_disable`** — USB Audio stream endpoint disable: enters critical section `thunk_EXT_FUN_00008802`, disables endpoint via `FUN_600d10a4`, and clears active flag `param_1 + 7`. Called from `usb_device_audio__600620b4`. | 1 caller / 3 callees |
+| `0x600d0658` |  34 | USB / Audio | **`usb_audio_stream_ep_cancel`** — USB Audio stream endpoint cancel: sets cancel flag `param_1 + 7 = 1` and cancels endpoint via `FUN_600d109c`. Called from `FUN_600d52f0`. | 1 caller / 1 callee |
+| `0x600d06d6` |  78 | USB / CDC-ACM | **`usb_cdc_ep_queues_cancel`** — USB CDC-ACM dual endpoint queue cancel: walks and cancels pending transfer descriptor queues on endpoints `param_1[2]` and `param_1[3]` via `FUN_600d10f6`. Called from `usb_device_cdc_acm__60054a54` and `usb_device_cdc_acm__60054d08`. | 2 callers / 1 callee |
+| `0x600d0724` | 108 | USB / CDC-ACM | **`usb_cdc_ep_recv_start`** — USB CDC-ACM endpoint receive start: verifies endpoint index matching `param_1 + 5` or `param_1 + 9`, enters critical section, arms endpoint via `FUN_600d1090`, and sets active flag. | 0 callers / 3 callees |
+| `0x600d0790` |  68 | USB / CDC-ACM | **`usb_cdc_ep_send_start`** — USB CDC-ACM endpoint transmit start: enters critical section, arms endpoint transmit via `FUN_600d109c`, and sets active flag `param_1 + 0x1d = 1`. | 0 callers / 3 callees |
+| `0x600d07d4` | 192 | USB / Class | **`usb_class_req_parse_dispatch`** — USB Audio / Class request parser & dispatcher: parses setup packet request types (`GET_CUR`, `SET_CUR`, `GET_MIN`, `GET_MAX`, etc.), maps request opcodes (`0x11`, `0x21`), and delegates to `FUN_600d0bc8`. | 0 callers / 2 callees |
+| `0x600d0894` |  84 | USB / Class | **`usb_class_control_transfer_cback`** — USB class control endpoint transfer callback: handles setup packet stage transitions via `FUN_600d1178` and `FUN_600d11ba`. | 0 callers / 2 callees |
+| `0x600d09c4` | 138 | USB / Class | **`usb_class_req_handler_get`** — USB class request entity handler query: looks up control request entity ID `*param_2 & 0x1f` via `FUN_600d1178`. | 0 callers / 1 callee |
+| `0x600d0a4e` |  66 | USB / Class | **`usb_class_req_unit_config`** — USB class request unit configuration handler: queries status via `FUN_600d1178`, configures audio unit descriptor via `FUN_6005505c`, and notifies class driver via `FUN_600d0bc8`. | 0 callers / 3 callees |
+| `0x600d0a90` |  58 | USB / Class | **`usb_class_req_notify`** — USB class request entity notification: queries setup request via `FUN_600d1178` and dispatches notification `0x16` via `FUN_600d0bc8`. | 0 callers / 2 callees |
+| `0x600d0b60` | 104 | USB / CDC-ACM | **`usb_cdc_acm_line_state_cback`** — USB CDC-ACM line state callback: decodes line coding request (`param_3 == 5`), updates baud rate / framing flags via `FUN_600d1134`, or receives line status data via `FUN_600d1090`. | 0 callers / 3 callees |
+| `0x600d0bc8` |  56 | USB / Class | **`usb_class_entity_cback_dispatch`** — USB class entity callback dispatcher: looks up class handler descriptor via `FUN_60054f7c`, executes state transition callbacks (`FUN_60054f30`, `FUN_6005505c`), and invokes class handler function pointer `*(handler + 4)`. | 3 callers / 3 callees |
+| `0x600d0c3c` |  46 | USB / Core | **`usb_ep_queue_cancel_all`** — USB endpoint transfer queue abort helper: walks queue `param_1[2]` and aborts all pending descriptors via `FUN_600d10f6`. Called from `FUN_600d0dfc` and `FUN_600d0c6a`. | 2 callers / 1 callee |
+| `0x600d0dfc` |  26 | USB / HID | **`usb_hid_endpoints_reset`** — USB HID class endpoint reset: flushes pending transfer queues via `FUN_600d0c3c` and zeroes 16-byte state structure. Called from `FUN_600551b8`. | 1 caller / 1 callee |
+| `0x600d0e16` |  34 | USB / HID | **`usb_hid_ep_recv_start`** — USB HID endpoint receive start: sets active flag `param_1 + 0x11 = 1` and arms receive endpoint via `FUN_600d1090`. | 0 callers / 1 callee |
+| `0x600d0e38` |  32 | USB / HID | **`usb_hid_ep_send_start`** — USB HID endpoint transmit start: arms transmit endpoint via `FUN_600d109c` and sets active flag `param_1 + 0x12 = 1`. | 0 callers / 1 callee |
+
+
 
 
 
