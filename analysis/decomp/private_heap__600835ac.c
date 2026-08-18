@@ -1,13 +1,14 @@
-// 600d15c4  private_heap__600835ac  size=4 bytes
+// 600835ac  private_heap__600835ac  size=194 bytes
+// src: private_heap.cc
 // --- callers ---
-//   600d6956 FUN_600d6956
-//   600649d4 usb_host_hid__600649d4
-//   600d234e FUN_600d234e
-//   600d6946 FUN_600d6946
-//   600d25f4 FUN_600d25f4
-//   600567fc FUN_600567fc
 // --- callees ---
+//   60083568 private_heap__60083568
+//   601016a2 FUN_601016a2
+//   60083534 private_heap__60083534
+//   600dfd6a FUN_600dfd6a
 
+
+/* src: private_heap.cc */
 
 void private_heap__600835ac(int param_1)
 
