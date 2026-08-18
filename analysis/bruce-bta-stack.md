@@ -1689,6 +1689,24 @@ Resolved 3 GHIDRA-TODO spurious function splits in the Ghidra database (`0x600a7
 | `0x600ad610` | 224 | GATT / Core | **`gatt_init_subsystem`** — GATT core subsystem initializer: zeroes 0x15b4-byte GATT control block (`DAT_600ad6f0`), configures default MTU parameters (2000, 12000), registers L2CAP fixed CID handlers (`0x1f`) via `FUN_600b507c`, `FUN_600f75c0`, `FUN_600f1996`, and invokes `gatt_sr_init_service_records` (`0x600abf08`). | 1 caller / 6 callees |
 | `0x600ad8b0` |  70 | GATT / Server | **`gatt_sr_enqueue_cmd`** — GATT server command buffer enqueue handler: validates CCB at `param_1` via `FUN_600afea0` (session 41), checks connection state via `FUN_600f6132`, enqueues command via `FUN_600ad9d8`, or frees GKI buffer via `FUN_6006ddd8`. | 0 callers / 4 callees |
 
+## Session 46 (Wave 16) — BTU Task Merge Resolution & BTM Security EIR, BLE Init and BTA DM Scan Filtering (10 functions, 1,572 bytes)
+
+Resolved Session 45 `GHIDRA-TODO` boundary items (`0x60092ada` fragment removed, `0x600a9f04`/`0x600a9f10`/`0x600a9fce` merged into single 724B `BTU_Task` function spanning `0x600a9f04`–`0x600aa1d7`), plus decompiled and documented 10 functions (1,572 bytes across `0x600b9afc`–`0x600c5228`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600b9afc` | 532 | BTM / Security | **`btm_sec_parse_eir`** — BTM security Extended Inquiry Response (EIR) packet parser: processes incoming EIR packets, extracts device name, UUIDs, Tx power level, and manufacturer data via `FUN_600bcbe0`. | 1 caller / 3 callees |
+| `0x600b9d18` | 120 | BTM / Security | **`btm_sec_check_eir_complete`** — BTM security EIR completeness validator: validates packet length against remaining EIR buffer size (`*(param_1 + 2) - 8`). | 1 caller / 0 callees |
+| `0x600bb1f8` | 164 | BTM / Security | **`btm_sec_dev_rec_init`** — BTM security device record database initializer: zeroes 0xf5c-byte device table (`DAT_600bb29c`), links 7 free record pointers (stride 0x158 at `+0x29c`), sets max capacity `+0xf56 = 0xfff`. | 1 caller / 1 callee |
+| `0x600c04f4` |  38 | BTM / BLE | **`btm_ble_sec_init`** — BTM BLE security subsystem initializer: zeroes 0x204-byte control block (`DAT_600c051c`), initializes encryption key state via `FUN_600c1738()`, registers BLE security handler via `FUN_600c8610(8)`. | 1 caller / 3 callees |
+| `0x600c4070` |  58 | BTA / DM BLE | **`bta_dm_ble_post_adv_cmpl`** — BTA DM BLE advertising completion event poster: allocates 10-byte GKI buffer (`0x6006dbac`), sets event code `0x205`, stores status `param_1`, posts to DM task queue via `FUN_600962dc`. | 0 callers / 2 callees |
+| `0x600c40b0` | 268 | BTA / DM BLE | **`bta_dm_ble_observe_results_handler`** — BTA DM BLE observation scan result handler: extracts 6-byte BD_ADDR, 3-byte CoD, RSSI `local_11a`, advertising data payload, formats BTA DM event via `FUN_600a21e4`. | 0 callers / 3 callees |
+| `0x600c447c` | 236 | BTA / DM BLE | **`bta_dm_ble_scan_filter_update`** — BTA DM BLE scan filter parameter updater: copies 6-byte BD_ADDR, formats 248-byte filter configuration structure (`local_123`), prepares periodic filter payload. | 0 callers / 2 callees |
+| `0x600c4af8` |  60 | BTA / DM BLE | **`bta_dm_ble_adv_stopped_cback`** — BTA DM BLE advertising stop notification callback: formats 6-byte BD_ADDR buffer, invokes registered DM callback `+0xe8` with event 0. | 0 callers / 1 callee |
+| `0x600c4c58` |  18 | BTA / DM BLE | **`bta_dm_ble_post_conn_cback`** — BTA DM BLE connection callback helper: allocates 0x18-byte GKI event buffer (`0x6006dbac`), formats BD_ADDR and event parameters. | 0 callers / 0 callees |
+| `0x600c5228` |  78 | BTA / DM BLE | **`bta_dm_ble_scan_filter_status`** — BTA DM BLE scan filter status callback: checks status `*param_1 == 0`, extracts BD_ADDR and filter index `param_1[2]`, fires event 7 to registered DM callback `+0xe8`. | 0 callers / 1 callee |
+
+
 
 
 

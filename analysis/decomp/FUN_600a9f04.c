@@ -1,6 +1,25 @@
-// 600a9f04  FUN_600a9f04  size=10 bytes
+// 600a9f04  FUN_600a9f04  size=724 bytes
 // --- callers ---
 // --- callees ---
+//   600d932a FUN_600d932a
+//   60095df4 FUN_60095df4
+//   600aa5ac FUN_600aa5ac
+//   600f31c6 FUN_600f31c6
+//   6006ddd8 FUN_6006ddd8
+//   600a9234 FUN_600a9234
+//   6006e5bc FUN_6006e5bc
+//   600b9d94 FUN_600b9d94
+//   600d9380 FUN_600d9380
+//   6006e160 FUN_6006e160
+//   600a89f0 FUN_600a89f0
+//   6006e3b0 FUN_6006e3b0
+//   6006df58 FUN_6006df58
+//   6006e6a8 FUN_6006e6a8
+//   6006be9c FUN_6006be9c
+//   600d908e FUN_600d908e
+//   6006e2d0 FUN_6006e2d0
+//   600b9e28 FUN_600b9e28
+//   600ad710 FUN_600ad710
 
 
 undefined4 FUN_600a9f04(void)
