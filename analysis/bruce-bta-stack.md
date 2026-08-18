@@ -1706,6 +1706,22 @@ Resolved Session 45 `GHIDRA-TODO` boundary items (`0x60092ada` fragment removed,
 | `0x600c4c58` |  18 | BTA / DM BLE | **`bta_dm_ble_post_conn_cback`** — BTA DM BLE connection callback helper: allocates 0x18-byte GKI event buffer (`0x6006dbac`), formats BD_ADDR and event parameters. | 0 callers / 0 callees |
 | `0x600c5228` |  78 | BTA / DM BLE | **`bta_dm_ble_scan_filter_status`** — BTA DM BLE scan filter status callback: checks status `*param_1 == 0`, extracts BD_ADDR and filter index `param_1[2]`, fires event 7 to registered DM callback `+0xe8`. | 0 callers / 1 callee |
 
+## Session 47 (Wave 17) — Final 8 BTA Functions: BLE Scan Filter Dispatch, Security Requests & GATT Teardown (8 functions, 2,366 bytes) — 🏆 100% COMPLETE
+
+Decompiled and documented the final 8 functions (2,366 bytes across `0x600c4808`–`0x600c6ab0`), completing 100% of all functions in the Broadcom BTA/BTE Bluetooth stack:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600c4808` | 698 | BTA / DM BLE | **`bta_dm_ble_scan_filter_cmd_dispatch`** — BLE scan filter opcode dispatcher: switches on opcode `param_1` (cases 0..9), formats 248-byte filter buffers, dispatches commands via `FUN_600d9176`, `FUN_600d9186`, `FUN_600f1800`, or invokes DM callback `+0xe8` with events 10, `0x1a`, `0xd`. | 0 callers / 7 callees |
+| `0x600c52cc` | 292 | BTA / DM BLE | **`bta_dm_ble_update_adv_params`** — BLE advertising parameter updater: evaluates feature flags `param_1`/`param_2` (`0x11`/`0x12`), sets/clears bit `0x20` on connection record `+0xb`, updates global advertising state via `FUN_600935dc()`, triggers update via `FUN_600c53f8()`. | 0 callers / 3 callees |
+| `0x600c5574` | 214 | BTA / DM BLE | **`bta_dm_ble_sec_auth_cmpl_cback`** — BLE security authentication completion callback: scans connection records for matching BD_ADDR (`FUN_600efcfe`), dequeues callback from queue `+0x10` via `FUN_600d9250`, maps status `param_4` to event codes (0, 1, 3, 4, 5), and invokes client callback. | 0 callers / 3 callees |
+| `0x600c5670` | 198 | BTA / DM BLE | **`bta_dm_ble_sec_auth_req`** — BLE security authentication request scheduler: checks callback `+0xc`, finds active connection record, allocates 8-byte GKI buffer, queues callback on queue `+0x10`, and initiates authentication request via `FUN_600f1b72`. | 0 callers / 4 callees |
+| `0x600c5908` | 734 | BTA / DM BLE | **`bta_dm_ble_adv_event_dispatch`** — BLE advertising event dispatcher: zeroes 0x118-byte event buffer, switches on opcode `param_1` (cases 1..13), fetches device name via `FUN_600f1700`/`FUN_600c54ec`, copies 0xf8-byte payload via `FUN_601024d8`, and dispatches events (`0x10`, `0x11`, `0x12`, `0x13`, `0x16`, `3`, `0xf`) to DM callback `+0xe8`. | 0 callers / 7 callees |
+| `0x600c5ff4` | 174 | BTA / DM BLE | **`bta_dm_ble_sec_event_dispatch`** — BLE security event dispatcher: switches on event type `param_1` (cases 0..7), delegates to status handler `FUN_600c5fa4`, authentication error `FUN_600c5db0(0xffff, 0x85)`, or authentication dispatcher `FUN_600c5d3c`. | 0 callers / 4 callees |
+| `0x600c60fc` |  28 | BTA / DM GATT | **`bta_dm_gattc_disable`** — BTA DM GATTC disable sequence: terminates GATT client operations via `FUN_600fd630`, clears search state flag `0x1d` via `FUN_60096290(0x1d)`. | 0 callers / 4 callees |
+| `0x600c6ab0` |  28 | BTA / DM GATT | **`bta_dm_gatts_disable`** — BTA DM GATTS disable sequence: terminates GATT server operations via `FUN_600fef54`, clears search state flag `0x1e` via `FUN_60096290(0x1e)`. | 0 callers / 4 callees |
+
+
 
 
 
