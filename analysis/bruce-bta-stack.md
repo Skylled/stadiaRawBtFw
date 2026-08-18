@@ -1600,7 +1600,30 @@ Decompiled and documented 15 functions (1,526 bytes across `0x600c29d0`–`0x600
 | `0x600c3b54` |  46 | BTA / DM BLE | **`bta_dm_ble_free_scan_filter`** — Frees allocated scan filter buffer via GKI buffer deallocator `FUN_600962dc`. | 0 callers / 1 callee |
 | `0x600c3bc4` |  50 | BTA / DM BLE | **`bta_dm_ble_stop_observe_cback`** — Invokes BTA DM observe stop callback (event 6) and clears BLE observation control block via `FUN_600c5f64`. | 3 callers / 1 callee |
 | `0x600c43c4` | 176 | BTA / DM BLE | **`bta_dm_ble_update_conn_params`** — Validates and dispatches BLE connection parameter update request: copies BD_ADDR, formats 248-byte connection param structure, checks interval range `< 0x1e`, and dispatches BTA DM event 4. | 0 callers / 2 callees |
-| `0x600c4570` | 204 | BTA / DM BLE | **`bta_dm_ble_set_adv_data`** — Configures BLE advertising data: copies BD_ADDR, checks manufacturer data length, calls `FUN_600f1800`, and invokes BTA DM callback with event 2. | 0 callers / 2 callees |
+| `0x600c4570` | 246 | BTA / DM BLE | **`bta_dm_ble_set_adv_data`** — Configures BLE advertising data: copies BD_ADDR, checks manufacturer data length, calls `FUN_600f1800`, and invokes BTA DM callback with event 2. *(Merged with 42B split artifact 0x600c463c in Session 42)* | 0 callers / 3 callees |
+
+## Session 42 (Wave 12) — BTA DM BLE Periodic Scan Filtering, Energy Info & Security Dispatch (15 functions, 1,544 bytes)
+
+Decompiled and documented 15 functions (1,544 bytes across `0x600c4758`–`0x600c5d3c`): advertisement payload formatting, periodic scan filter timers, controller energy info queries, configuration parameter opcode dispatching, random address generation, and authentication requests:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600c4758` | 170 | BTA / DM BLE | **`bta_dm_ble_set_adv_config`** — Formats 0x118-byte BLE advertisement payload buffer with BD_ADDR and 248-byte advertisement data (`0xf8` bytes), invokes DM callback with event 3. | 0 callers / 4 callees |
+| `0x600c4b38` |  58 | BTA / DM BLE | **`bta_dm_ble_scan_filter_setup`** — Enables/disables BLE scan filtering: configures filter flags `+0x104`/`+0x106` and starts periodic scan filter via `0x600c4b7c`, or cancels timer via `FUN_6009633c`. | 0 callers / 2 callees |
+| `0x600c4b7c` | 200 | BTA / DM BLE | **`bta_dm_ble_scan_filter_proc`** — Periodic scan filter evaluation: iterates discovered devices (`+0xe4`), evaluates filters via `0x6009a1dc` / `0x6009a254`, arms periodic timer `FUN_60096314(interval * 1000)`. | 1 caller / 3 callees |
+| `0x600c4cdc` |  50 | BTA / DM BLE | **`bta_dm_ble_energy_info_cmpl`** — BLE energy info completion: if pending opcode is `0x200`, marks completed `+0x264 = 1`, resets opcode, and advances DM state machine via `FUN_600c2f68`. | 0 callers / 1 callee |
+| `0x600c4d18` | 134 | BTA / DM BLE | **`bta_dm_ble_query_energy_info`** — BLE controller energy info query: checks if active `+0x244 != 0`, scans connections for feature flag `0x20`, sends command via `FUN_6009931c`, and sets pending opcode `param_1`. | 1 caller / 2 callees |
+| `0x600c527c` |  76 | BTA / DM BLE | **`bta_dm_ble_scan_filter_cback`** — BLE scan filter callback: formats 6-byte BD_ADDR structure via `FUN_600efcc6`, dispatches event 7 to registered callback `+0xe8`. | 0 callers / 1 callee |
+| `0x600c54ec` |  46 | BTA / DM BLE | **`bta_dm_ble_get_local_name`** — Local device name accessor: if cached name is empty, queries BTM local device name via `FUN_600f1700`. | 5 callers / 1 callee |
+| `0x600c5524` |  74 | BTA / DM BLE | **`bta_dm_ble_sec_auth_cmpl`** — BLE security authentication completion handler: dispatches event 9 with boolean status to registered DM callback `+0xe8`. | 0 callers / 0 callees |
+| `0x600c5744` |  78 | BTA / DM BLE | **`bta_dm_ble_passkey_cback`** — BLE numeric comparison / passkey notification: invokes registered callback pointer `+0x290` with status boolean. | 0 callers / 0 callees |
+| `0x600c5798` |  92 | BTA / DM BLE | **`bta_dm_ble_confirm_reply`** — BLE user confirmation reply: registers callback at `+0x290`, delegates confirmation reply via `FUN_600a1174(param_1+8)`. | 0 callers / 1 callee |
+| `0x600c57fc` | 194 | BTA / DM BLE | **`bta_dm_ble_cfg_param_dispatch`** — BLE configuration parameter opcode dispatcher: switches on opcode (`param_1+8`) over cases 0..8, dispatching to `0x600c6fe4` (case 0) and `0x600ff672`..`0x600ff862` (cases 1..8). | 0 callers / 9 callees |
+| `0x600c5c20` | 104 | BTA / DM BLE | **`bta_dm_ble_multi_adv_cback`** — BLE multi-advertising instance event callback: copies 0x30-byte payload, maps instance ID (`param_1`) to event 0x14 (instance 1) or 0x15 (instance 2). | 0 callers / 1 callee |
+| `0x600c5c8c` |  66 | BTA / DM BLE | **`bta_dm_ble_set_rand_addr`** — Generates 16-byte random private address: zeroes buffer with salt `0x87`, writes random address via `FUN_6009451c`. | 1 caller / 2 callees |
+| `0x600c5cd8` |  96 | BTA / DM BLE | **`bta_dm_ble_sec_key_cmpl`** — BLE security key exchange completion handler: computes key record address from index difference `+0x142 - +0x148` (stride 0x14), delegates to `FUN_60094690`. | 3 callers / 1 callee |
+| `0x600c5d3c` | 106 | BTA / DM BLE | **`bta_dm_ble_send_auth_req`** — BLE authentication request dispatcher: copies BD_ADDR, local name via `0x600c54ec`, 20-byte auth payload, invokes DM callback with event 3. | 1 caller / 4 callees |
+
 
 
 

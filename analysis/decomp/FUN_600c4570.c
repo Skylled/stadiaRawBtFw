@@ -1,7 +1,8 @@
-// 600c4570  FUN_600c4570  size=204 bytes
+// 600c4570  FUN_600c4570  size=246 bytes
 // --- callers ---
 // --- callees ---
 //   600efcc6 FUN_600efcc6
+//   601024d8 FUN_601024d8
 //   600f1800 FUN_600f1800
 
 
@@ -11,9 +12,9 @@ undefined4 FUN_600c4570(undefined4 param_1,undefined1 *param_2,char *param_3)
   int iVar1;
   undefined4 uVar2;
   undefined1 auStack_120 [6];
-  undefined1 local_11a;
-  undefined1 local_119;
-  undefined1 local_118;
+  undefined1 uStack_11a;
+  undefined1 uStack_119;
+  undefined1 uStack_118;
   undefined1 auStack_117 [248];
   undefined1 uStack_1f;
   
@@ -33,9 +34,9 @@ undefined4 FUN_600c4570(undefined4 param_1,undefined1 *param_2,char *param_3)
       }
     }
     FUN_600efcc6(auStack_120,param_1);
-    local_11a = *param_2;
-    local_119 = param_2[1];
-    local_118 = param_2[2];
+    uStack_11a = *param_2;
+    uStack_119 = param_2[1];
+    uStack_118 = param_2[2];
     FUN_601024d8(auStack_117,param_3,0xf8);
     uStack_1f = 0;
     (**(code **)(DAT_600c4668 + 0xe8))(2,auStack_120);
