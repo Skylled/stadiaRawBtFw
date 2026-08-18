@@ -1686,6 +1686,32 @@ Resolved stdio / string formatting cluster boundaries in Ghidra DB via `FixSpuri
 | `0x600cdca0` |  36 | C Runtime / Signals | **`_kill_r`** — Reentrant process signal/kill handler: delegates to `FUN_600ce1e8`. | 0 callers / 1 callee |
 | `0x600cdcc4` | 104 | Stdio / Format | **`vsnprintf`** — Standard C library `vsnprintf(buf, size, fmt, ap)`: sets up string output stream (`local_74 = 0x208`, `local_72 = 0xffff`), formats string via `_vfprintf_r` (`FUN_600cddc8`), and null-terminates output buffer. | 28 callers / 1 callee |
 
+## Session 50 (Wave 20) — Reentrant Signals, Stdio Formatting Suite & Low-Level POSIX System Call Stubs (17 functions, 943 bytes)
+
+Resolved Session 49 `GHIDRA-TODO` item (`_raise_r` function boundary defined at `0x601023fa`), plus decompiled and documented 17 functions (943 bytes across `0x600cdd2c`–`0x6010244a`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x601023fa` |  80 | C Runtime / Signals | **`_raise_r`** — Reentrant signal raiser: checks `sig < 0x20`, looks up signal table at `param_1 + 0x44`, dispatches registered handler `handler(sig)`, or default handles via `_kill_r(_getpid_r(param_1), sig)` (`FUN_600cdca0`). | 0 callers / 1 callee |
+| `0x6010244a` |   4 | C Runtime / Signals | **`_getpid_r`** — Reentrant getpid helper: sets errno 0x58 on error or returns PID 1. | 1 caller / 0 callees |
+| `0x600cdd2c` |  64 | Stdio / Format | **`sprintf`** — Standard C library `sprintf(str, fmt, ...)`: formats into string buffer without length bounds via `_vfprintf_r`. | 7 callers / 1 callee |
+| `0x600cdd6c` |  28 | Stdio / Format | **`printf`** — Standard C library `printf(fmt, ...)`: outputs formatted text to stdout FILE stream (`*DAT_600cdd84`). | 3 callers / 1 callee |
+| `0x600cdd88` |  44 | Stdio / Format | **`vsprintf`** — Standard C library `vsprintf(str, fmt, ap)`: sets up unbounded string output stream and invokes `_vfprintf_r`. | 0 callers / 1 callee |
+| `0x600cddb4` |  20 | Stdio / Format | **`fprintf`** — Standard C library `fprintf(fp, fmt, ...)`: format output wrapper delegating to `vsprintf`/`_vfprintf_r`. | 1 caller / 0 callees |
+| `0x600cddc8` | 473 | Stdio / Format | **`_vfprintf_r`** — Standard C library reentrant formatted I/O core parsing engine (`vfprintf` conversion parser). | 4 callers / 4 callees |
+| `0x600ce1d8` |  12 | POSIX / Process | **`getpid`** — Low-level `getpid()` stub: returns constant process identifier 1 (`0x1`). | 0 callers / 0 callees |
+| `0x600ce1e8` |  12 | POSIX / Process | **`kill`** — Low-level `kill(pid, sig)` stub: sets errno to `0x16` (`EINVAL`) and returns -1. | 1 caller / 0 callees |
+| `0x600ce1f8` |  40 | CRT / Memory | **`_sbrk_r`** — Low-level heap memory expansion hook: manages heap top pointer `*DAT_600ce21c`, checks bounds against heap limit `DAT_600ce218`, sets `ENOMEM` (12) on overflow. | 2 callers / 1 callee |
+| `0x600ce220` |  18 | POSIX / File I/O | **`_write_r`** — Low-level file descriptor write stub: returns error / non-implemented code. | 1 caller / 1 callee |
+| `0x600ce232` |   2 | POSIX / File I/O | **`_close_r`** — Low-level file descriptor close stub: returns 0 (`kOk`). | 0 callers / 0 callees |
+| `0x600ce234` |  24 | POSIX / File I/O | **`_fstat_r`** — Low-level file status query: populates `st_mode = 0x2000` (`S_IFCHR` character device) and returns 0. | 3 callers / 1 callee |
+| `0x600ce24c` |  16 | POSIX / File I/O | **`_isatty_r`** — Low-level TTY query: returns 1 (terminal character device). | 4 callers / 0 callees |
+| `0x600ce25c` |  14 | POSIX / File I/O | **`_lseek_r`** — Low-level seek stub: returns 0. | 1 caller / 1 callee |
+| `0x600ce26a` |  54 | POSIX / File I/O | **`_read_r`** — Low-level file descriptor read stub: reads bytes from input queue or returns EOF. | 3 callers / 3 callees |
+| `0x600ce2a0` |  38 | POSIX / File I/O | **`_open_r`** — Low-level file open stub: returns file descriptor or `ENOSYS`. | 25 callers / 1 callee |
+
+
+
 
 
 

@@ -138,6 +138,7 @@ public class FixSpuriousSplits extends GhidraScript {
         Address acddb4 = toAddr(0x600cddb4);
         Function fcddb4 = fm.getFunctionAt(acddb4);
         if (fcddb4 != null) {
+            fcdc90 = fm.getFunctionAt(acddb4);
             fcddb4.setBody(new AddressSet(acddb4, toAddr(0x600cddc7)));
         }
 
@@ -145,6 +146,18 @@ public class FixSpuriousSplits extends GhidraScript {
         Function fcddc8 = fm.getFunctionAt(acddc8);
         if (fcddc8 != null) {
             fcddc8.setBody(new AddressSet(acddc8, toAddr(0x600cdfa0)));
+        }
+
+        // 7. Define function boundary for _raise_r at 0x601023fa
+        Address a1023fa = toAddr(0x601023fa);
+        disassemble(a1023fa);
+        Function f1023fa = fm.getFunctionAt(a1023fa);
+        if (f1023fa == null) {
+            createFunction(a1023fa, "FUN_601023fa");
+            f1023fa = fm.getFunctionAt(a1023fa);
+        }
+        if (f1023fa != null) {
+            f1023fa.setBody(new AddressSet(a1023fa, toAddr(0x60102449)));
         }
         
         println("FixSpuriousSplits completed successfully.");
