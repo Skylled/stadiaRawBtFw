@@ -1971,6 +1971,34 @@ Decompiled and documented 20 functions (1,182 bytes across `0x600d2a6e`–`0x600
 | `0x600d334c` |  58 | USB / Host Driver | **`usb_host_transfer_context_alloc`** — USB Host transfer context allocator: pops a free transfer context structure from linked list `*(param_1 + 0x2cc)` within mutex protection. | 12 callers / 2 callees |
 | `0x600d3386` |  44 | USB / Host Driver | **`usb_host_transfer_context_free`** — USB Host transfer context deallocator: pushes transfer context structure `param_2` onto free linked list `*(param_1 + 0x2cc)` within mutex protection. | 21 callers / 2 callees |
 
+## Session 61 (Wave 31) — USB Host Param Dispatcher, Clock Gating, Logging Buffers & Interpolation LUTs (20 functions, 850 bytes)
+
+Decompiled and documented 20 functions (850 bytes across `0x600d33b2`–`0x600d379e`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d33b2` | 126 | USB / Host Param | **`usb_host_param_query`** — USB Host instance parameter query dispatcher: maps query selectors (1..15) to instance structure fields (`param_1 + 0x43d`, `+0x43f`, `+0x418`, `+0x41c`, frame speed query via `FUN_60056610`). | 19 callers / 1 callee |
+| `0x600d344a` | 112 | Power / Clock | **`clock_gate_acquire`** — Peripheral clock / power domain acquire helper: disables IRQ interrupts, walks clock dependency tree `*(param_2 + 4)`, increments clock refcount `*(param_2 + uVar6 * 2)`, invokes clock enable callback `*(param_2 + 8)` on 0->1 transition, and restores IRQ state. | 0 callers / 0 callees |
+| `0x600d34ba` |  60 | Power / Clock | **`clock_gate_release`** — Peripheral clock / power domain release helper: disables IRQ interrupts, decrements clock refcount, invokes clock disable callback `*(iVar5 + 0xc)` on 1->0 transition, and restores IRQ state. | 0 callers / 0 callees |
+| `0x600d34f6` |   4 | Diagnostics / Log | **`log_buffer_write_thunk`** (`thunk_FUN_60057ff0`) — Logging diagnostic buffer write thunk: tail-call to `FUN_60057ff0`. | 2 callers / 0 callees |
+| `0x600d34fa` |  58 | Diagnostics / Log | **`log_buffer_fill_char`** — Diagnostic log string padding helper: appends `param_4` bytes of character `param_3` to buffer, flushing via `thunk_FUN_60057ff0` when reaching 128 bytes. | 0 callers / 1 callee |
+| `0x600d3534` |  48 | Diagnostics / Log | **`log_msg_format_hexdump`** — Diagnostic log message payload formatter: formats buffer memory chunk via `FUN_60050c18` and emits formatted record via `FUN_601019da`. Called from `FUN_6005dcc0`. | 1 caller / 3 callees |
+| `0x600d3594` |   6 | Memory / Heap | **`heap_alloc_thunk`** — Dynamic memory allocator wrapper: calls `thunk_EXT_FUN_00007f58(param_2)`. | 2 callers / 1 callee |
+| `0x600d359a` |   6 | Memory / Heap | **`heap_free_thunk`** — Dynamic memory deallocator wrapper: calls `thunk_EXT_FUN_000080d8(param_2)`. | 3 callers / 1 callee |
+| `0x600d35a0` |  54 | Memory / Heap | **`heap_realloc`** — Dynamic memory reallocation helper: allocates new buffer `thunk_EXT_FUN_00007f58(param_3)`, copies data `thunk_EXT_FUN_0000b572`, and frees old buffer `thunk_EXT_FUN_000080d8(param_2)`. | 1 caller / 3 callees |
+| `0x600d35b4` |  22 | System / Init | **`system_table_init_1d0`** — System constant configuration table initializer: initializes 464-byte (`0x1d0`) table via `thunk_EXT_FUN_0000b52e`. | 0 callers / 2 callees |
+| `0x600d35ca` |  22 | System / Init | **`system_table_init_2ad8`** — System constant configuration table initializer: initializes 10,968-byte (`0x2ad8`) table via `thunk_EXT_FUN_0000b52e`. | 0 callers / 2 callees |
+| `0x600d35e0` |  22 | System / Init | **`system_table_init_43ac`** — System constant configuration table initializer: initializes 17,324-byte (`0x43ac`) table via `thunk_EXT_FUN_0000b52e`. | 0 callers / 2 callees |
+| `0x600d3602` |  22 | System / Init | **`system_table_init_1358`** — System constant configuration table initializer: initializes 4,952-byte (`0x1358`) table via `thunk_EXT_FUN_0000b52e`. | 0 callers / 2 callees |
+| `0x600d3638` |  32 | Utils / String | **`string_null_terminated_check`** — String buffer null-termination validator: verifies string buffer length <= 128 and checks null terminators at offset 15 and offset 15 + length. Called from `FUN_60058600`. | 1 caller / 0 callees |
+| `0x600d3664` |  14 | Math / LUT | **`lookup_key_comparator_32`** — 32-bit key comparison predicate: returns `*param_1 < *param_2`. Called by `FUN_600d36d6`. | 1 caller / 0 callees |
+| `0x600d3672` |  14 | Math / LUT | **`lookup_key_comparator_32_alt`** — 32-bit key comparison predicate: returns `*param_1 < *param_2`. Called by `FUN_600d373a`. | 1 caller / 0 callees |
+| `0x600d36a8` |  14 | System / Init | **`system_table_init_12`** — System table zeroer: zeroes 12-byte table via `thunk_EXT_FUN_0000b52e(param_1, 0xc)`. | 0 callers / 1 callee |
+| `0x600d36d6` | 100 | Math / LUT | **`lut_piecewise_linear_interp_4point`** — 4-point piecewise linear interpolation table lookup: binary searches breakpoints using `FUN_600d3664` and computes interpolated value `y0 + (y1 - y0) * (x - x0) / (x1 - x0)`. | 0 callers / 1 callee |
+| `0x600d373a` | 100 | Math / LUT | **`lut_piecewise_linear_interp_3point`** — 3-point piecewise linear interpolation table lookup: binary searches breakpoints using `FUN_600d3672` and computes interpolated value `y0 + (y1 - y0) * (x - x0) / (x1 - x0)`. | 0 callers / 1 callee |
+| `0x600d379e` |  14 | Math / Predicate | **`comparator_uint32_less`** — 32-bit unsigned less-than comparison predicate: returns `*param_1 < *param_2`. Called from `FUN_600593f4` and `FUN_600db43e`. | 2 callers / 0 callees |
+
+
 
 
 
