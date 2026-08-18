@@ -1733,6 +1733,28 @@ Resolved boundary overlap at `0x600cea74` (trimmed from 136B to 132B in `FixSpur
 | `0x600ce96e` | 130 | Crypto / BEE | **`bee_key_config`** — BEE encryption key loader: validates 16-byte key length (`param_4 == 0x10`), sets mode bits `*param_1 |= 0x20`, copies reversed key via `FUN_600ce932`. Called from `bee__6005ef04`. | 1 caller / 1 callee |
 | `0x600ce9f0` | 132 | Crypto / BEE | **`bee_aes_ccm_encrypt_start`** — BEE AES-CCM hardware crypto launcher: validates block alignment (`param_6 >= 0x10 && (param_6 & 0xf) == 0`), sets opcodes `0x322`/`0x722`, and invokes hardware trigger via indirect call `(*DAT_6013d0fc)()`. Called from `FUN_60052c78`. | 1 caller / 0 callees |
 
+## Session 52 (Wave 22) — BEE Hardware Decryption, DMA Channel Engine & Hardware Timer Stubs (14 functions, 928 bytes)
+
+Resolved Session 50 `GHIDRA-TODO` items via `FixSignatures.java` (re-decompiling `0x600cdc90` and `0x601023fa` with typed signatures), plus decompiled and documented 14 functions (928 bytes across `0x600cea74`–`0x600cee6e`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600cea74` | 132 | Crypto / BEE | **`bee_aes_ccm_decrypt_start`** — BEE AES-CCM hardware decryption launcher: validates 16-byte block alignment (`param_6 >= 0x10 && (param_6 & 0xf) == 0`), encodes direction flags `0x222`/`0x622`, and triggers hardware via indirect call `(*DAT_6013d0fc)()`. Called from `FUN_60052ccc`. | 1 caller / 0 callees |
+| `0x600ceaf8` |  18 | Crypto / BEE | **`bee_hw_config_init`** — BEE hardware configuration state initializer: initializes 5-byte struct (`param_1[0]=1`, `param_1[2]=1`, `param_1[3]=0xf`, `param_1[4]=0`). Called from `FUN_6005f3e0`. | 1 caller / 0 callees |
+| `0x600ceb0a` | 112 | Hardware / DMA | **`dma_channel_config_copy`** — DMA channel descriptor loader: copies 32-byte (8-word) channel descriptor from `param_3` into array offset `param_1 + param_2 * 0x20 + 0x1000`. | 0 callers / 0 callees |
+| `0x600ceb7a` |  14 | Crypto / BEE | **`bee_channel_state_reset`** — BEE channel state struct reset: clears 4-byte struct fields (`param_1[0]=0`, `param_1[1]=1`, `param_1[2]=0`, `param_1[3]=0`). Called from `FUN_6005f5d4`. | 1 caller / 0 callees |
+| `0x600ceb88` |  28 | Hardware / DMA | **`dma_channel_desc_init`** — DMA channel descriptor initializer: zeroes 32-byte channel descriptor and sets default control flag `*(param_1 + 7) = 8`. | 0 callers / 0 callees |
+| `0x600ceba4` |  66 | Hardware / DMA | **`dma_channel_desc_pack`** — Packs DMA channel parameters from `param_2` into 32-byte channel descriptor `param_1`, setting base address and flag bits (`0x10` if `param_3 != 0`). | 0 callers / 0 callees |
+| `0x600cebe6` |  40 | Hardware / DMA | **`dma_channel_status_get`** — Retrieves DMA channel status flags: extracts bit `param_2` from `param_1 + 0x24` (shifted by 2), bit from `param_1 + 0x2c` (shifted by 1), and channel status word from `param_1 + param_2 * 0x20 + 0x101c` (bit 7). | 16 callers / 0 callees |
+| `0x600cec0e` |  18 | Hardware / DMA | **`dma_channel_transfer_init`** — Initializes DMA transfer state: sets transfer length/handle at `param_1 + 0xc`, zeroes status bytes `0x11, 0x12, 0x13, 0x15`, and sets mode byte `param_1 + 0x14 = param_3`. Called from `FUN_6005427c` and `FUN_600542d4`. | 2 callers / 0 callees |
+| `0x600cec26` | 144 | Hardware / DMA | **`dma_channel_transfer_config`** — Configures DMA channel transfer descriptor: maps transfer widths (`1 -> 0, 2 -> 1, 4 -> 2, 0x10 -> 4, 0x20 -> 5`), computes block step `param_7 / param_6`, configures source/destination stride. Called from `FUN_600cf8de`. | 1 caller / 0 callees |
+| `0x600cecb6` |  82 | Hardware / DMA | **`dma_channel_irq_enable`** — DMA channel interrupt control: sets channel active flags `*(param_1 + 8 + 0x1b) = param_1[0x10] & 0x1f`, executes privileged `disableIRQinterrupts()` / `enableIRQinterrupts()` around channel register updates. Called from `FUN_600cf8de`. | 1 caller / 0 callees |
+| `0x600ced08` |  40 | Hardware / DMA | **`dma_channel_stop`** — Stops DMA channel: clears channel control registers at `*(param_1 + 8) + param_1[0x10] * 0x20 + 0x1018`, resets state bytes `0x11, 0x12, 0x13`. | 4 callers / 0 callees |
+| `0x600ced30` | 146 | Hardware / DMA | **`dma_channel_transfer_cback`** — DMA transfer completion callback dispatcher: calculates transferred bytes from ring offset `*(iVar4 + 0x1018)`, updates transfer counter `param_1 + 0x13`, and invokes completion callback `(*param_1)(param_1, param_1[1], uVar5)`. | 16 callers / 0 callees |
+| `0x600cedc2` |  22 | Hardware / Timer | **`hardware_timer_state_init`** — Hardware timer channel state initializer: sets timer enable bytes (`*param_1 = 1, *(param_1+4) = 1, param_1[9]=1, param_1[10]=1, param_1[13]=1`). Called from `hardware_timer__60061a98`. | 1 caller / 0 callees |
+| `0x600cee6e` |  66 | Hardware / Timer | **`hardware_timer_clock_config`** — Hardware timer clock source and prescaler configurator: parses clock selection bits (`param_2 & 0x3c00`), maps clock divisor codes (`0x386`, `0x387`, `0x389`, `0x38a`), configures control register `*(param_1 + 0x10) |= 0x300`. Called from `FUN_600ceeb0`. | 1 caller / 0 callees |
+
+
 
 
 
