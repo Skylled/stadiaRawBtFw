@@ -1944,6 +1944,34 @@ Decompiled and documented 21 functions (1,596 bytes across `0x600d218c`–`0x600
 | `0x600d29b8` | 132 | USB / Host Controller | **`usb_host_pipe_transfer_abort`** — USB Host pipe transfer abort & completion callback: pauses asynchronous schedule if active, unlinks queued transfer descriptors `puVar4`, and invokes transfer completion callback `*(puVar4[4])(puVar4[5], puVar4, 0xe)`. | 2 callers / 5 callees |
 | `0x600d2a3c` |  50 | USB / Host Controller | **`usb_host_controller_periodic_stop`** — USB Host controller periodic schedule stop: synchronizes handshake bits `0x4000` / `0x10` and clears periodic schedule enable bit `0x10` in register `*(param_1 + 0x140)`. | 0 callers / 0 callees |
 
+## Session 60 (Wave 30) — EHCI Schedule Management, Host Controller Teardown & Transfer Abort Engine (20 functions, 1,182 bytes)
+
+Decompiled and documented 20 functions (1,182 bytes across `0x600d2a6e`–`0x600d3386`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d2a6e` |  32 | USB / Host EHCI | **`usb_host_ehci_periodic_frame_unlink`** — EHCI periodic schedule frame list unlinker: unlinks element `param_2` from frame list index `param_3` in 1024-entry frame list `*(param_1 + param_3 * 4)`. | 3 callers / 0 callees |
+| `0x600d2a8e` |  64 | USB / Host EHCI | **`usb_host_ehci_itd_chain_unlink`** — EHCI isochronous transfer descriptor (iTD) chain unlinker: iterates iTD chain `param_2`..`param_3`, unlinks from frame list via `FUN_600d2a6e`, and links into free list `*(param_1 + 0x20)`. | 2 callers / 1 callee |
+| `0x600d2ace` |  64 | USB / Host EHCI | **`usb_host_ehci_itd_pipe_abort`** — EHCI isochronous pipe abort: unlinks queued iTD requests, calls `FUN_600d2a8e` to release iTD frames, and invokes completion callbacks. | 2 callers / 3 callees |
+| `0x600d2b0e` |  94 | USB / Host EHCI | **`usb_host_ehci_sitd_chain_unlink`** — EHCI split isochronous transfer descriptor (siTD) chain unlinker: iterates siTD chain `param_2`..`param_3`, unlinks from frame list via `FUN_600d2a6e`, zeroes descriptor fields, and returns byte sum. | 2 callers / 1 callee |
+| `0x600d2b6c` |  68 | USB / Host EHCI | **`usb_host_ehci_sitd_pipe_abort`** — EHCI split isochronous pipe abort: unlinks queued siTD transfers from pipe `param_2`, calls `FUN_600d2b0e` to release siTD frames, and invokes completion callbacks. | 2 callers / 3 callees |
+| `0x600d2d94` |  38 | USB / Host EHCI | **`usb_host_ehci_controller_stop`** — EHCI controller stop & shutdown: zeroes schedule registers `0x140`/`0x148`, releases host mutex `thunk_FUN_600d1662`, resets event group via `FUN_600d15f8`, and notifies host stack via `thunk_EXT_FUN_000080d8`. | 0 callers / 3 callees |
+| `0x600d2dba` | 282 | USB / Host EHCI | **`usb_host_ehci_pipe_close`** — EHCI pipe close and schedule unlinker: unlinks pipe from asynchronous schedule (cases 0/2: bulk/control), split isochronous schedule (case 1: siTD/iTD), or periodic interrupt schedule (case 3: periodic frame list), cleans up descriptors, and returns to free queue. | 0 callers / 9 callees |
+| `0x600d3196` |  40 | USB / Host Control | **`usb_host_control_transfer_submit`** — USB Host standard control transfer submitter: sets request length `param_2 + 4 = param_3`, buffer length `param_2 + 8 = param_4`, and dispatches via `FUN_600d32a2`. | 3 callers / 2 callees |
+| `0x600d31be` |  14 | USB / Host Control | **`usb_host_control_get_status_req`** — USB Host control GET_STATUS request helper: formats standard request packet and invokes `FUN_600d3196`. | 1 caller / 1 callee |
+| `0x600d31cc` |  26 | USB / Host Control | **`usb_host_control_feature_req`** — USB Host control SET/CLEAR_FEATURE request helper: formats standard request packet with feature selector and invokes `FUN_600d3196`. | 1 caller / 1 callee |
+| `0x600d31e6` |  28 | USB / Host Controller | **`usb_host_controller_state_clear`** — USB Host controller state clear: enters critical section `thunk_EXT_FUN_00008802`, clears state byte `*param_1 = 0`, and exits critical section `FUN_600d15e8`. | 2 callers / 2 callees |
+| `0x600d3202` |  66 | USB / Host Controller | **`usb_host_controller_deinit`** — USB Host controller deinitializer: detaches all active devices `param_1[0xb5]` via `FUN_600d265a`, calls hardware controller deinit callback `*(param_1[0xb4] + 4)`, releases controller mutex, and clears host state. | 1 caller / 3 callees |
+| `0x600d3244` |  18 | USB / Host Driver | **`usb_host_pipe_open`** — USB Host pipe open dispatcher: dispatches to controller hardware pipe open function pointer `*(param_1[0xb4] + 8)`. | 4 callers / 0 callees |
+| `0x600d3256` |  18 | USB / Host Driver | **`usb_host_pipe_close`** — USB Host pipe close dispatcher: dispatches to controller hardware pipe close function pointer `*(param_1[0xb4] + 0xc)`. | 7 callers / 0 callees |
+| `0x600d3268` |  58 | USB / Host Driver | **`usb_host_transfer_submit_async`** — USB Host asynchronous transfer submit dispatcher: clears status flags, locks mutex `param_1[2]`, and invokes hardware transfer submit callback `*(param_1[0xb4] + 0x10)`. | 2 callers / 2 callees |
+| `0x600d32a2` |  76 | USB / Host Driver | **`usb_host_transfer_submit_sync`** — USB Host synchronous/control transfer submit dispatcher: clears status flags, configures direction bit, locks mutex `param_1[2]`, and invokes hardware transfer submit callback `*(param_1[0xb4] + 0x10)`. | 7 callers / 2 callees |
+| `0x600d32ee` |  60 | USB / Host Driver | **`usb_host_transfer_submit_iso`** — USB Host isochronous transfer submit dispatcher: sets isochronous flag `*(param_3 + 0x20) = 1`, locks mutex `param_1[2]`, and invokes hardware transfer submit callback `*(param_1[0xb4] + 0x14)`. | 3 callers / 2 callees |
+| `0x600d332a` |  34 | USB / Host Driver | **`usb_host_pipe_abort`** — USB Host pipe abort dispatcher: dispatches to controller hardware pipe abort function pointer `*(param_1[0xb4] + 0x18)`. | 8 callers / 0 callees |
+| `0x600d334c` |  58 | USB / Host Driver | **`usb_host_transfer_context_alloc`** — USB Host transfer context allocator: pops a free transfer context structure from linked list `*(param_1 + 0x2cc)` within mutex protection. | 12 callers / 2 callees |
+| `0x600d3386` |  44 | USB / Host Driver | **`usb_host_transfer_context_free`** — USB Host transfer context deallocator: pushes transfer context structure `param_2` onto free linked list `*(param_1 + 0x2cc)` within mutex protection. | 21 callers / 2 callees |
+
+
 
 
 
