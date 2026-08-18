@@ -6,7 +6,7 @@ Data-driven status doc for the "decompile all of `bruce` to source-reconstructio
 
 ## 1. Top-line stats
 
-| Metric | Functions | % of 4,995 | Bytes | % of 660,570 |
+| Metric | Functions | % of 5,539 | Bytes | % of 715,892 |
 |---|---:|---:|---:|---:|
 | **Total functions (census)** | 5,539 | 100% | 715,892 | 100% |
 | **Attributed** (leaked `__FILE__` → 139 src files) | 448 | 8.09% | 97,450 | 13.61% |
@@ -26,7 +26,7 @@ Data-driven status doc for the "decompile all of `bruce` to source-reconstructio
 
 Netting this out against §1's "Totally unknown" row gives the true unidentified figure:
 
-| | Functions | % of 4,995 | Bytes | % of 660,570 |
+| | Functions | % of 5,539 | Bytes | % of 715,892 |
 |---|---:|---:|---:|---:|
 | Totally unknown (§1, includes BTA-identified-but-undecompiled) | 3,669 | 66.24% | 334,817 | 46.77% |
 | — of which: BTA-identified, module known, just not decompiled | 18 | 0.32% | 3,938 | 0.55% |
@@ -189,7 +189,7 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 
 | # | Start | End | Span (B) | Code bytes | Funcs | Already decompiled | Density | Largest function in range |
 |---:|---|---|---:|---:|---:|---:|---:|---|
-| 1★ | `0x600921b8` | `0x600c9cc4` | 228108 | 204449 | 1076 | 1101 | 98.2% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |
+| 1★ | `0x600921b8` | `0x600c9cc4` | 228108 | 214057 | 1119 | 1101 | 98.2% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |
 | 2† | `0x600ecb72` | `0x6013d4e4` | 330098 | 95117 | 1006 | 14 | 28.8% | `FUN_601054dc` (2546B @ `601054dc`) |
 | 3† | `0x600df286` | `0x600ea868` | 46562 | 44326 | 316 | 15 | 95.2% | `FUN_600e398a` (6270B @ `600e398a`) |
 | 4† | `0x600cc6e4` | `0x600d4560` | 32380 | 24998 | 304 | 35 | 77.2% | `FUN_600ccfb4` (1568B @ `600ccfb4`) |
@@ -207,7 +207,7 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 
 ## 4. The honest bottom line
 
-Of **4,995 total functions** (the current census):
+Of **5,539 total functions** (the current census):
 
 | | Functions | Bytes |
 |---|---:|---:|
