@@ -1580,6 +1580,29 @@ Decompiled and documented 15 census entries (1,766 bytes across `0x600afbd0`–`
 | `0x600c288c` | 114 | BTM / BLE | **`btm_ble_observe_timeout`** — BTM BLE scan timer expiry: iterates discovered BLE devices (`+0xe4`), dispatches observation reports via `0x600f04e4`, resets observe state `+0x108 = 0`, arms restart timer `FUN_60096314(0x78)`. | 0 callers / 3 callees |
 | `0x600c290c` | 192 | BTM / BLE | **`BTM_BleSetScanParams`** — Configures BLE scan interval/window parameters (`param_1+8`, `param_1+10`), updates connectable/non-connectable scan mode flags `+0x245`/`+0x246`, and calls `BTM_SetPairingState` (`0x600a407c`, session 35). | 0 callers / 3 callees |
 
+## Session 41 (Wave 11) — BTM BLE Security Bonding & BTA DM BLE Observation/Advertising Pipeline (15 functions, 1,526 bytes)
+
+Decompiled and documented 15 functions (1,526 bytes across `0x600c29d0`–`0x600c4570`): BTM BLE scan parameter configuration, BLE bond cancel/request, BLE advertising feature bitmask updates, and BTA DM BLE observation/advertising handlers:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600c29d0` |  84 | BTM / BLE | **`btm_ble_set_scan_params`** — Stores 4 16-bit scan interval/window parameters into `btm_cb + 0x26c..0x272` and delegates to `0x600a17ec`. | 0 callers / 1 callee |
+| `0x600c2b3c` | 196 | BTM / BLE | **`btm_ble_sec_bond_cancel`** — BLE bond cancel handler: checks address resolution list (`FUN_600f045e`); resets security keys (`FUN_600f16ae`, `FUN_600945f8`, `FUN_6009470c`) or cleans up cached record via `FUN_600f04e4`. | 0 callers / 6 callees |
+| `0x600c2d00` |  88 | BTM / BLE | **`btm_ble_sec_bond_req`** — Initiates BLE security bonding request: calls `FUN_600a4820(param_1+8)`; on failure, notifies callback `+0xe8` with event 9. | 0 callers / 1 callee |
+| `0x600c2e9c` | 198 | BTM / BLE | **`btm_ble_set_adv_flag`** — Modifies BLE advertising feature bitmask: reads existing 8-byte feature mask via `FUN_600f1f5c`, updates bitmask for feature index `< 0x1f`, and writes updated mask via `FUN_600f1a0e`. | 0 callers / 4 callees |
+| `0x600c3250` | 102 | BTA / DM BLE | **`bta_dm_ble_scan_cmpl`** — BTA DM BLE scan completion callback: formats status structure via `FUN_600efcc6`, checks status (`0` or `-0xc`), clears scan flag `*DAT = 0`, and dispatches BTA DM event 5. | 1 caller / 3 callees |
+| `0x600c330c` |  78 | BTA / DM BLE | **`bta_dm_ble_stop_scan`** — BTA DM BLE scan stop handler: cancels active scan via `FUN_600c309c(0)`, formats event status, and invokes registered BTA DM callback with event 5. | 1 caller / 3 callees |
+| `0x600c33f0` |  80 | BTA / DM BLE | **`bta_dm_ble_read_rmt_name`** — Initiates remote device name request: copies BD_ADDR, calls `FUN_600f1800`; registers remote name notification callback via `BTM_SecAddRmtNameNotifyCallback` (`0x600a3fc0`, session 35). | 1 caller / 3 callees |
+| `0x600c3520` |  46 | BTA / DM BLE | **`bta_dm_ble_rmt_name_cmpl`** — Remote name request completion: sets valid flag on device record and advances BTA DM state machine via `FUN_600c3f04`. | 0 callers / 1 callee |
+| `0x600c3924` |  50 | BTA / DM BLE | **`bta_dm_ble_scan_timer_cback`** — BTA DM BLE scan timer expiry: stops timer `FUN_600aa648`, checks event code `0x208` to call `0x600c3250`, or dispatches event 4. | 0 callers / 2 callees |
+| `0x600c39c0` | 100 | BTA / DM BLE | **`bta_dm_ble_observe_results`** — Dispatches BLE observation results to BTA DM callback (event 2), arms 4-second observation window timer `FUN_60096314(4000)`. | 0 callers / 2 callees |
+| `0x600c3a30` |  28 | BTA / DM BLE | **`bta_dm_ble_observe_timeout`** — Clears observation active flag `+0x13c = 0` and advances state machine via `FUN_600c3e84`. | 0 callers / 1 callee |
+| `0x600c3b54` |  46 | BTA / DM BLE | **`bta_dm_ble_free_scan_filter`** — Frees allocated scan filter buffer via GKI buffer deallocator `FUN_600962dc`. | 0 callers / 1 callee |
+| `0x600c3bc4` |  50 | BTA / DM BLE | **`bta_dm_ble_stop_observe_cback`** — Invokes BTA DM observe stop callback (event 6) and clears BLE observation control block via `FUN_600c5f64`. | 3 callers / 1 callee |
+| `0x600c43c4` | 176 | BTA / DM BLE | **`bta_dm_ble_update_conn_params`** — Validates and dispatches BLE connection parameter update request: copies BD_ADDR, formats 248-byte connection param structure, checks interval range `< 0x1e`, and dispatches BTA DM event 4. | 0 callers / 2 callees |
+| `0x600c4570` | 204 | BTA / DM BLE | **`bta_dm_ble_set_adv_data`** — Configures BLE advertising data: copies BD_ADDR, checks manufacturer data length, calls `FUN_600f1800`, and invokes BTA DM callback with event 2. | 0 callers / 2 callees |
+
+
 
 
 

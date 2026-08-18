@@ -1,8 +1,12 @@
-// 600afea0  FUN_600afea0  size=68 bytes
+// 600afea0  FUN_600afea0  size=114 bytes
 // --- callers ---
-//   600f6042 FUN_600f6042
 //   600f5ede FUN_600f5ede
+//   600f6042 FUN_600f6042
+//   600f5e3c FUN_600f5e3c
+//   600ad8b0 FUN_600ad8b0
+//   600f60c2 FUN_600f60c2
 //   600f5fb4 FUN_600f5fb4
+//   600f5db4 FUN_600f5db4
 // --- callees ---
 
 
