@@ -1889,6 +1889,34 @@ Resolved Session 56 GHIDRA-TODO by updating `Decompile.java` to format thunk fil
 | `0x600d1a62` |  58 | USB / Host Audio | **`usb_host_audio_num_channels_get`** — USB Host Audio channel count query: iterates audio topology descriptor chain up to 10 iterations to count active channels. Called from `usb_host_audio_topology__600644dc`. | 1 caller / 1 callee |
 | `0x600d1ba0` |  60 | USB / Host Audio | **`usb_host_audio_feature_unit_req`** — USB Host Audio Feature Unit request submitter: formats class-specific control request `0xa1` (GET_CUR/SET_CUR) with entity ID and dispatches via `FUN_600558b8`. Called from `usb_host_audio__6006318c`. | 1 caller / 1 callee |
 
+## Session 58 (Wave 28) — USB Host Audio Control, CDC-ACM Pipes & HID Host Pipeline (20 functions, 1,412 bytes)
+
+Decompiled and documented 20 functions (1,412 bytes across `0x600d1bdc`–`0x600d2140`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d1bdc` |  60 | USB / Host Audio | **`usb_host_audio_sampling_freq_req`** — USB Host Audio sampling frequency control request: formats control request `0x22` (GET_CUR/SET_CUR for endpoint) with frequency value and dispatches via `FUN_600558b8`. Called from `usb_host_audio__6006318c`. | 2 callers / 1 callee |
+| `0x600d1c18` |  58 | USB / Host Audio | **`usb_host_audio_control_req_submit`** — USB Host Audio control request submitter: formats setup packet with request type `0x21` and dispatches via `FUN_600558b8`. Called from `usb_host_audio__6006318c`. | 1 caller / 1 callee |
+| `0x600d1c52` |  58 | USB / Host Audio | **`usb_host_audio_stream_req_submit`** — USB Host Audio stream endpoint request submitter: formats setup packet with request type `0x22` and dispatches via `FUN_600558b8`. Called from `usb_host_audio__6006318c`. | 1 caller / 1 callee |
+| `0x600d1c8c` | 154 | USB / Host Audio | **`usb_host_audio_topology_resolve`** — USB Host Audio topology descriptor parser: searches input terminal, feature unit, and output terminal descriptors via `FUN_600d19ea`, checks channel configuration, and resolves terminal audio properties. | 1 caller / 1 callee |
+| `0x600d1d26` |  32 | USB / Host CDC | **`usb_host_cdc_serial_state_cback`** — USB Host CDC-ACM serial state notification callback: invokes registered callback `*(param_1 + 0x14)(..., param_3)` and frees buffer via `FUN_600d3386`. | 0 callers / 1 callee |
+| `0x600d1d46` |  32 | USB / Host CDC | **`usb_host_cdc_data_in_cback`** — USB Host CDC-ACM data IN callback: invokes client callback `*(param_1 + 0x18)(..., param_3)` and frees buffer via `FUN_600d3386`. | 0 callers / 1 callee |
+| `0x600d1d66` |  36 | USB / Host CDC | **`usb_host_cdc_data_out_cback`** — USB Host CDC-ACM data OUT callback: clears state `param_1 + 0x1c = 0`, invokes client callback `*(param_1 + 0x20)(..., param_3)`, and frees buffer via `FUN_600d3386`. | 0 callers / 1 callee |
+| `0x600d1d8a` | 236 | USB / Host CDC | **`usb_host_cdc_stream_open`** — USB Host CDC-ACM stream open & pipe configurator: allocates bulk IN and bulk OUT transfer pipes via `FUN_600d3244` with 3000ms timeout, stores handle in `param_1 + 0x10`, and notifies client. | 1 caller / 2 callees |
+| `0x600d1ea2` |  62 | USB / Host CDC | **`usb_host_cdc_instance_alloc`** — USB Host CDC-ACM instance allocator: allocates 76-byte context structure `FUN_600d15c8(0x4c)` and registers pipe handles via `FUN_600d33b2`. | 1 caller / 2 callees |
+| `0x600d1ee0` | 100 | USB / Host CDC | **`usb_host_cdc_device_close`** — USB Host CDC-ACM device close: aborts pending bulk pipes via `FUN_600d332a` / `FUN_600d3256`, unbinds interfaces via `FUN_600569e4`, and notifies host stack via `thunk_EXT_FUN_000080d8`. | 1 caller / 4 callees |
+| `0x600d1f44` |  20 | USB / Host HID | **`usb_host_hid_report_length_get`** — USB Host HID report length query: returns 16-bit report length `param_1 + 0x34` or `param_1 + 0x36` for HID interface. Called from `usb_host_hid__600649d4`. | 1 caller / 0 callees |
+| `0x600d1f58` |  32 | USB / Host HID | **`usb_host_hid_get_report_desc_req`** — USB Host HID get report descriptor request: sends standard `GET_DESCRIPTOR` request (`0x81`, opcode 6, descriptor type `0x22`) via `FUN_60055cfc`. Called from `usb_host_hid__600649d4`. | 1 caller / 1 callee |
+| `0x600d1f78` |  32 | USB / Host HID | **`usb_host_hid_set_idle_req`** — USB Host HID set idle request: sends class-specific `SET_IDLE` request (`0x21`, opcode 10) via `FUN_60055cfc`. Called from `usb_host_hid__600649d4`. | 1 caller / 1 callee |
+| `0x600d1f98` |  30 | USB / Host HID | **`usb_host_hid_set_protocol_req`** — USB Host HID set protocol request: sends class-specific `SET_PROTOCOL` request (`0x21`, opcode 11) via `FUN_60055cfc`. Called from `usb_host_hid__600649d4`. | 1 caller / 1 callee |
+| `0x600d1fb6` |  36 | USB / Host HID | **`usb_host_hid_set_report_req`** — USB Host HID set report request: sends class-specific `SET_REPORT` request (`0x21`, opcode 9) via `FUN_60055cfc`. Called from `usb_host_hid__600649d4`. | 1 caller / 1 callee |
+| `0x600d1fda` |  32 | USB / Host HID | **`usb_host_hid_interrupt_in_cback`** — USB Host HID interrupt IN transfer callback: invokes client callback `*(param_1 + 0x20)(...)` and frees buffer via `FUN_600d3386`. | 0 callers / 1 callee |
+| `0x600d1ffa` |  36 | USB / Host HID | **`usb_host_hid_interrupt_out_cback`** — USB Host HID interrupt OUT transfer callback: clears state `param_1 + 0x1c = 0`, invokes client callback `*(param_1 + 0x28)(...)`, and frees buffer via `FUN_600d3386`. | 0 callers / 1 callee |
+| `0x600d201e` |  78 | USB / Host HID | **`usb_host_hid_instance_alloc`** — USB Host HID instance allocator: allocates 76-byte context structure `FUN_600d15c8(0x4c)` and registers pipe handles via `FUN_600d33b2`. Called from `FUN_600563b8`. | 1 caller / 2 callees |
+| `0x600d206c` | 212 | USB / Host HID | **`usb_host_hid_interrupt_pipe_open`** — USB Host HID interrupt transfer pipe open: searches endpoint descriptors for interrupt endpoint (`type 3`), allocates pipe via `FUN_600d3244` with 3000ms timeout, stores handle in `param_1 + 0x14`, and notifies client. Called from `FUN_600563b8`. | 1 caller / 4 callees |
+| `0x600d2140` |  76 | USB / Host HID | **`usb_host_hid_device_close`** — USB Host HID device close: aborts pending interrupt pipes via `FUN_600d332a` / `FUN_600d3256`, unbinds interfaces via `FUN_600569e4`, and notifies host stack via `thunk_EXT_FUN_000080d8`. Called from `FUN_600563b8`. | 1 caller / 4 callees |
+
+
 
 
 
