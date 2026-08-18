@@ -1862,6 +1862,34 @@ Decompiled and documented 20 functions (950 bytes across `0x600d0e58`–`0x600d1
 | `0x600d15c8` |  28 | Memory / Heap | **`private_heap_calloc`** — Private heap zeroed allocation helper: allocates memory via `thunk_EXT_FUN_00007f58` and zeroes `param_1` bytes. | 6 callers / 1 callee |
 | `0x600d15e4` |   4 | USB / Host | **`usb_host_event_notify_thunk`** (`thunk_EXT_FUN_000080d8`) — USB host/peripheral event notification thunk: indirect jump via function pointer `DAT_6013d184`. | 11 callers / 0 callees |
 
+## Session 57 (Wave 27) — USB Synchronization, Hardware Registers & USB Host Audio Pipeline (20 functions, 976 bytes)
+
+Resolved Session 56 GHIDRA-TODO by updating `Decompile.java` to format thunk filenames as `thunk_<name>__<addr>.c` (preventing collisions with attributed target source files), plus decompiled and documented 20 functions (976 bytes across `0x600d15c4`–`0x600d1ba0`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d15c4` |   4 | Memory / Heap | **`private_heap_free`** (`thunk_private_heap__600835ac__600d15c4`) — Private heap free tail-call thunk: branches to `private_heap__600835ac` (`b.w 0x600835ac`). | 6 callers / 0 callees |
+| `0x600d15e8` |  16 | Kernel / Critical | **`critical_section_exit`** — Interrupt & critical section restore helper: restores interrupt base priority `setBasePriority(param_1)` if in ISR, else exits critical section via `thunk_EXT_FUN_00007dac`. | 19 callers / 1 callee |
+| `0x600d15f8` |  46 | USB / Events | **`usb_event_group_clear`** — USB event group reset: signals event group via `event_groups__600c9d88`, enters critical section `thunk_EXT_FUN_00008802`, and clears state byte `param_1[10] = 0`. Called from `FUN_600d2d94`. | 1 caller / 3 callees |
+| `0x600d1626` |  60 | USB / Events | **`usb_event_wait_timeout`** — USB event wait with millisecond timeout: calls OS event wait `thunk_EXT_FUN_00006820(*param_1, param_2, ..., timeout_ms)`. | 0 callers / 1 callee |
+| `0x600d1662` |  44 | USB / Mutex | **`usb_mutex_release`** — USB mutex release & state clear: unlocks mutex `thunk_EXT_FUN_00007018(*param_1)`, enters critical section, and clears active flag `param_1 + 0x15 = 0`. | 0 callers / 3 callees |
+| `0x600d168e` |   4 | USB / Mutex | **`usb_mutex_release_thunk`** (`thunk_FUN_600d1662`) — USB mutex release thunk: tail-call to `FUN_600d1662`. Called from `usb_device_cdc_acm__60054d08` and others. | 6 callers / 0 callees |
+| `0x600d1692` |  28 | USB / Queue | **`usb_msg_queue_post`** — USB message queue post: posts message pointer `param_3` to queue `queue__600c9eac(*param_1, 0xffffffff, ...)`. | 19 callers / 1 callee |
+| `0x600d16ae` |  22 | USB / Queue | **`usb_msg_queue_fetch`** — USB message queue fetch: receives message from queue `queue__600c9e6c(*param_1)`. | 19 callers / 1 callee |
+| `0x600d16c4` | 102 | USB / Hardware | **`usb_hardware_endpoint_config`** — USB hardware endpoint register configurator: sets MMIO register `*(0x400d81b4 + (param_1 - 2) * 0x60) = 0x180000`, sets control flags `0x4000 | 0x8000`, and packs endpoint address and direction. Called from `usb_device__60060ccc`. | 1 caller / 1 callee |
+| `0x600d172a` |  28 | USB / Hardware | **`usb_hardware_remote_wakeup_set`** — USB hardware remote wakeup enable/disable: updates control register bit 1 `*(iVar1 + 0x30)`. | 0 callers / 1 callee |
+| `0x600d1746` |  40 | USB / Host Audio | **`usb_host_audio_control_cback`** — USB Host Audio control transfer completion callback: clears state `param_1[0x17] = 0`, invokes client callback `*(param_1[0x15])(...)`, and frees buffer via `FUN_600d3386`. | 0 callers / 1 callee |
+| `0x600d176e` |  32 | USB / Host Audio | **`usb_host_audio_stream_in_cback`** — USB Host Audio stream IN transfer callback: invokes callback `*(param_1[0xc])(...)` and frees buffer via `FUN_600d3386`. | 0 callers / 1 callee |
+| `0x600d178e` |  32 | USB / Host Audio | **`usb_host_audio_stream_out_cback`** — USB Host Audio stream OUT transfer callback: invokes callback `*(param_1[0xe])(...)` and frees buffer via `FUN_600d3386`. | 0 callers / 1 callee |
+| `0x600d18d2` |  56 | USB / Host Audio | **`usb_audio_desc_search_interface`** — USB Audio descriptor interface iterator: parses standard descriptor chain `*param_1` looking for interface descriptor type `4` and matching interface number `*param_3`. Called from `FUN_600d19ea` and `FUN_600d1a62`. | 2 callers / 0 callees |
+| `0x600d190a` |  64 | USB / Host Audio | **`usb_host_audio_instance_alloc`** — USB Host Audio instance allocator: allocates 104-byte structure `FUN_600d15c8(0x68)` and registers pipe handlers via `FUN_600d33b2`. | 0 callers / 2 callees |
+| `0x600d194a` | 132 | USB / Host Audio | **`usb_host_audio_device_close`** — USB Host Audio device close: aborts pending audio streams via `FUN_600d332a` / `FUN_600d3256`, unbinds interfaces via `FUN_600d26ea`, and notifies host stack via `thunk_EXT_FUN_000080d8`. Called from `usb_host_audio__6006318c`. | 1 caller / 5 callees |
+| `0x600d19ce` |  28 | USB / Host Audio | **`usb_host_audio_sample_rate_get`** — USB Host Audio sample rate query: returns 16-bit sample rate `param_1 + 0x60` (channel 1) or `param_1 + 0x62` (channel 2). Called from `usb_host_audio__6006318c`. | 1 caller / 0 callees |
+| `0x600d19ea` | 120 | USB / Host Audio | **`usb_host_audio_unit_find`** — USB Host Audio unit finder: searches audio topology descriptors `param_1 + 0x34` for matching unit ID `param_2` via `FUN_600d18d2`. Called from `usb_host_audio_topology__60063e24`. | 3 callers / 1 callee |
+| `0x600d1a62` |  58 | USB / Host Audio | **`usb_host_audio_num_channels_get`** — USB Host Audio channel count query: iterates audio topology descriptor chain up to 10 iterations to count active channels. Called from `usb_host_audio_topology__600644dc`. | 1 caller / 1 callee |
+| `0x600d1ba0` |  60 | USB / Host Audio | **`usb_host_audio_feature_unit_req`** — USB Host Audio Feature Unit request submitter: formats class-specific control request `0xa1` (GET_CUR/SET_CUR) with entity ID and dispatches via `FUN_600558b8`. Called from `usb_host_audio__6006318c`. | 1 caller / 1 callee |
+
+
 
 
 

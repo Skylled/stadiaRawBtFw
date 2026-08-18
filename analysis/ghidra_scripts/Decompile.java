@@ -40,6 +40,9 @@ public class Decompile extends GhidraScript {
                     : "// decompile failed: " + (res == null ? "null" : res.getErrorMessage());
 
             String fname = f.getName().replaceAll("[^A-Za-z0-9_.]", "_");
+            if (f.isThunk() && !fname.startsWith("thunk_")) {
+                fname = "thunk_" + fname + "__" + f.getEntryPoint();
+            }
             PrintWriter pw = new PrintWriter(new FileWriter(outDir + fname + ".c"));
             pw.println("// " + f.getEntryPoint() + "  " + f.getName()
                     + "  size=" + f.getBody().getNumAddresses() + " bytes");
