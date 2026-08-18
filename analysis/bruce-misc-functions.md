@@ -1710,6 +1710,30 @@ Resolved Session 49 `GHIDRA-TODO` item (`_raise_r` function boundary defined at 
 | `0x600ce26a` |  54 | POSIX / File I/O | ~~**`_read_r`** — Low-level file descriptor read stub: reads bytes from input queue or returns EOF~~ ⚠️ **misidentified, corrected QA session 50** — disassembly shows this function's sole meaningful action is `bl 0x6007f8e4`, a direct call to the already-established `pattern_player__6007f8e4` (`pattern_player.cc`, the audio/haptic pattern-sequencer subsystem — that function's own header already lists this exact address, `0x600ce26a`, as one of its 5 callers), passing a 6-argument bundle built from this function's own parameters plus two words loaded from a caller-supplied structure. This has no plausible connection to POSIX `read()`. Likely misidentified by address-range pattern-matching (sitting between other genuine syscall stubs) rather than content verification. Real identity unconfirmed, but definitively not `_read_r`. | 3 callers / 3 callees |
 | `0x600ce2a0` |  38 | POSIX / File I/O | **`_open_r`** — Low-level file open stub: returns file descriptor or `ENOSYS`. | 25 callers / 1 callee |
 
+## Session 51 (Wave 21) — Record Sorting/Formatting Utilities, BLE GATT RPC Wrappers & Hardware BEE Crypto Primitives (16 functions, 1,246 bytes)
+
+Resolved boundary overlap at `0x600cea74` (trimmed from 136B to 132B in `FixSpuriousSplits.java`), plus decompiled and documented 16 functions (1,246 bytes across `0x600ce31c`–`0x600ce9f0`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600ce31c` |  56 | Utility / Formatting | **`hex_encode_bytes`** — Hexadecimal string encoder: converts `param_2` binary bytes from `param_1` into uppercase ASCII hex characters in `param_3` and null-terminates. | 3 callers / 0 callees |
+| `0x600ce354` | 236 | Algorithms / Heap | **`stats_heap_sift_down_36b`** — Min-heap sift-down algorithm over 36-byte (9-word) records, ordering elements by key field at offset `+8` (`param_6`). Called from `FUN_6005183c` and `FUN_60051a50`. | 2 callers / 0 callees |
+| `0x600ce440` |  72 | Algorithms / Sort | **`insertion_sort_shift_36b`** — Insertion sort shift routine: shifts preceding 36-byte records rightward while their key at `+8` exceeds `uVar10`. | 2 callers / 0 callees |
+| `0x600ce488` | 116 | Algorithms / Sort | **`insertion_sort_36b`** — Insertion sort over 36-byte records: sorts record range from `param_1` to `param_2` using `memmove` (`thunk_EXT_FUN_0000b588`) and `FUN_600ce440`. Called from `stats__60051b50`. | 1 caller / 2 callees |
+| `0x600ce4fc` |  48 | Serialization / Metrics | **`json_format_metric_u32`** — Metric serialization helper: verifies active stream buffer via `FUN_600cc3cc()`, formats integer metric value via `FUN_60050c18`, and appends closing delimiter `}` via `FUN_601019da`. | 6 callers / 3 callees |
+| `0x600ce52c` |  48 | Serialization / Metrics | **`json_format_metric_u32_alt`** — Alternate entry point for integer metric serialization into text stream. Called from `stats__60051b50`. | 1 caller / 3 callees |
+| `0x600ce55c` |  58 | Serialization / Metrics | **`json_format_metric_str`** — String metric serialization helper: verifies active stream, formats string token via `FUN_600cc4a8`, and appends delimiter via `FUN_601019da`. | 2 callers / 3 callees |
+| `0x600ce596` |  54 | Algorithms / Utility | **`swap_records_36b`** — In-place record swap: exchanges contents of two 36-byte (9-word) structs `param_1` and `param_2`. Called from `FUN_60051a50`. | 1 caller / 0 callees |
+| `0x600ce708` |  60 | BLE / GATT RPC | **`gatt_client_read_req`** — BLE GATT client read wrapper: executes `FUN_600cf2be(*(param_3[0]), param_3[1], &local_10, 0)` and maps status codes (`4 -> -5`, `0x514 -> -2`, `0 -> 0`, else `-1`). | 0 callers / 1 callee |
+| `0x600ce744` |  60 | BLE / GATT RPC | **`gatt_client_write_req`** — BLE GATT client write wrapper: executes `FUN_600cf266(*(param_3[0]), param_3[1], &local_10)` and maps status codes (`4 -> -5`, `0x515 -> -2`, `0 -> 0`, else `-1`). | 0 callers / 1 callee |
+| `0x600ce8be` |  32 | BLE / Advertising | **`ble_adv_params_reset`** — Advertising parameter initializer: sets default configuration fields (`param_1[5]=1`, `param_1[8]=3`, `param_1[10]=2`). Called from `FUN_600d4724`. | 1 caller / 0 callees |
+| `0x600ce8de` |  84 | BLE / Advertising | **`ble_adv_status_check`** — Advertising status poll: checks and toggles flag bits at `param_1 + 0x44` (bit `0x2000`), sets `param_1 + 0x4c = 2`, polls bit `0x80`, returns 64-bit pair. | 1 caller / 0 callees |
+| `0x600ce932` |  42 | Crypto / Utility | **`byte_reverse_copy_16b`** — 16-byte buffer reverse copier: reverses 16-byte crypto key / UUID buffer in place. Called from `FUN_600ce96e`. | 1 caller / 0 callees |
+| `0x600ce95c` |  18 | Crypto / BEE | **`bee_context_init`** — Bluetooth Encryption Engine (BEE) context initializer: zeroes structure and initializes config word `*(param_1 + 0xc) = 0xf0000000`. Called from `bee__6005ef04`. | 1 caller / 0 callees |
+| `0x600ce96e` | 130 | Crypto / BEE | **`bee_key_config`** — BEE encryption key loader: validates 16-byte key length (`param_4 == 0x10`), sets mode bits `*param_1 |= 0x20`, copies reversed key via `FUN_600ce932`. Called from `bee__6005ef04`. | 1 caller / 1 callee |
+| `0x600ce9f0` | 132 | Crypto / BEE | **`bee_aes_ccm_encrypt_start`** — BEE AES-CCM hardware crypto launcher: validates block alignment (`param_6 >= 0x10 && (param_6 & 0xf) == 0`), sets opcodes `0x322`/`0x722`, and invokes hardware trigger via indirect call `(*DAT_6013d0fc)()`. Called from `FUN_60052c78`. | 1 caller / 0 callees |
+
+
 
 
 
