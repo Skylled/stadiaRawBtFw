@@ -1641,6 +1641,31 @@ Parameters (`param_1` = `HardwareTimer` descriptor struct):
   3. Enters an infinite branch trap `b 0x60051832` (halting CPU).
 - **Callers:** `FUN_6010209a`, `FUN_600cdb4c` (newlib/libc abort paths).
 
+---
+
+## Session 48 (Wave 18) — FreeRTOS Heap Metrics, C++ Threading / Synchronization & IEEE 754 Math (15 functions, 1,062 bytes)
+
+Following 100% completion of the Broadcom BTA/BTE Bluetooth stack in Session 47, Wave 18 targets the next major unattributed contiguous block (§3b Run #4: `0x600cc6e4`–`0x600d4560`, 24,998 bytes / 304 functions), decompiling and documenting 15 core functions across FreeRTOS heap inspection, C++ runtime `std::call_once` synchronization / mutex primitives, and single-precision IEEE 754 math routines:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600cc6e4` |   6 | FreeRTOS / Heap | **`xPortGetFreeHeapSize`** — FreeRTOS heap capacity inspector: reads current free heap bytes (`*DAT_600cc6ec` = `xFreeBytesRemaining`). | 5 callers / 0 callees |
+| `0x600cc6f0` |   6 | FreeRTOS / Heap | **`xPortGetMinimumEverFreeHeapSize`** — FreeRTOS heap high-water metric: reads all-time minimum free heap bytes (`*DAT_600cc6f8` = `xMinimumEverFreeBytesRemaining`). | 3 callers / 0 callees |
+| `0x600cc6fc` |  24 | FreeRTOS / Heap | **`xPortResetLargestFreeBlockAllocated`** — FreeRTOS heap metric snapshot & reset: enters scheduler critical section via `thunk_EXT_FUN_0000713c()`, snapshots `*DAT_600cc714`, resets with `*DAT_600cc718`, exits critical section via `thunk_EXT_FUN_0000728c()`. | 1 caller / 2 callees |
+| `0x600cc824` |  22 | C++ Runtime / Sync | **`cxx_mutex_unlock`** — C++ mutex unlock wrapper: unlocks mutex handle `*DAT_600cc840` via `thunk_EXT_FUN_0000b294` and triggers fatal abort via `FUN_6010209a()` on failure. | 2 callers / 2 callees |
+| `0x600cc884` |  20 | C++ Runtime / Thread | **`cxx_thread_self`** — C++ thread-ID resolver: retrieves active thread handle `*DAT_600cc8a4` via `thunk_EXT_FUN_0000b18c`. | 2 callers / 1 callee |
+| `0x600cc8a8` |  38 | C++ Runtime / Sync | **`cxx_mutex_lock`** — C++ mutex lock wrapper: sets flag `*param_1 = 1`, locks mutex `*DAT_600cc8dc` via `thunk_EXT_FUN_0000b28c`, and aborts via `FUN_6010209a()` on failure. | 2 callers / 3 callees |
+| `0x600cc8e0` |  18 | C++ Runtime / Sync | **`cxx_condvar_broadcast`** — C++ condition variable wake / broadcast: wakes pending threads via `thunk_EXT_FUN_0000b15c()` and aborts on error. | 1 caller / 2 callees |
+| `0x600cc8f8` | 122 | C++ Runtime / Sync | **`cxx_call_once_acquire`** — C++ `std::call_once` initialization acquisition primitive: issues DMB (`0x1b`), verifies state bit 31, acquires mutex via `FUN_600cc8a8`, tests in-progress flag `param_1[1]`, loops on thread completion via `FUN_600edffe`, and sets `param_1[1] = 1`. | 32 callers / 6 callees |
+| `0x600cc984` |  60 | C++ Runtime / Sync | **`cxx_call_once_release`** — C++ `std::call_once` initialization completion release: clears in-progress flag `param_1[1] = 0`, issues DMB barrier, marks initialized `*param_1 = 1`, broadcasts condition variable via `FUN_600cc8e0()`, and unlocks mutex via `FUN_600cc824()`. | 32 callers / 4 callees |
+| `0x600cc9e4` |  72 | C++ Runtime / ABI | **`cxx_pure_virtual_abort`** — C++ ABI `__cxa_pure_virtual` / diagnostic abort handler: copies 0x68-byte format string, formats parameter lengths, and halts via `FUN_60101fd2`. | 1 caller / 2 callees |
+| `0x600cca30` |  74 | C Runtime / Format | **`int_to_dec_string`** — Integer to decimal ASCII string formatter: repeatedly computes `param_3 % 10` and `param_3 / 10`, maps digits via `DAT_600cca7c`, and copies to output buffer via `thunk_EXT_FUN_0000b572`. | 1 caller / 1 callee |
+| `0x600cca80` | 134 | Libm / Math | **`sinf`** — Single-precision IEEE 754 sine function: compares against threshold `DAT_600ccb08` (`pi/4`), performs argument reduction via `FUN_600ccc10`, and evaluates cosine polynomial `FUN_600cceb0` or sine polynomial `FUN_600cd604`. | 2 callers / 3 callees |
+| `0x600ccb10` | 102 | Libm / Math | **`modff`** — Single-precision IEEE 754 `modff`: extracts exponent `(ABS(x) >> 23) - 127`, separates integer and fractional parts via bitmask `DAT_600ccb78 >> exp`. | 1 caller / 0 callees |
+| `0x600ccb7c` | 138 | Libm / Math | **`cosf`** — Single-precision IEEE 754 cosine function: compares against threshold `DAT_600ccc08` (`pi/4`), performs argument reduction via `FUN_600ccc10`, and evaluates sine/cosine polynomial kernels. | 2 callers / 3 callees |
+| `0x600cceb0` | 226 | Libm / Math | **`__kernel_cosf`** — Single-precision polynomial cosine kernel: evaluates 6th-order Taylor polynomial with split-precision constants `DAT_600ccf94`..`DAT_600ccfa8` (`fdlibm`/`newlib` implementation). | 2 callers / 0 callees |
+
+
 
 
 
