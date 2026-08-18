@@ -1558,6 +1558,29 @@ Decompiled and documented 15 functions (1,500 bytes across `0x600af390`–`0x600
 | `0x600af9a0` |  88 | GATT / Core | **`gatt_build_32bit_uuid`** — Initializes 16-byte Bluetooth Base UUID template into `param_1` and embeds 32-bit UUID `param_2` at bytes 12-15. | 6 callers / 1 callee |
 | `0x600afb50` | 122 | GATT / Core | **`gatt_find_ccb_by_handle`** — Searches 10 CCB connection records (stride 0x28) for active CCB matching attribute handle range `[entry+0xaa4 .. entry+0xaa6]`. | 3 callers / 0 callees |
 
+## Session 40 (Wave 10) — GATT Service Database, Connection Ring Buffers & BLE Scan Management (15 functions, 1,766 bytes)
+
+Decompiled and documented 15 functions (1,766 bytes across `0x600afbd0`–`0x600c290c`): GATT service database lookups, client command 6-element ring buffer queues, background connect list management, and BTM BLE observation/scan parameter control:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600afbd0` | 176 | GATT / Server | **`gatt_find_srv_db_entry`** — Searches 10 service database entries (stride 40 bytes) for matching service/UUIDs `param_1`, `param_2`, and handle `param_3`; releases UUID via `FUN_600b0444`. | 2 callers / 3 callees |
+| `0x600afc84` | 158 | GATT / Server | **`gatt_alloc_srv_db_entry`** — Allocates free service database entry: zeroes 0x28 bytes, marks `+0x25 = 1`, copies 20-byte UUID struct, assigns primary (`0x2800`) / secondary (`0x2801`) service UUID, sets start/end handles. | 1 caller / 2 callees |
+| `0x600afd28` |  86 | GATT / Core | **`gatt_get_reg_record`** — Maps 1-indexed application ID `param_1` (1..10) to registration record base pointer `gatt_cb + (app_id-1)*0x30 + 0x1068`, validating `*(entry+0x2d) != 0`. | 22 callers / 0 callees |
+| `0x600afd84` | 110 | GATT / Core | **`gatt_is_app_holding_conn`** — Checks if any of 6 GATT connection holding records (stride 0x60) holds connection handle `param_1`. | 5 callers / 0 callees |
+| `0x600afdf8` | 162 | GATT / Core | **`gatt_alloc_conn_holding_record`** — Allocates connection holding record (6 slots, stride 0x60 at `gatt_cb + 0x1248`): looks up discovery record via `0x600af7c8` and registration record via `0x600afd28`, marks active `+0x17*4 = 1`. | 5 callers / 2 callees |
+| `0x600afea0` |  68 | GATT / Discovery | **`gatt_find_disc_record_by_conn_id`** — Scans 10 discovery records (stride 0x10c) matching connection ID `entry+0x18 == param_1` (`*(entry+0xfa) != 0`). | 3 callers / 0 callees |
+| `0x600afee4` |  46 | GATT / Discovery | **`gatt_find_next_disc_record_by_conn_id`** — Iterator advancing through discovery records matching connection ID `unaff_r7+6`. | 1 caller / 0 callees |
+| `0x600aff18` | 106 | GATT / Core | **`gatt_get_app_id_by_index`** — Scans active application indices in connection record `param_1+0x1e`; returns index into `*param_3` and app ID byte into `*param_4`. | 1 caller / 0 callees |
+| `0x600aff88` | 144 | GATT / Client | **`gatt_enqueue_cl_cmd`** — Enqueues GATT client command into 6-element ring buffer at `param_1 + 0x98` (stride 8 bytes): sets payload, handle, status flags, and advances head index `*(param_1+0xf9) = (param_1+0xf9 + 1) % 6`. | 1 caller / 0 callees |
+| `0x600b001c` | 142 | GATT / Client | **`gatt_dequeue_cl_cmd`** — Dequeues GATT client command from ring buffer: resolves connection record at `gatt_cb + (cmd_handle)*0x60 + 0x1248`, copies status flag into `*param_2`, and advances tail index `*(param_1+0xf8) = (param_1+0xf8 + 1) % 6`. | 2 callers / 0 callees |
+| `0x600b0548` |  78 | GATT / Core | **`gatt_find_bg_dev`** — Scans 3 background auto-connect device records (stride 0x1b) matching 6-byte BD_ADDR at `entry+0x14` (`thunk_EXT_FUN_0000b554`). | 5 callers / 1 callee |
+| `0x600b059c` |  78 | GATT / Core | **`gatt_alloc_bg_dev`** — Allocates free background auto-connect device record (3 slots, stride 0x1b): marks `+0x1a = 1`, copies 6-byte BD_ADDR into `entry+0x14`. | 1 caller / 1 callee |
+| `0x600c2810` | 106 | BTM / BLE | **`btm_ble_stop_observe`** — BTM BLE scan stop: stops BLE scan (`0x60096378(0)`), cancels timers, disconnects GATT (`0x600ab88c`), cleans up BLE records (`0x600c330c`), sets observe state `+0x108 = 1`, arms scan duration timer `FUN_60096314`. | 0 callers / 7 callees |
+| `0x600c288c` | 114 | BTM / BLE | **`btm_ble_observe_timeout`** — BTM BLE scan timer expiry: iterates discovered BLE devices (`+0xe4`), dispatches observation reports via `0x600f04e4`, resets observe state `+0x108 = 0`, arms restart timer `FUN_60096314(0x78)`. | 0 callers / 3 callees |
+| `0x600c290c` | 192 | BTM / BLE | **`BTM_BleSetScanParams`** — Configures BLE scan interval/window parameters (`param_1+8`, `param_1+10`), updates connectable/non-connectable scan mode flags `+0x245`/`+0x246`, and calls `BTM_SetPairingState` (`0x600a407c`, session 35). | 0 callers / 3 callees |
+
+
 
 
 
