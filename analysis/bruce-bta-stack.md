@@ -1536,6 +1536,29 @@ Decompiled and documented 15 functions (1,660 bytes across `0x600abbf4`–`0x600
 | `0x600af1d8` |  96 | GATT / SrvChg | **`gatt_sr_update_srv_chg_ccc`** — Updates Client Characteristic Configuration (CCC) flags for Service Changed: iterates list `DAT_600af238`, sets CCC flag `entry+6 = 1`, and notifies callback with event 2. | 1 caller / 3 callees |
 | `0x600af240` | 138 | GATT / SrvChg | **`gatt_find_srv_chg_record`** — Searches Service Changed registry list `DAT_600af2cc` for matching service UUIDs `param_1` and `param_2` (`FUN_600f68f0`) and handle `param_3`. | 2 callers / 3 callees |
 
+## Session 39 (Wave 9) — GATT Client Control Block Allocation, Discovery Database & UUID Constructors (15 functions, 1,500 bytes)
+
+Decompiled and documented 15 functions (1,500 bytes across `0x600af390`–`0x600afb50`): client control block allocation, 10-entry GATT discovery database management, 16-bit/32-bit UUID builders, and CCB handle-range lookups:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600af390` |  96 | GATT / Core | **`gatt_clb_alloc`** — GATT client control block allocator: scans 10 client control blocks at `gatt_cb + 0xc30` (stride 0x58), zeroes 0x58 bytes, marks active `*(cb+0x54) = 1`. | 2 callers / 1 callee |
+| `0x600af3f4` |  76 | GATT / Server | **`gatt_find_hdl_buffer_by_app_id`** — Walks list `*DAT_600af440` matching attribute handle / app ID `param_1 == *(entry+0x32)` where `*(entry+0x15) != 0`. | 4 callers / 0 callees |
+| `0x600af444` | 138 | GATT / SrvChg | **`gatt_find_the_srv_chg_record`** — Walks list `*DAT_600af4d0` matching service UUIDs `param_1` and `param_2` (`FUN_600f68f0`) and handle `param_3 == *(entry+0x30)`. | 2 callers / 1 callee |
+| `0x600af598` | 114 | GATT / SrvChg | **`gatt_set_chg_record_flags`** — Sets Service Changed state record flags: updates connection record `*(DAT + param_1*0x10 + 0xfbb) = 1`, `+0xfba = param_1`, and copies handle/transport `param_3`. | 1 caller / 0 callees |
+| `0x600af610` | 154 | GATT / Discovery | **`gatt_get_next_disc_record`** — Scans 10 discovery records at `gatt_cb + 0xfa` (stride 0x10c); copies 6-byte BD_ADDR at `entry+0xd` to `param_2`, returns index into `*param_3` and transport into `*param_4`. | 2 callers / 1 callee |
+| `0x600af6b0` |  98 | GATT / SrvChg | **`gatt_is_service_chg_pending`** — Walks connection record service changed queue `param_1 + 0x68` (via `0x600d92f8`/`0x600d92fc`); returns 1 if handle matches Service Changed attribute handle `*(DAT+0x1550)`. | 1 caller / 2 callees |
+| `0x600af718` |  64 | GATT / Discovery | **`gatt_find_disc_record_by_addr`** — Walks discovery list `DAT_600af758` matching 6-byte BD_ADDR `param_1` (`thunk_EXT_FUN_0000b554`). | 5 callers / 3 callees |
+| `0x600af75c` | 102 | GATT / Discovery | **`gatt_find_disc_index_by_addr`** — Scans 10 discovery records (stride 0x10c); returns 0..9 index matching BD_ADDR `entry+0xd` and transport `entry+0x13`, or 0xFF if not found. | 2 callers / 1 callee |
+| `0x600af7c8` |  72 | GATT / Discovery | **`gatt_get_disc_record_by_index`** — Returns base pointer of discovery record `param_1` if index `< 10` and `*(entry+0xfa) != 0`, else 0. | 12 callers / 0 callees |
+| `0x600af814` |  66 | GATT / Discovery | **`gatt_find_disc_record`** — Maps BD_ADDR `param_1` and transport `param_2` to discovery record base pointer via `0x600af75c`. | 14 callers / 1 callee |
+| `0x600af85c` |  74 | GATT / Discovery | **`gatt_alloc_disc_index`** — Searches for free discovery record index (0..9) with `*(entry+0xfa) == 0`, returning index or 0xFF. | 1 caller / 0 callees |
+| `0x600af8ac` | 172 | GATT / Discovery | **`gatt_alloc_disc_record`** — Finds or allocates discovery record: allocates free slot, zeroes 0x10c bytes, initializes 3 internal lists (`+0x0`, `+0x68`, `+0x100`) via `FUN_600d9246`, sets `+0xfa = 1`, and copies 6-byte BD_ADDR. | 2 callers / 5 callees |
+| `0x600af95c` |  64 | GATT / Core | **`gatt_build_16bit_uuid`** — Initializes 16-byte Bluetooth Base UUID template into `param_1` and embeds 16-bit UUID `param_2` at bytes 12-13. | 1 caller / 1 callee |
+| `0x600af9a0` |  88 | GATT / Core | **`gatt_build_32bit_uuid`** — Initializes 16-byte Bluetooth Base UUID template into `param_1` and embeds 32-bit UUID `param_2` at bytes 12-15. | 6 callers / 1 callee |
+| `0x600afb50` | 122 | GATT / Core | **`gatt_find_ccb_by_handle`** — Searches 10 CCB connection records (stride 0x28) for active CCB matching attribute handle range `[entry+0xaa4 .. entry+0xaa6]`. | 3 callers / 0 callees |
+
+
 
 
 
