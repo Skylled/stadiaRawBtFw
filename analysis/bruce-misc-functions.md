@@ -1781,6 +1781,34 @@ Resolved Session 50/52 `GHIDRA-TODO` item via `FixTailCalls.java` (`setFlowOverr
 | `0x600cf62e` |  16 | Hardware / DMA | **`dma_ring_buffer_init_mode1`** — DMA ring buffer mode 1 descriptor initializer: sets mode bytes `param_1[1]=1, param_1[3]=1`, zeroes fields `0,2,4`. Called from `FUN_60060668`. | 1 caller / 0 callees |
 | `0x600cf63e` |  32 | Hardware / DMA | **`dma_channel_priority_config`** — DMA channel priority & control register configurator: sets bit 31 (`0x80000000`) and channel priority mask `0x40000` in control registers `*(param_1 + 8)` and `*(param_1 + 0x88)`. Called from `FUN_600cf8de` and `FUN_600cfa22`. | 2 callers / 0 callees |
 
+## Session 54 (Wave 24) — SAI Audio Interface, SRTC Driver & Bluetooth Packet Dispatcher (20 functions, 1,526 bytes)
+
+Added `0x600cefde` signature typing in `FixSignatures.java`, plus decompiled and documented 20 functions (1,526 bytes across `0x600cf65e`–`0x600cfc8e`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600cf65e` | 158 | Audio / SAI | **`sai_rx_config`** — Synchronous Audio Interface (SAI) receiver hardware channel configurator: computes frame synchronization divider `(param_4 / uVar5 >> 1) - 1`, word length, and slot masks for SAI RX registers `param_1 + 0x10, 0x14, 0x18, 0x1c, 0x60`. Called from `FUN_600cf876`. | 1 caller / 0 callees |
+| `0x600cf6fc` | 186 | Audio / SAI | **`sai_tx_config`** — SAI transmitter hardware channel configurator: computes frame sync divider, slot mask, and data format for SAI TX registers `param_1 + 0x8c, 0x90, 0x94, 0x98, 0x9c, 0xe0`. Called from `FUN_600cf8aa`. | 1 caller / 0 callees |
+| `0x600cf7b6` |  94 | Audio / SAI | **`sai_rx_dma_cback`** — SAI receiver DMA completion callback: advances RX queue index `param_2[1] + 0xe5`, invokes stream callback `*(iVar3 + 0xc)(..., 0x771)`, and disables DMA channel via `FUN_600ced08`. | 0 callers / 1 callee |
+| `0x600cf814` |  98 | Audio / SAI | **`sai_tx_dma_cback`** — SAI transmitter DMA completion callback: advances TX queue index `param_2[1] + 0xe5`, invokes stream callback `*(iVar3 + 0xc)(..., 0x772)`, and disables DMA channel via `FUN_600ced08`. | 0 callers / 1 callee |
+| `0x600cf876` |  52 | Audio / SAI | **`sai_rx_init`** — SAI receiver initialization wrapper: delegates to `FUN_600cf65e`, configures word length `*(param_2 + 5) = uVar1`, and clears FIFO bits in control register `*(param_1 + 0x14)`. Called from `sai__600605dc`. | 1 caller / 1 callee |
+| `0x600cf8aa` |  52 | Audio / SAI | **`sai_tx_init`** — SAI transmitter initialization wrapper: delegates to `FUN_600cf6fc`, configures word length `*(param_2 + 5) = uVar1`, and clears FIFO bits in control register `*(param_1 + 0x94)`. Called from `sai__600606b0`. | 1 caller / 1 callee |
+| `0x600cf8de` | 232 | Audio / SAI | **`sai_tx_dma_transfer_start`** — SAI TX DMA transfer initiator: sets up 24-byte DMA descriptor on stack, configures channel descriptor via `FUN_600cec26`, loads DMA hardware via `thunk_EXT_FUN_000083ec`, enables IRQ via `FUN_600cecb6`, and sets channel priority via `FUN_600cf63e(param_1, 1)`. | 0 callers / 5 callees |
+| `0x600cf9c6` |  92 | Audio / SAI | **`sai_rx_stop`** — SAI receiver stop handler: halts DMA channel via `FUN_600ced08(*param_2)`, clears control register flags `*(param_1 + 0x14)`, and disables peripheral via `thunk_EXT_FUN_0000851a`. Called from `sai__60060634`. | 1 caller / 2 callees |
+| `0x600cfa22` | 108 | Audio / SAI | **`sai_tx_stop`** — SAI transmitter stop handler: halts DMA channel via `FUN_600ced08(*param_2)`, resets priority via `FUN_600cf63e(param_1, 0)`, and disables TX control registers. Called from `sai__60060708`. | 1 caller / 2 callees |
+| `0x600cfafe` |  20 | Hardware / SRTC | **`srtc_alarm_status_get`** — Secure Real-Time Clock (SRTC) alarm status query: parses alarm flags from control word `*(param_1 + 0x14)`. Called from `FUN_600607b8`. | 1 caller / 0 callees |
+| `0x600cfb2c` |   8 | Hardware / SRTC | **`srtc_time_zero`** — SRTC timestamp zeroer: clears 8-byte time structure (`*param_1 = 0, *(param_1 + 4) = 0`). Called from `srtc__60060804`. | 1 caller / 0 callees |
+| `0x600cfb34` |  14 | Hardware / SRTC | **`srtc_tamper_flag_get`** — SRTC tamper detection flag query: checks tamper latch bit `*(param_1 + 0x4c) & 1` (returns `4` if set, else `0`). Called from `FUN_600607b8`. | 1 caller / 0 callees |
+| `0x600cfb42` |  14 | Hardware / SRTC | **`srtc_tamper_flag_set`** — SRTC tamper status setter: sets bit 0 in control register `*(param_1 + 0x4c) |= 1`. Called from `srtc__60060804`. | 2 callers / 0 callees |
+| `0x600cfb50` |  14 | Hardware / SRTC | **`srtc_interrupt_enable`** — SRTC interrupt enable: sets bit 1 in control register `*(param_1 + 0x38) |= 2`. Called from `FUN_60060910`. | 1 caller / 0 callees |
+| `0x600cfb5e` |  14 | Hardware / SRTC | **`srtc_interrupt_disable`** — SRTC interrupt disable: clears bit 1 in control register `*(param_1 + 0x38) &= ~2`. Called from `FUN_60060940`. | 1 caller / 0 callees |
+| `0x600cfb82` | 116 | Hardware / XBARA | **`xbara_fifo_read_bytes`** — Crossbar Switch (XBARA) / hardware FIFO read utility: polls FIFO status bit `0x15`, reads up to `param_3` bytes in 4-byte chunks from data register array `param_1[uVar3 + 0x10]`. Called from `xbara__600cbdc8` and `FUN_60091d50`. | 3 callers / 0 callees |
+| `0x600cfc34` |  30 | Bluetooth / Events | **`bt_event_cback_notify_1`** — Bluetooth event notification helper 1: clears flag `param_3 + 0x1b`, invokes callback `(*callback)(param_3, 1, param_2)`. Called from `FUN_600cfc8e`. | 1 caller / 0 callees |
+| `0x600cfc52` |  30 | Bluetooth / Events | **`bt_event_cback_notify_2`** — Bluetooth event notification helper 2: clears flag `param_3 + 0x1d`, invokes callback `(*callback)(param_3, 2, param_2)`. Called from `FUN_600cfc8e`. | 1 caller / 0 callees |
+| `0x600cfc70` |  30 | Bluetooth / Events | **`bt_event_cback_notify_3`** — Bluetooth event notification helper 3: clears flag `param_3 + 0x1c`, invokes callback `(*callback)(param_3, 3, param_2)`. Called from `FUN_600cfc8e`. | 1 caller / 0 callees |
+| `0x600cfc8e` | 164 | Bluetooth / Events | **`bt_packet_dispatcher`** — Bluetooth packet event dispatcher: walks packet header array `*param_2`, parses packet type descriptors via `FUN_600d10f6`, and dispatches corresponding notification handlers `FUN_600cfc34`, `FUN_600cfc52`, `FUN_600cfc70`. Called from `FUN_600d0332` and `FUN_600d0590`. | 2 callers / 4 callees |
+
+
 
 
 

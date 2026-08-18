@@ -38,6 +38,14 @@ public class FixSignatures extends GhidraScript {
             fdc90.setReturnType(new IntegerDataType(), SourceType.USER_DEFINED);
             fdc90.updateFunction(null, null, Function.FunctionUpdateType.DYNAMIC_STORAGE_ALL_PARAMS, true, SourceType.USER_DEFINED);
         }
+
+        // Fix 0x600cefde: int i2c_bus_busy_check(void *ctx)
+        Function fcefde = getFunctionAt(toAddr(0x600cefde));
+        if (fcefde != null) {
+            fcefde.setReturnType(new IntegerDataType(), SourceType.USER_DEFINED);
+            fcefde.updateFunction(null, null, Function.FunctionUpdateType.DYNAMIC_STORAGE_ALL_PARAMS, true, SourceType.USER_DEFINED);
+        }
         println("Signatures updated.");
     }
 }
+
