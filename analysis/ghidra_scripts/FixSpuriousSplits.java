@@ -85,6 +85,67 @@ public class FixSpuriousSplits extends GhidraScript {
             println("Expanding BTU_Task 0x600a9f04 to span 0x600a9f04 - " + end9f04);
             f9f04.setBody(new AddressSet(a9f04, end9f04));
         }
+
+        // 6. Fix printf / snprintf family boundaries around 0x600cdc90..0x600cddc8
+        Address acdc90 = toAddr(0x600cdc90);
+        Function fcdc90 = fm.getFunctionAt(acdc90);
+        if (fcdc90 != null) {
+            fcdc90.setBody(new AddressSet(acdc90, toAddr(0x600cdc9f)));
+        }
+
+        Address acdca0 = toAddr(0x600cdca0);
+        Function fcdca0 = fm.getFunctionAt(acdca0);
+        if (fcdca0 == null) {
+            createFunction(acdca0, "FUN_600cdca0");
+            fcdca0 = fm.getFunctionAt(acdca0);
+        }
+        if (fcdca0 != null) {
+            fcdca0.setBody(new AddressSet(acdca0, toAddr(0x600cdcc3)));
+        }
+
+        Address acdcc4 = toAddr(0x600cdcc4);
+        Function fcdcc4 = fm.getFunctionAt(acdcc4);
+        if (fcdcc4 != null) {
+            fcdcc4.setBody(new AddressSet(acdcc4, toAddr(0x600cdd2b)));
+        }
+
+        Address acdd2c = toAddr(0x600cdd2c);
+        Function fcdd2c = fm.getFunctionAt(acdd2c);
+        if (fcdd2c == null) {
+            createFunction(acdd2c, "FUN_600cdd2c");
+            fcdd2c = fm.getFunctionAt(acdd2c);
+        }
+        if (fcdd2c != null) {
+            fcdd2c.setBody(new AddressSet(acdd2c, toAddr(0x600cdd6b)));
+        }
+
+        Address acdd6c = toAddr(0x600cdd6c);
+        Function fcdd6c = fm.getFunctionAt(acdd6c);
+        if (fcdd6c != null) {
+            fcdd6c.setBody(new AddressSet(acdd6c, toAddr(0x600cdd87)));
+        }
+
+        Address acdd88 = toAddr(0x600cdd88);
+        Function fcdd88 = fm.getFunctionAt(acdd88);
+        if (fcdd88 == null) {
+            createFunction(acdd88, "FUN_600cdd88");
+            fcdd88 = fm.getFunctionAt(acdd88);
+        }
+        if (fcdd88 != null) {
+            fcdd88.setBody(new AddressSet(acdd88, toAddr(0x600cddb3)));
+        }
+
+        Address acddb4 = toAddr(0x600cddb4);
+        Function fcddb4 = fm.getFunctionAt(acddb4);
+        if (fcddb4 != null) {
+            fcddb4.setBody(new AddressSet(acddb4, toAddr(0x600cddc7)));
+        }
+
+        Address acddc8 = toAddr(0x600cddc8);
+        Function fcddc8 = fm.getFunctionAt(acddc8);
+        if (fcddc8 != null) {
+            fcddc8.setBody(new AddressSet(acddc8, toAddr(0x600cdfa0)));
+        }
         
         println("FixSpuriousSplits completed successfully.");
     }

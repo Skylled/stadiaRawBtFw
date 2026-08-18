@@ -1665,6 +1665,28 @@ Following 100% completion of the Broadcom BTA/BTE Bluetooth stack in Session 47,
 | `0x600ccb7c` | 138 | Libm / Math | **`cosf`** — Single-precision IEEE 754 cosine function: compares against threshold `DAT_600ccc08` (`pi/4`), performs argument reduction via `FUN_600ccc10`, and evaluates sine/cosine polynomial kernels. | 2 callers / 3 callees |
 | `0x600cceb0` | 226 | Libm / Math | **`__kernel_cosf`** — Single-precision polynomial cosine kernel: evaluates 6th-order Taylor polynomial with split-precision constants `DAT_600ccf94`..`DAT_600ccfa8` (`fdlibm`/`newlib` implementation). | 2 callers / 0 callees |
 
+## Session 49 (Wave 19) — IEEE 754 Math Kernels, CRT Static Init/Exit & Stdio vsnprintf Core (14 functions, 924 bytes)
+
+Resolved stdio / string formatting cluster boundaries in Ghidra DB via `FixSpuriousSplits.java`, plus decompiled and documented 14 functions (924 bytes across `0x600ccea8`–`0x600cdcc4`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600ccea8` |   6 | Libm / Math | **`sqrtf`** — Single-precision square root: executes Cortex-M hardware `vsqrt.f32` instruction. | 1 caller / 0 callees |
+| `0x600cd604` | 114 | Libm / Math | **`__kernel_sinf`** — Single-precision polynomial sine kernel: evaluates 6th-order polynomial with coefficients `DAT_600cd678`..`DAT_600cd690` (`fdlibm`/`newlib` implementation). | 2 callers / 0 callees |
+| `0x600cd738` |   4 | Libm / Math | **`__fp_dummy_zero`** — Floating-point stub helper returning 0. | 1 caller / 0 callees |
+| `0x600cd9ac` |  14 | Libm / Math | **`fabsf`** — Single-precision absolute value: clears IEEE 754 sign bit via `param_1 & 0x7fffffff`. | 1 caller / 0 callees |
+| `0x600cd9bc` | 126 | Libm / Math | **`floorf`** / **`truncf`** — Single-precision floating-point rounding/truncation: extracts exponent, masks fractional bits, manages FPSCR exception flags. | 1 caller / 0 callees |
+| `0x600cda48` | 186 | Libm / Math | **`scalbnf`** — Single-precision scale floating-point by power of 2 ($x \cdot 2^n$): handles normal, subnormal, overflow, and underflow exponent adjustments. | 1 caller / 1 callee |
+| `0x600cdb18` |  24 | Libm / Math | **`copysignf`** — Single-precision IEEE 754 `copysignf`: copies sign bit of `param_2` to magnitude of `param_1` via `(param_1 & 0x7fffffff) | (param_2 & 0x80000000)`. | 1 caller / 0 callees |
+| `0x600cdb4c` |  40 | CRT / Lifecycle | **`__call_exitprocs`** — Standard C library exit processor: calls registered cleanup hooks and invokes `exit__60051824`. | 1 caller / 1 callee |
+| `0x600cdb74` |  56 | CRT / Lifecycle | **`__libc_init_array`** — Standard C/C++ static constructor array iterator: iterates function pointers in `.init_array` (`DAT_600cdbac`..`DAT_600cdbb0`) and executes global constructors. | 1 caller / 2 callees |
+| `0x600cdbbc` |  20 | CRT / Reent | **`__getreent`** — Retrieves per-thread reentrancy structure errno pointer `*(reent + 0xec)`. | 3 callers / 0 callees |
+| `0x600cdbd8` | 178 | CRT / Reent | **`_reent_cleanup`** — Reentrancy structure resource teardown: walks open stdio FILE streams and flush/close structures (`FUN_600d359a`). | 1 caller / 2 callees |
+| `0x600cdc90` |  16 | C Runtime / Signals | **`raise`** — Standard C library `raise(sig)`: sets `r1 = sig`, `r0 = _impure_ptr`, and delegates to `_raise_r` (`0x601023fa`). | 1 caller / 0 callees |
+| `0x600cdca0` |  36 | C Runtime / Signals | **`_kill_r`** — Reentrant process signal/kill handler: delegates to `FUN_600ce1e8`. | 0 callers / 1 callee |
+| `0x600cdcc4` | 104 | Stdio / Format | **`vsnprintf`** — Standard C library `vsnprintf(buf, size, fmt, ap)`: sets up string output stream (`local_74 = 0x208`, `local_72 = 0xffff`), formats string via `_vfprintf_r` (`FUN_600cddc8`), and null-terminates output buffer. | 28 callers / 1 callee |
+
+
 
 
 
