@@ -1649,6 +1649,24 @@ Decompiled and documented the final 18 functions (1,762 bytes across `0x600c5eac
 | `0x600c6f50` | 142 | BTA / DM BLE | **`bta_dm_ble_build_adv_mask`** — Builds BLE advertising channel bitmask: copies default 10-byte mask from `DAT_600c6fe0`, clears bit positions between `param_2` and `param_3` (channels `< 0x4e`). | 1 caller / 1 callee |
 | `0x600c6fe4` |  94 | BTA / DM BLE | **`bta_dm_ble_check_feature_support`** — Evaluates BLE controller feature support bitmasks at `DAT_600c7044 + 0x817..0x818` (bits 0x08/0x10), checks BTM feature query status via `FUN_600a01a0`, sends vendor feature command via `FUN_600b4bf0`. | 2 callers / 2 callees |
 
+## Session 44 (Wave 14) — BTA System Event Engine, 2D State Machines & Power Management Timers (10 functions, 1,842 bytes)
+
+Decompiled and documented 10 functions (1,842 bytes across `0x60092798`–`0x600971a0`) from the newly expanded Ghidra census, covering BTA system timer/event execution, BTA DM 2D state machine engines, power management connection timers, SDP discovery results, and search initialization:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x60092798` |  60 | BTA / System | **`bta_sys_stop_timer`** — BTA system timer cancel utility: calls timer kill `FUN_6009633c` on timer control block at `param_1`, clears timer ID `*(param_1 + 4) = 0`. | 0 callers / 0 callees |
+| `0x600929f4` | 754 | BTA / System | **`bta_sys_sm_execute`** — BTA system message state machine event dispatcher: processes 7 BTA system events (`0x2a00`..`0x2a06`), managing buffer allocations, states 0..3, timer arms, and callback dispatchers. | 0 callers / 7 callees |
+| `0x600933c4` |  44 | BTA / DM Core | **`bta_dm_sm_direct_dispatch`** — Direct event index dispatcher: validates event index `< 0x35` (53 DM events), invokes state handler from jump table `DAT_600933f0`. | 0 callers / 0 callees |
+| `0x600933f4` | 120 | BTA / DM Core | **`bta_dm_sm_table_execute`** — BTA DM 2D state machine engine: looks up transition matrix for current state `+0x18`, updates next state, and executes up to 2 action routines (terminating on action `0x13`). | 0 callers / 0 callees |
+| `0x60094374` | 324 | BTA / DM PM | **`bta_dm_pm_conn_timer_cback`** — BTA DM power management link timer callback: iterates 3 link records (stride 0x5c) and 3 sub-timer slots (stride 0x18), updates activity counter `+0x179`, zeroes active flag on idle, allocates event buffer via GKI (`0x6006dbac`), and posts event `0x112`. | 0 callers / 3 callees |
+| `0x6009486c` | 214 | BTA / DM SDP | **`bta_dm_sdp_disc_results`** — BTA DM SDP discovery result handler: parses discovered SDP service records (`FUN_600fa2e4`, `FUN_600fa2cc`, `FUN_600fa300`), delivers attributes via `FUN_600eec5a`, frees buffer via GKI (`FUN_6006ddd8`), and resets state pointers. | 0 callers / 6 callees |
+| `0x60095df4` |  74 | BTA / DM Search | **`bta_dm_search_init`** — BTA DM search/inquiry subsystem initializer: zeroes 0x170-byte search control block (`DAT_60095e40`), initializes 1000ms periodic timer via `FUN_600efd62`, sets task ID `+0x115 = FUN_6006e594()`, registers search state handlers via `FUN_6009625c` and `0x600a1368`. | 1 caller / 5 callees |
+| `0x60095e5c` | 126 | BTA / DM Search | **`bta_dm_search_sm_execute`** — BTA DM search state machine engine: looks up transition matrix for search state `+0x116`, updates next state, and executes up to 2 action routines (terminating on action 6). | 0 callers / 0 callees |
+| `0x60096290` |  34 | BTA / DM Search | **`bta_dm_search_set_state_flag`** — Clears search state flag at `DAT_600962b4 + 200 + param_1`. | 4 callers / 0 callees |
+| `0x600971a0` |  92 | BTA / DM Sec | **`bta_dm_sec_set_dev_name_cmpl`** — BTA DM device name update completion callback: on success, updates local name record via `FUN_6006edb4(0, 6, name)` and invokes registered callback `+0x9c` with status 0, or on error with status 1. | 0 callers / 1 callee |
+
+
 
 
 
