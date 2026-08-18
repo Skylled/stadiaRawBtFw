@@ -1835,6 +1835,34 @@ Resolved Session 54 QA finding by adding 3-parameter signature typing to `0x600c
 | `0x600d0e16` |  34 | USB / HID | **`usb_hid_ep_recv_start`** — USB HID endpoint receive start: sets active flag `param_1 + 0x11 = 1` and arms receive endpoint via `FUN_600d1090`. | 0 callers / 1 callee |
 | `0x600d0e38` |  32 | USB / HID | **`usb_hid_ep_send_start`** — USB HID endpoint transmit start: arms transmit endpoint via `FUN_600d109c` and sets active flag `param_1 + 0x12 = 1`. | 0 callers / 1 callee |
 
+## Session 56 (Wave 26) — USB Low-Level Controller IOCTL Engine, Heap Memory Drivers & Event Thunks (20 functions, 950 bytes)
+
+Decompiled and documented 20 functions (950 bytes across `0x600d0e58`–`0x600d15e4`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d0e58` | 110 | USB / HID | **`usb_hid_report_desc_parse`** — USB HID report descriptor parser: validates report descriptor length, initializes input/output report lengths, and configures report structure `param_1 + 3..param_1 + 6`. | 1 caller / 0 callees |
+| `0x600d0ede` |  20 | USB / Controller | **`usb_driver_ioctl_dispatch`** — USB low-level controller IOCTL dispatcher: validates controller context `param_1` and invokes driver IOCTL function pointer `*(param_1 + 8)`. | 9 callers / 0 callees |
+| `0x600d0ef2` |  34 | USB / Controller | **`usb_driver_init`** — USB low-level controller driver initializer: sets initialized flag `param_1 + 0x10 = 1` and dispatches IOCTL opcode 0 via `FUN_600d0ede`. | 2 callers / 2 callees |
+| `0x600d0f14` | 162 | USB / Controller | **`usb_driver_endpoint_open`** — USB controller endpoint open handler: calculates endpoint index `((param_2 >> 7) | (param_2 & 0xf) << 1) * 0xc`, configures packet size / transfer type, and invokes IOCTL opcode 1. | 2 callers / 4 callees |
+| `0x600d0fb6` | 168 | USB / Controller | **`usb_driver_transfer_submit`** — USB controller transfer submit: arms endpoint transfer slot `param_1 + index * 0xc` with buffer descriptor and length `param_3[1]`, then triggers IOCTL opcode 2. | 2 callers / 1 callee |
+| `0x600d105e` |   8 | USB / Controller | **`usb_driver_device_handle_get`** — USB controller device handle getter: returns `*(param_1 + 4)`. | 2 callers / 1 callee |
+| `0x600d1066` |   8 | USB / Controller | **`usb_driver_device_handle_set`** — USB controller device handle setter: stores `*(param_1 + 4) = param_2`. | 2 callers / 1 callee |
+| `0x600d106e` |  34 | USB / Controller | **`usb_driver_deinit`** — USB controller driver deinitializer: invokes IOCTL opcode 0x13 and clears initialization state `param_1 + 0x10 = 0`. | 3 callers / 1 callee |
+| `0x600d1090` |  12 | USB / Controller | **`usb_driver_ep_recv_enable`** — USB controller endpoint receive enable: dispatches IOCTL opcode 0x14 via `FUN_600d0ede`. | 6 callers / 1 callee |
+| `0x600d109c` |   8 | USB / Controller | **`usb_driver_ep_send_enable`** — USB controller endpoint transmit enable: dispatches IOCTL opcode 0x15 via `FUN_600d0ede`. | 5 callers / 1 callee |
+| `0x600d10a4` |  20 | USB / Controller | **`usb_driver_ep_disable`** — USB controller endpoint disable: dispatches IOCTL opcode 0x16 via `FUN_600d0ede`. | 2 callers / 0 callees |
+| `0x600d10b8` |  62 | USB / Controller | **`usb_driver_endpoint_close`** — USB controller endpoint close: zeroes endpoint slot descriptor and dispatches IOCTL opcode 3 via `FUN_600d0ede`. | 5 callers / 1 callee |
+| `0x600d10f6` |  62 | USB / Controller | **`usb_driver_transfer_cancel`** — USB controller transfer cancel: dispatches IOCTL opcode 3 and resets endpoint buffer descriptors. | 5 callers / 1 callee |
+| `0x600d1134` |  34 | USB / Controller | **`usb_driver_ep_stall_set`** — USB controller endpoint STALL setter: dispatches IOCTL opcode 4 via `FUN_600d0ede`. | 4 callers / 1 callee |
+| `0x600d1156` |  34 | USB / Controller | **`usb_driver_ep_stall_clear`** — USB controller endpoint STALL clearer: dispatches IOCTL opcode 5 via `FUN_600d0ede`. | 3 callers / 1 callee |
+| `0x600d1178` |  58 | USB / Controller | **`usb_driver_param_get`** — USB controller parameter query: maps query selector (2..8) to controller property query opcode or reads state byte `*(param_1 + 0xcc/0xce)`. | 5 callers / 1 callee |
+| `0x600d11ba` |  80 | USB / Controller | **`usb_driver_param_set`** — USB controller parameter setter: maps configuration selector (1..14) to controller configuration opcode or writes state byte. | 1 caller / 1 callee |
+| `0x600d15c4` |   4 | Memory / Heap | **`private_heap_free`** (`private_heap__600835ac`) — Private heap memory block free thunk: deallocates dynamic memory block and coalesces adjacent heap chunks. | 6 callers / 0 callees |
+| `0x600d15c8` |  28 | Memory / Heap | **`private_heap_calloc`** — Private heap zeroed allocation helper: allocates memory via `thunk_EXT_FUN_00007f58` and zeroes `param_1` bytes. | 6 callers / 1 callee |
+| `0x600d15e4` |   4 | USB / Host | **`usb_host_event_notify_thunk`** (`thunk_EXT_FUN_000080d8`) — USB host/peripheral event notification thunk: indirect jump via function pointer `DAT_6013d184`. | 11 callers / 0 callees |
+
+
 
 
 
