@@ -1754,6 +1754,34 @@ Resolved Session 50 `GHIDRA-TODO` items via `FixSignatures.java` (re-decompiling
 | `0x600cedc2` |  22 | Hardware / Timer | **`hardware_timer_state_init`** — Hardware timer channel state initializer: sets timer enable bytes (`*param_1 = 1, *(param_1+4) = 1, param_1[9]=1, param_1[10]=1, param_1[13]=1`). Called from `hardware_timer__60061a98`. | 1 caller / 0 callees |
 | `0x600cee6e` |  66 | Hardware / Timer | **`hardware_timer_clock_config`** — Hardware timer clock source and prescaler configurator: parses clock selection bits (`param_2 & 0x3c00`), maps clock divisor codes (`0x386`, `0x387`, `0x389`, `0x38a`), configures control register `*(param_1 + 0x10) |= 0x300`. Called from `FUN_600ceeb0`. | 1 caller / 0 callees |
 
+## Session 53 (Wave 23) — I2C Master Engine, BLE GATT Stream Transport, Audio Curve & DMA Ring Primitives (20 functions, 1,298 bytes)
+
+Resolved Session 50/52 `GHIDRA-TODO` item via `FixTailCalls.java` (`setFlowOverride(FlowOverride.CALL_RETURN)` on tail branches `0x600cdc96`, `0x60102428`, `0x6010244a`, `0x600cddbe`), cleanly decoupling `raise` (`0x600cdc90`) and `_raise_r` (`0x601023fa`), resolved boundary overlap at `0x600cf63e` (trimmed from 86B to 32B in `FixSpuriousSplits.java`), plus decompiled and documented 20 functions (1,298 bytes across `0x600cefde`–`0x600cf63e`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600cefde` |  20 | Hardware / I2C | **`i2c_bus_busy_check`** — I2C bus busy probe: checks state bits `*(param_1 + 0x14) & 0x3000000 == 0x2000000`, returning error `900` if busy, else `0`. Called from `FUN_600cf0ca`. | 1 caller / 0 callees |
+| `0x600ceff2` | 216 | Hardware / I2C | **`i2c_clock_divisor_calc`** — I2C baud rate & clock prescaler calculator: iterates clock prescaler (1..32) and power-of-2 divisors (up to 128) to compute optimal clock divider for target baud rate `param_3`. | 1 caller / 0 callees |
+| `0x600cf0ca` | 232 | Hardware / I2C | **`i2c_transfer_submit`** — I2C master transaction submitter: verifies bus state via `FUN_600cefde`, formats 16-bit packet control words (`*(param_2 + 8) = ... | 0x400`), configures mode flags, and arms peripheral registers. | 0 callers / 1 callee |
+| `0x600cf1b2` |  52 | Hardware / I2C | **`i2c_rx_buffer_fill`** — I2C receive FIFO drain: copies `param_3` bytes into buffer `param_2` from FIFO register `param_1 + 0x1c`, applying 7-bit mask `& 0x7f` if parity/framing flag set. | 0 callers / 0 callees |
+| `0x600cf1e6` |  26 | Utility / Buffer | **`ring_buffer_avail_bytes`** — Ring buffer available byte query: calculates byte capacity `uVar2 - uVar1` between read index `param_2 + 0x20` and write index `param_2 + 0x22`. Called from `FUN_600cf2be`. | 1 caller / 0 callees |
+| `0x600cf200` |  36 | BLE / GATT Stream | **`gatt_channel_ctx_init`** — GATT stream channel context initializer: sets default baud/timeout constant `0x1c200` and zeroes 18-byte context structure. Called from `FUN_6006e854` and `FUN_600ce780`. | 2 callers / 0 callees |
+| `0x600cf224` |  16 | Hardware / Serial | **`uart_status_flags_get`** — Serial peripheral status query: combines status word `*(param_1 + 0x28) >> 16 & 0xc3` with control word `*(param_1 + 0x14)`. Called from `FUN_60053b50`. | 1 caller / 0 callees |
+| `0x600cf234` |  18 | BLE / GATT Stream | **`gatt_rx_stream_start`** — GATT stream receive starter: sets buffer pointer `param_3`, length `param_4`, clears indices, and signals event `0x8200000` via `FUN_60053864`. Called from `FUN_6006e854`. | 1 caller / 1 callee |
+| `0x600cf246` |  32 | BLE / GATT Stream | **`gatt_rx_stream_stop`** — GATT stream receive terminator: clears stream pointers/indices and clears event `0x8200000` via `FUN_600538b4`. Called from `FUN_6006e9b0` and `FUN_6006eb00`. | 2 callers / 1 callee |
+| `0x600cf266` |  44 | BLE / GATT Stream | **`gatt_tx_req_dispatch`** — GATT transmit request dispatcher: checks active tx state (`param_2[0xb] == 1`), copies buffer descriptors, sets active state `1`, and signals event `0x800000` via `FUN_60053864`. Called from `FUN_6006ea44` and `FUN_600ce744`. | 2 callers / 1 callee |
+| `0x600cf292` |  22 | BLE / GATT Stream | **`gatt_tx_abort`** — GATT transmit abort handler: clears event `0xc00000` via `FUN_600538b4`, zeroes length and state flag `param_2 + 0x2c`. Called from `FUN_6006ea44` and `FUN_600ce780`. | 2 callers / 1 callee |
+| `0x600cf2a8` |  22 | BLE / GATT Stream | **`gatt_tx_remaining_get`** — GATT transmit remaining bytes query: returns `param_2[8] - param_2[4]` if active, else returns error `6`. | 0 callers / 0 callees |
+| `0x600cf2be` | 208 | BLE / GATT Stream | **`gatt_rx_data_read`** — GATT receive buffer drain & callback processor: reads incoming bytes from ring buffer `param_2 + 0x18`, copies into target buffer `*param_3`, advances ring index `param_2 + 0x22`, and invokes completion callback `*(param_2 + 0x24)`. Called from `FUN_6006eb00` and `FUN_600ce708`. | 2 callers / 3 callees |
+| `0x600cf38e` |  28 | BLE / GATT Stream | **`gatt_rx_abort`** — GATT receive abort handler: clears event `0x8300000` via `FUN_600538b4`, zeroes remaining length and sets state byte `param_2 + 0x2d = 2`. Called from `FUN_6006eb00` and `FUN_600ce780`. | 2 callers / 1 callee |
+| `0x600cf3aa` |  24 | BLE / GATT Stream | **`gatt_rx_remaining_get`** — GATT receive remaining bytes query: returns `param_2[0x14] - param_2[0x10]` if active, else returns error `6`. | 0 callers / 0 callees |
+| `0x600cf3c2` |  28 | BLE / Link Layer | **`ble_channel_map_clear`** — BLE channel map initializer: zeroes 12-byte channel configuration structure. Called from `FUN_600d4a7e`. | 1 caller / 0 callees |
+| `0x600cf548` | 210 | Audio / Haptic | **`audio_gain_curve_calc`** — Audio / haptic gain envelope calculator: computes 16-bit gain curve envelopes and duty cycles scaled by percentage `param_5` (`0..100%`) across 4 shaping modes (`0..3`), writing results into `param_1 + param_2 * 0x60 + 0x12..0x1e`. Called from `FUN_600d4c3a` and `FUN_600d4cae`. | 2 callers / 0 callees |
+| `0x600cf61e` |  16 | Hardware / DMA | **`dma_ring_buffer_init_mode0`** — DMA ring buffer mode 0 descriptor initializer: sets mode byte `param_1[3]=1`, zeroes fields `0,1,2,4`. Called from `FUN_60060594`. | 1 caller / 0 callees |
+| `0x600cf62e` |  16 | Hardware / DMA | **`dma_ring_buffer_init_mode1`** — DMA ring buffer mode 1 descriptor initializer: sets mode bytes `param_1[1]=1, param_1[3]=1`, zeroes fields `0,2,4`. Called from `FUN_60060668`. | 1 caller / 0 callees |
+| `0x600cf63e` |  32 | Hardware / DMA | **`dma_channel_priority_config`** — DMA channel priority & control register configurator: sets bit 31 (`0x80000000`) and channel priority mask `0x40000` in control registers `*(param_1 + 8)` and `*(param_1 + 0x88)`. Called from `FUN_600cf8de` and `FUN_600cfa22`. | 2 callers / 0 callees |
+
+
 
 
 

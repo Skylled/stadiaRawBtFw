@@ -2,13 +2,14 @@
 // --- callers ---
 //   601023fa FUN_601023fa
 // --- callees ---
+//   600ce1d8 FUN_600ce1d8
 
 
-undefined4 thunk_FUN_600ce1d8(void)
+void thunk_FUN_600ce1d8(void)
 
 {
-  *DAT_600ce1e4 = 0x58;
-  return 0xffffffff;
+  FUN_600ce1d8();
+  return;
 }
 
 

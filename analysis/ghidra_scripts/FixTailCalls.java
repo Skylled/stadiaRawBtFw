@@ -1,0 +1,26 @@
+
+import ghidra.app.script.GhidraScript;
+import ghidra.program.model.address.Address;
+import ghidra.program.model.listing.Instruction;
+import ghidra.program.model.listing.FlowOverride;
+
+public class FixTailCalls extends GhidraScript {
+    @Override
+    public void run() throws Exception {
+        Address[] branchAddrs = new Address[] {
+            toAddr(0x600cdc96),
+            toAddr(0x60102428),
+            toAddr(0x6010244a),
+            toAddr(0x600cddbe)
+        };
+        for (Address a : branchAddrs) {
+            Instruction ins = getInstructionAt(a);
+            if (ins != null) {
+                ins.setFlowOverride(FlowOverride.CALL_RETURN);
+                println("Set CALL_RETURN flow override at " + a + " (" + ins + ")");
+            } else {
+                println("No instruction at " + a);
+            }
+        }
+    }
+}
