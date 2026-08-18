@@ -1916,6 +1916,36 @@ Decompiled and documented 20 functions (1,412 bytes across `0x600d1bdc`–`0x600
 | `0x600d206c` | 212 | USB / Host HID | **`usb_host_hid_interrupt_pipe_open`** — USB Host HID interrupt transfer pipe open: searches endpoint descriptors for interrupt endpoint (`type 3`), allocates pipe via `FUN_600d3244` with 3000ms timeout, stores handle in `param_1 + 0x14`, and notifies client. Called from `FUN_600563b8`. | 1 caller / 4 callees |
 | `0x600d2140` |  76 | USB / Host HID | **`usb_host_hid_device_close`** — USB Host HID device close: aborts pending interrupt pipes via `FUN_600d332a` / `FUN_600d3256`, unbinds interfaces via `FUN_600569e4`, and notifies host stack via `thunk_EXT_FUN_000080d8`. Called from `FUN_600563b8`. | 1 caller / 4 callees |
 
+## Session 59 (Wave 29) — USB Host Hub Class Pipeline, Device Lifecycle & Controller Pipe Engine (21 functions, 1,596 bytes)
+
+Decompiled and documented 21 functions (1,596 bytes across `0x600d218c`–`0x600d2a3c`, including 20 newly decompiled functions):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d218c` |  30 | USB / Host Hub | **`usb_host_hub_get_hub_desc_req`** — USB Host Hub Class GET_HUB_DESCRIPTOR request: sends standard hub class request `0xa0` with opcode 6 via `FUN_60055ed0`. | 0 callers / 1 callee |
+| `0x600d21aa` |  30 | USB / Host Hub | **`usb_host_hub_clear_hub_feature_req`** — USB Host Hub Class CLEAR_HUB_FEATURE request: sends hub feature clear request `0x20` with opcode 1 via `FUN_60055ed0`. | 0 callers / 1 callee |
+| `0x600d21c8` |  30 | USB / Host Hub | **`usb_host_hub_get_hub_status_req`** — USB Host Hub Class GET_HUB_STATUS request: sends hub status query request `0xa0` with opcode 0 via `FUN_60055ed0`. | 0 callers / 1 callee |
+| `0x600d21e6` |  32 | USB / Host Hub | **`usb_host_hub_set_port_feature_req`** — USB Host Hub Class SET_PORT_FEATURE request: sends port feature set request `0x23` with opcode 3 via `FUN_60055ed0`. Called from `FUN_60055fbc`. | 1 caller / 1 callee |
+| `0x600d2206` |  32 | USB / Host Hub | **`usb_host_hub_clear_port_feature_req`** — USB Host Hub Class CLEAR_PORT_FEATURE request: sends port feature clear request `0x23` with opcode 1 via `FUN_60055ed0`. Called from `FUN_60055fbc`. | 1 caller / 1 callee |
+| `0x600d2226` |  32 | USB / Host Hub | **`usb_host_hub_get_port_status_req`** — USB Host Hub Class GET_PORT_STATUS request: sends port status query request `0xa3` with opcode 0 via `FUN_60055ed0`. Called from `FUN_60055fbc`. | 1 caller / 1 callee |
+| `0x600d2246` |  48 | USB / Host Device | **`usb_host_device_list_remove`** — USB Host device list remover: unlinks device context `param_2` from host device linked list `*(param_1 + 0x2d4)`. Called from `FUN_600569e4` and `FUN_600d265a`. | 2 callers / 0 callees |
+| `0x600d2298` |  48 | USB / Host Device | **`usb_host_device_bitmask_clear`** — USB Host device bitmask clearer: clears bit `param_2 - 1` in device active bitfield `*(param_1 + 0x2d8)` within critical section. Called from `FUN_600d25f4`. | 1 caller / 2 callees |
+| `0x600d22c8` | 134 | USB / Host Device | **`usb_host_device_init_dispatch`** — USB Host device initialization dispatcher: iterates device interface descriptors looking for class handlers (e.g. Hub class `9`), invokes interface initialization callbacks `*(iVar7 + 4)` / `FUN_600563b8`. | 3 callers / 1 callee |
+| `0x600d25f4` | 136 | USB / Host Device | **`usb_host_device_cleanup`** — USB Host device cleanup & teardown: cancels endpoint pipes via `FUN_600d332a` / `FUN_600d3256`, frees descriptor buffers `private_heap__600835ac`, and notifies host stack via `thunk_EXT_FUN_000080d8`. | 2 callers / 5 callees |
+| `0x600d265a` |  74 | USB / Host Device | **`usb_host_device_detach`** — USB Host device detach handler: resets state byte `param_2 + 0x43e = 0`, cancels pending transfers, unlinks from device list via `FUN_600d2246`, and invokes `FUN_600d25f4`. | 4 callers / 4 callees |
+| `0x600d26a4` |  70 | USB / Host Device | **`usb_host_device_detach_by_id`** — USB Host device detach by address/port ID: searches host device list `*(param_1 + 0x2d4)` for device matching ID `param_2`/`param_3` and invokes `FUN_600d265a`. | 0 callers / 3 callees |
+| `0x600d26ea` |  28 | USB / Host Device | **`usb_host_device_list_find`** — USB Host device finder: searches host device list `*(param_1 + 0x2d4)` to verify if device pointer `param_2` is valid and active. | 3 callers / 0 callees |
+| `0x600d2706` |  26 | USB / Host Controller | **`usb_host_controller_tx_wait`** — USB Host controller FIFO transfer wait: polls hardware transmit FIFO index until required byte count `param_2 << 3` is satisfied. Called from `FUN_60057c78`. | 1 caller / 0 callees |
+| `0x600d2720` |  66 | USB / Host Controller | **`usb_host_controller_async_advance`** — USB Host controller asynchronous schedule advance: waits for schedule handshake bits `0x8000` / `0x20` in register `*(iVar2 + 0x144)`, updates head pointer `*(iVar2 + 0x158) = *(param_1 + 0x2c)`, and asserts `0x20`. | 3 callers / 0 callees |
+| `0x600d2762` |  82 | USB / Host Controller | **`usb_host_pipe_transfer_enqueue`** — USB Host pipe transfer enqueue: sums transfer buffer lengths in descriptor chain `param_2`..`param_3`, enqueues descriptor to pipe queue `*(param_1 + 0x10)` / `*(param_1 + 0x14)`, and increments pending transfer count `param_1 + 0x49`. | 3 callers / 2 callees |
+| `0x600d27b4` | 260 | USB / Host Controller | **`usb_host_pipe_config_hw`** — USB Host pipe hardware descriptor configurator: initializes 16-dword (64-byte) hardware pipe descriptor `puVar5`, queries endpoint parameters via `FUN_600d33b2`, and packs endpoint address, speed, max packet size, and bandwidth allocation fields. Called from `FUN_60056fa4`. | 1 caller / 3 callees |
+| `0x600d28b8` | 206 | USB / Host Controller | **`usb_host_pipe_bandwidth_allocate`** — USB Host periodic pipe bandwidth allocator: calculates frame transaction duration via `FUN_60056a9c`, searches periodic schedule frame list `*(param_1 + 0x38)` to find available microframe slot with <900us total allocated bandwidth. Called from `FUN_60056fa4`. | 1 caller / 2 callees |
+| `0x600d2986` |  50 | USB / Host Controller | **`usb_host_controller_async_stop`** — USB Host controller asynchronous schedule stop: synchronizes handshake bits and clears schedule enable bit `0x20` in register `*(param_1 + 0x140)`. | 3 callers / 0 callees |
+| `0x600d29b8` | 132 | USB / Host Controller | **`usb_host_pipe_transfer_abort`** — USB Host pipe transfer abort & completion callback: pauses asynchronous schedule if active, unlinks queued transfer descriptors `puVar4`, and invokes transfer completion callback `*(puVar4[4])(puVar4[5], puVar4, 0xe)`. | 2 callers / 5 callees |
+| `0x600d2a3c` |  50 | USB / Host Controller | **`usb_host_controller_periodic_stop`** — USB Host controller periodic schedule stop: synchronizes handshake bits `0x4000` / `0x10` and clears periodic schedule enable bit `0x10` in register `*(param_1 + 0x140)`. | 0 callers / 0 callees |
+
+
+
 
 
 

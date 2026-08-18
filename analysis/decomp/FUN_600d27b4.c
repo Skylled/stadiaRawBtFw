@@ -3,8 +3,8 @@
 //   60056fa4 FUN_60056fa4
 // --- callees ---
 //   600d16ae FUN_600d16ae
-//   600d33b2 FUN_600d33b2
 //   600d1692 FUN_600d1692
+//   600d33b2 FUN_600d33b2
 
 
 undefined4 FUN_600d27b4(int param_1,uint param_2)
