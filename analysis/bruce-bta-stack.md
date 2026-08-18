@@ -1624,6 +1624,32 @@ Decompiled and documented 15 functions (1,544 bytes across `0x600c4758`–`0x600
 | `0x600c5cd8` |  96 | BTA / DM BLE | **`bta_dm_ble_sec_key_cmpl`** — BLE security key exchange completion handler: computes key record address from index difference `+0x142 - +0x148` (stride 0x14), delegates to `FUN_60094690`. | 3 callers / 1 callee |
 | `0x600c5d3c` | 106 | BTA / DM BLE | **`bta_dm_ble_send_auth_req`** — BLE authentication request dispatcher: copies BD_ADDR, local name via `0x600c54ec`, 20-byte auth payload, invokes DM callback with event 3. | 1 caller / 4 callees |
 
+## Session 43 (Wave 13) — Final 18 Functions: BTA DM BLE Security Authentication, GATT Client APIs & Feature Support (18 functions, 1,762 bytes) — 🎉 100% BTA BLOCK COMPLETE
+
+Decompiled and documented the final 18 functions (1,762 bytes across `0x600c5eac`–`0x600c6fe4`), concluding the complete reverse-engineering and decompilation of the entire 1,076-function Broadcom BTA/BTE Bluetooth stack:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600c5eac` |  62 | BTA / DM BLE | **`bta_dm_ble_reset_rand_addr`** — Releases PM connection record via `0x60094650`, clears cached 6-byte address, resets connection handle `+0x14a = 0xffff`. | 0 callers / 2 callees |
+| `0x600c5ef4` |  98 | BTA / DM BLE | **`bta_dm_ble_sec_start_auth`** — Initiates BLE security authentication: checks BD_ADDR matching `DAT_600c5f5c` (`FUN_600efcfe`), cancels timer `0x6009633c`, invokes key completion `0x600c5cd8`, or initiates connection via `0x60094590`. | 1 caller / 5 callees |
+| `0x600c5f64` |  60 | BTA / DM BLE | **`bta_dm_ble_sec_cancel_auth`** — Cancels pending BLE authentication: cancels connection request via `0x600945f8`, notifies status `0x85` via `0x600c5db0`. | 2 callers / 2 callees |
+| `0x600c5fa4` |  70 | BTA / DM BLE | **`bta_dm_ble_sec_auth_status`** — Handles BLE authentication status event: stores handle `+0x14a`, calls key completion `0x600c5cd8` on success, or dispatches error via `0x600c5db0`. | 1 caller / 2 callees |
+| `0x600c60cc` |  42 | BTA / DM GATT | **`bta_dm_gatt_client_init`** — Initializes BTA DM GATT client subsystem: zeroes 0x5c8 bytes of client control block (`DAT_600c60f8`), marks initialized state `*param_1 = 2`. | 1 caller / 1 callee |
+| `0x600c6318` | 100 | BTA / DM GATT | **`bta_dm_gatt_set_app_state`** — Scans 6 connection records (stride 0x20 at `+0x490`) matching connection handle `param_1`, updates application state `+0x4ad = param_2`, triggers BTA DM event `0x1d0f` via `FUN_60094d24`. | 5 callers / 1 callee |
+| `0x600c6380` |  92 | BTA / DM GATT | **`bta_dm_gatt_reset_app_state`** — Scans 6 connection records matching connection handle `param_1`, resets application state `+0x4ad = 0`, sets connection state `+0x4ac = 3`. | 2 callers / 0 callees |
+| `0x600c65b0` | 158 | BTA / DM GATT | **`bta_dm_gatt_close_conn`** — Closes GATT connection: zeroes 0x2b0-byte event structure, cancels GATT connection via `FUN_600ab9b8`, zeroes 0x10c-byte CCB struct, invokes client callback `*param_1` with event 1, updates PM state via `FUN_60094fac`. | 2 callers / 3 callees |
+| `0x600c69dc` |  92 | BTA / DM GATT | **`bta_dm_gatt_srv_chg_listen`** — Iterates 10 Service Changed listener slots (stride 7 bytes); for active records matching UUID via `FUN_60094ffc`, triggers service changed registration via `FUN_600fed9e`. | 1 caller / 2 callees |
+| `0x600c6a3c` | 112 | BTA / DM GATT | **`bta_dm_gatt_register_all`** — Initializes GATT registrations: zeroes 0x25c bytes, iterates registered GATT services via `thunk_FUN_6006d1ac`, registers each via `GATT_Register` (`0x600ab088`), deregisters default entry via `GATT_Deregister` (`0x600ab0d4`). | 1 caller / 4 callees |
+| `0x600c6cb0` | 110 | BTA / GATTC | **`bta_gattc_read_char_val`** — Initiates GATT characteristic value read via `FUN_600f3540`, formats result structure, invokes client callback with event 8. | 0 callers / 1 callee |
+| `0x600c6d24` | 122 | BTA / GATTC | **`bta_gattc_read_char_descr`** — Initiates characteristic descriptor read via `FUN_600f35ae`, formats result structure, invokes client callback with event 9. | 0 callers / 1 callee |
+| `0x600c6da4` | 118 | BTA / GATTC | **`bta_gattc_read_multiple`** — Initiates read multiple characteristics via `FUN_600f3620`, formats result structure, invokes client callback with event 10. | 0 callers / 1 callee |
+| `0x600c6e20` | 110 | BTA / GATTC | **`bta_gattc_write_char_val`** — Initiates characteristic value write via `FUN_600ab318`, zeroes 0x1c-byte buffer on success, invokes client callback with event 11 (`0xb`). | 0 callers / 2 callees |
+| `0x600c6e94` | 100 | BTA / GATTC | **`bta_gattc_write_char_descr`** — Initiates characteristic descriptor write via `FUN_600ab424`, invokes client callback with event 12 (`0xc`). | 0 callers / 1 callee |
+| `0x600c6efc` |  80 | BTA / GATTC | **`bta_gattc_close_conn`** — Closes GATT connection via `GATT_Disconnect` (`0x600ab564`, session 37), invokes client callback with event 13 (`0xd`). | 0 callers / 1 callee |
+| `0x600c6f50` | 142 | BTA / DM BLE | **`bta_dm_ble_build_adv_mask`** — Builds BLE advertising channel bitmask: copies default 10-byte mask from `DAT_600c6fe0`, clears bit positions between `param_2` and `param_3` (channels `< 0x4e`). | 1 caller / 1 callee |
+| `0x600c6fe4` |  94 | BTA / DM BLE | **`bta_dm_ble_check_feature_support`** — Evaluates BLE controller feature support bitmasks at `DAT_600c7044 + 0x817..0x818` (bits 0x08/0x10), checks BTM feature query status via `FUN_600a01a0`, sends vendor feature command via `FUN_600b4bf0`. | 2 callers / 2 callees |
+
+
 
 
 
