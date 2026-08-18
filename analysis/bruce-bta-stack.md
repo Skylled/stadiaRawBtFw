@@ -1672,6 +1672,24 @@ Decompiled and documented 10 functions (1,842 bytes across `0x60092798`–`0x600
 | `0x60096290` |  34 | BTA / DM Search | **`bta_dm_search_set_state_flag`** — Clears search state flag at `DAT_600962b4 + 200 + param_1`. | 4 callers / 0 callees |
 | `0x600971a0` |  92 | BTA / DM Sec | **`bta_dm_sec_set_dev_name_cmpl`** — BTA DM device name update completion callback: on success, updates local name record via `FUN_6006edb4(0, 6, name)` and invokes registered callback `+0x9c` with status 0, or on error with status 1. | 0 callers / 1 callee |
 
+## Session 45 (Wave 15) — Spurious Splits Resolution & BTM Security, BTU Task and GATT Server Subsystems (10 functions, 2,054 bytes)
+
+Resolved 3 GHIDRA-TODO spurious function splits in the Ghidra database (`0x600a7870`/`0x600a7896` restored to single 714B function, `0x600b5540`/`0x600b56aa` merged into 364B function, `0x600b6378`/`0x600b643a` merged into 260B function; removed spurious `FUN_600b56aa.c` and `FUN_600b643a.c`), plus decompiled and documented 10 functions (2,054 bytes across `0x6009b5b4`–`0x600ad8b0`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x6009b5b4` | 396 | BTM / Security | **`btm_sec_auth_event`** — BTM security authentication event handler: looks up device security record via `FUN_6009ff18(param_2)`, evaluates pairing opcode `param_1` (cases 1..12), manages pairing bitmasks `+0x2a` (`0x200`) and `+0x50`, copies BD_ADDR, and dispatches authentication callbacks `+0x1138`/`+0x1130`. | 0 callers / 8 callees |
+| `0x6009e9e4` | 154 | BTM / BLE | **`btm_ble_timer_event`** — BTM BLE timer event dispatcher: handles timer event types `0x2f`, `0x30`, `0x33`, `0x37`, `0x38`, clearing timer flags `+0xb10`, dispatching privacy updates via `FUN_6009d9d4` / `FUN_6009e8fc`, or forwarding BLE events to registered callback `+0xd4`. | 1 caller / 6 callees |
+| `0x600a1368` |  38 | BTM / Security | **`btm_sec_set_search_cback`** — Stores search state callback pointer at `DAT_600a1390 + 0x6f0` and returns previous callback pointer. | 1 caller / 0 callees |
+| `0x600a76cc` | 378 | BTM / Security | **`btm_sec_pairing_timeout`** — BTM security pairing state timeout handler: checks security state byte `+0x118c` (states 2..10), cancels ongoing pairing via `FUN_600b45b4` / `FUN_600b4714` / `FUN_600a8108(0)`, and fires error notification `8` to registered security callback `+0x1128`. | 0 callers / 7 callees |
+| `0x600a9c4c` | 444 | BTU / Core | **`btu_hcif_process_event`** — BTU HCI event packet processing dispatcher: dequeues HCI event buffer from queue `+0xc` via `FUN_600d9250`, reads 16-bit HCI event opcode, parses HCI event types (`0x801`, `0x401`, `0x405`, `0x411`, `0x413`, `0x415`, `0x419`, `0x41c`, `0xc3f`, `0x140c`, `0x2014`), delegates to event handlers `FUN_600f2532` / `FUN_600a96d8`, and frees GKI buffer via `FUN_6006ddd8`. | 1 caller / 9 callees |
+| `0x600a9f04` |  10 | BTU / Core | **`btu_task_entry`** — BTU task entry wrapper: initiates main event loop of Bluetooth Upper Layer task (`BTU_Task` / `0x600a9fce`). | 0 callers / 0 callees |
+| `0x600aa744` |  86 | GATT / Server | **`gatt_find_reg_record_by_app_uuid`** — Scans 6 GATT registration control block slots (stride 0x20 at `DAT_600aa79c`) for matching active registration entries with UUID `param_1` (`+0xc`). | 1 caller / 0 callees |
+| `0x600abf08` | 254 | GATT / Server | **`gatt_sr_init_service_records`** — GATT server service record initializer: initializes 16-byte GATT service UUID buffer `0x1801` (Generic Attribute Profile) and `0x2a05` (Service Changed characteristic), registers with GATT database via `FUN_600ab8d4`, `FUN_600abb14`, `FUN_600ab110`, `FUN_600f35ae`, and `FUN_600f3620`. | 1 caller / 7 callees |
+| `0x600ad610` | 224 | GATT / Core | **`gatt_init_subsystem`** — GATT core subsystem initializer: zeroes 0x15b4-byte GATT control block (`DAT_600ad6f0`), configures default MTU parameters (2000, 12000), registers L2CAP fixed CID handlers (`0x1f`) via `FUN_600b507c`, `FUN_600f75c0`, `FUN_600f1996`, and invokes `gatt_sr_init_service_records` (`0x600abf08`). | 1 caller / 6 callees |
+| `0x600ad8b0` |  70 | GATT / Server | **`gatt_sr_enqueue_cmd`** — GATT server command buffer enqueue handler: validates CCB at `param_1` via `FUN_600afea0` (session 41), checks connection state via `FUN_600f6132`, enqueues command via `FUN_600ad9d8`, or frees GKI buffer via `FUN_6006ddd8`. | 0 callers / 4 callees |
+
+
 
 
 
