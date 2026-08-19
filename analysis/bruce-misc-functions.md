@@ -2621,6 +2621,34 @@ Decompiled and documented 20 functions (936 bytes across `0x600df286`–`0x600df
 | `0x600df810` | 104 | Protobuf / Serialize | **`protobuf_serialize_message_fields`** — Protobuf message serializer: iterates through field descriptor table (`FUN_600dfadc`/`FUN_600dfb00`), evaluates field presence, encodes primitive fields via `FUN_60081ea4` or invokes custom serializer callback. | 4 callers / 3 callees |
 | `0x600df878` |  40 | Protobuf / Serialize | **`protobuf_message_compute_size`** — Protobuf message size computer: initializes 20-byte stack context `auStack_24`, executes field serializer `FUN_600df810`, returns total serialized byte size in `*param_1`. | 1 caller / 2 callees |
 
+## Session 85 (Wave 55) — Protobuf Deserializer, Gotham Channel Registration & Remote Device DB (20 functions, 1,030 bytes)
+
+Decompiled and documented 20 functions (1,030 bytes across `0x600df8a0`–`0x600dfd24`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600df8a0` |  32 | Protobuf / Varint | **`protobuf_encode_varint32_and_flush`** — Protobuf varint32 encoder & stream writer: encodes integer as varint via `protobuf_encode_varint64` (`FUN_600df70c`), flushes buffer via `FUN_60081d50`. | 0 callers / 2 callees |
+| `0x600df8fa` |  30 | Protobuf / Buffer | **`protobuf_buffer_copy_bytes`** — Protobuf buffer byte copier: advances destination pointer `*(param_1 + 4)` by `param_3`, copies `param_3` bytes from source buffer. | 0 callers / 0 callees |
+| `0x600df918` | 170 | Protobuf / Init | **`protobuf_field_clear_default`** — Protobuf field default initializer: resets field to default based on type descriptor flags (`*(param_1 + 4)`), clearing sub-messages via `protobuf_message_init_defaults` (`FUN_600df9c2`) or zeroing buffers via `memset_zero`. | 2 callers / 5 callees |
+| `0x600df9c2` |  34 | Protobuf / Init | **`protobuf_message_init_defaults`** — Protobuf message initializer: walks message field descriptor table (`FUN_600dfadc`/`FUN_600dfb00`), resetting each field to default values via `protobuf_field_clear_default` (`FUN_600df918`). | 3 callers / 3 callees |
+| `0x600df9e4` |   6 | Protobuf / Decode | **`protobuf_decode_varint32_wrapper`** — Protobuf varint32 decode wrapper: invokes `FUN_600821d8` with flag 0. | 2 callers / 1 callee |
+| `0x600df9ea` |  52 | Protobuf / Tag | **`protobuf_decode_tag_and_wire_type`** — Protobuf tag and wire type decoder: reads varint tag via `FUN_600821d8`, decomposes into field number `*param_3 = tag >> 3` and wire type `*param_2 = tag & 7`. | 1 caller / 1 callee |
+| `0x600dfa1e` |  36 | Protobuf / Stream | **`protobuf_stream_seek_and_sync`** — Protobuf stream seek & sync: seeks stream via `FUN_60082270`, updates stream offsets `param_1 + 4` and `param_1 + 0xc`. | 2 callers / 1 callee |
+| `0x600dfa42` |  30 | Protobuf / Parse | **`protobuf_message_parse_from_stream`** — Protobuf message stream parser: resets message fields (`protobuf_message_init_defaults`), parses protobuf wire stream via `FUN_60082814`. | 3 callers / 2 callees |
+| `0x600dfa60` |  62 | Protobuf / ZigZag | **`protobuf_decode_sint64_zigzag`** — Protobuf 64-bit zigzag decoder: reads 64-bit varint via `FUN_60082410`, decodes zigzag encoding `(n >> 1) ^ -(n & 1)` to signed 64-bit integer into `*param_2`. | 0 callers / 1 callee |
+| `0x600dfadc` |  36 | Protobuf / Iterator | **`protobuf_field_iterator_init`** — Protobuf field descriptor iterator initializer: initializes iterator struct `param_1[0..5]` with descriptor table `param_2` and base struct `param_3`. | 6 callers / 0 callees |
+| `0x600dfb00` | 126 | Protobuf / Iterator | **`protobuf_field_iterator_next`** — Protobuf field descriptor iterator step: advances iterator `param_1[1]` to next field in descriptor table, computes field offsets `param_1[4..5]`. | 5 callers / 1 callee |
+| `0x600dfb7e` |  46 | Protobuf / Lookup | **`protobuf_field_descriptor_lookup_by_tag`** — Protobuf field descriptor lookup by tag: iterates through descriptor table (`protobuf_field_iterator_next`) until finding field matching tag `param_2`. | 1 caller / 1 callee |
+| `0x600dfbac` | 102 | Gotham / Channel | **`device_info_channel_alloc_and_register`** — Gotham channel descriptor allocator & registrar: allocates 28-byte channel descriptor (`0x1c`) via `pvPortMalloc` (`thunk_EXT_FUN_0000b532`), configures descriptor via `FUN_60061964`, registers to Gotham dispatcher via `gotham__60067d14`. Called by `device_info__6005a1b0`. | 1 caller / 5 callees |
+| `0x600dfc22` |  14 | Memory / Zero | **`device_info_state_zero_16b`** — 16-byte state buffer zeroer: zeroes 16 bytes (`0x10`) at `param_1` via `memset_zero` (`thunk_EXT_FUN_0000b52e`). | 0 callers / 1 callee |
+| `0x600dfc30` |  38 | RemoteDB / Sync | **`remote_device_db_sync_record`** — Remote device DB record synchronizer: computes scaled offset `param_1[4] * 0x9d`, invokes DB record sync `FUN_600cc29c`. Called by `remote_device_db__60083080` and `remote_device_db__6006c340`. | 2 callers / 1 callee |
+| `0x600dfc68` |  22 | RemoteDB / Sector | **`remote_device_db_flush_sector`** — Remote device DB sector flusher: calls `FUN_60101c60(*param_1, 0x810, 0x10)`. Called by `remote_device_db__6008318c` and `remote_device_db__6006c340`. | 2 callers / 1 callee |
+| `0x600dfc7e` |  34 | RemoteDB / Dump | **`remote_device_db_format_dump_entry`** — Remote device DB entry formatter: formats entry text via `FUN_60050c18` and appends to output buffer via `FUN_60101ba2`. Called by `remote_device_db__6006c340`. | 1 caller / 2 callees |
+| `0x600dfca0` |  40 | RemoteDB / Channel | **`remote_device_db_lookup_channel_11`** — Remote device DB channel lookup: searches channel list from `FUN_600653f0` for channel type 11 (`0xb`), returns channel index `piVar2[1]`. Called by `remote_device_db__60083080` and `remote_device_db__6006c340`. | 2 callers / 1 callee |
+| `0x600dfcf2` |  50 | Util / Search | **`util_record_binary_search`** — Binary searches sorted record table `param_1[2]` with count `param_1[4]` using comparator `util__60092128`. Called by `0x600dfd24`. | 1 caller / 1 callee |
+| `0x600dfd24` |  70 | Util / Lookup | **`util_record_lookup_by_key`** — Record lookup by key: searches sorted 16-byte record table (`0x10` stride) via `util_record_binary_search` (`FUN_600dfcf2`), extracts payload pointer and length. Called by `0x600d4664`. | 1 caller / 1 callee |
+
+
 
 
 
