@@ -4202,8 +4202,8 @@ address,name,size_bytes
 600e0acc,FUN_600e0acc,22
 600e0ae2,FUN_600e0ae2,24
 600e0afa,FUN_600e0afa,46
-600e0be8,FUN_600e0be8,134
-600e0bee,FUN_600e0bee,80
+600e0be8,FUN_600e0be8,6
+600e0bee,FUN_600e0bee,16
 600e0bfe,FUN_600e0bfe,76
 600e0c4a,FUN_600e0c4a,16
 600e0c5a,FUN_600e0c5a,14

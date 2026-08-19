@@ -2729,6 +2729,34 @@ Decompiled and documented 20 functions (510 bytes across `0x600e0680`–`0x600e0
 | `0x600e09e0` |  48 | Crypto / String | **`crypto_strlcpy`** — Standard `strlcpy` string copy helper: bounded copy of `param_2` to `param_1` with size limit `param_3`, guarantees null termination, returns bytes copied plus source length. Called by `0x600e0a14`, `FUN_60086b98`, `FUN_60091ab4`. | 3 callers / 1 callee |
 | `0x600e0a14` |  46 | Crypto / PEM | **`crypto_pem_string_copy_safe`** — Safe PEM string copy helper: checks null pointers, verifies length `strlen(param_4) < param_2`, and copies string via `crypto_strlcpy` (`0x600e09e0`). Called by `pem_lib__60085f2c`. | 1 caller / 2 callees |
 
+## Session 89 (Wave 59) — BoringSSL `OPENSSL_sk` Stack Engine & Crypto Mutex Synchronization (20 functions, 398 bytes)
+
+Decompiled and documented 20 functions (398 bytes across `0x600e0a54`–`0x600e0c94`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600e0a54` |  28 | Crypto / Bignum | **`crypto_bn_asn1_alloc_and_decode`** — Bignum ASN.1 allocator & decoder: allocates BIGNUM context via `bcm__6008b384`, stores in `*param_2`, decodes ASN.1 structure via `bn_asn1__60090dd8`. Called by `FUN_60086824`, `FUN_600868fc`. | 2 callers / 2 callees |
+| `0x600e0a70` |  60 | Crypto / Stack | **`crypto_stack_alloc_with_capacity_4`** — OpenSSL/BoringSSL `OPENSSL_sk_new` stack structure allocator: allocates 20-byte stack header (`0x14`), zeroes it, allocates 16-byte initial element array (`0x10` bytes = 4 pointers), sets capacity `*(iVar1 + 0xc) = 4` and element comparator `*(iVar1 + 0x10) = param_1`. | 2 callers / 3 callees |
+| `0x600e0aac` |   6 | Crypto / Stack | **`crypto_stack_alloc_null_comparator`** — OpenSSL/BoringSSL `OPENSSL_sk_new_null`: calls `crypto_stack_alloc_with_capacity_4(0)`. Called by `tasn_new__60090c3c`, `tasn_dec__6008ffc0`, `bcm__6008b570`. | 3 callers / 1 callee |
+| `0x600e0ab2` |   6 | Crypto / Stack | **`crypto_stack_num_elements`** — OpenSSL/BoringSSL `OPENSSL_sk_num`: returns `*stack` (element count) or 0 if NULL. | 9 callers / 0 callees |
+| `0x600e0ab8` |  20 | Crypto / Stack | **`crypto_stack_value_at_index`** — OpenSSL/BoringSSL `OPENSSL_sk_value`: returns `stack->data[index]` if `index < stack->num`, else NULL. Called by 8 callers across `ex_data.c`, `tasn_dec.c`, `bcm.c`. | 8 callers / 0 callees |
+| `0x600e0acc` |  22 | Crypto / Stack | **`crypto_stack_set_value_at_index`** — OpenSSL/BoringSSL `OPENSSL_sk_set`: sets `stack->data[index] = value` if `index < stack->num`, returns value or NULL. Called by `FUN_60090568`. | 1 caller / 0 callees |
+| `0x600e0ae2` |  24 | Crypto / Stack | **`crypto_stack_free_shallow`** — OpenSSL/BoringSSL `OPENSSL_sk_free`: frees `stack->data` and `stack` header via `free` (`thunk_EXT_FUN_0000ac5e`). | 4 callers / 1 callee |
+| `0x600e0afa` |  46 | Crypto / Stack | **`crypto_stack_pop_free_with_callback`** — OpenSSL/BoringSSL `OPENSSL_sk_pop_free`: iterates elements in stack, invokes free callback `param_2(element)`, then frees stack via `crypto_stack_free_shallow` (`0x600e0ae2`). Called by `FUN_6008b544`. | 1 caller / 1 callee |
+| `0x600e0be8` |   6 | Crypto / Stack | **`crypto_stack_push_element`** — OpenSSL/BoringSSL `OPENSSL_sk_push`: inserts `param_2` at end of stack via `func_0x600e0b28(stack, elem, stack->num)`. Resized from 134B to 6B. | 2 callers / 0 callees |
+| `0x600e0bee` |  16 | Crypto / Stack | **`crypto_stack_pop_element`** — OpenSSL/BoringSSL `OPENSSL_sk_pop`: pops last element `stack->num - 1` via `func_0x600e0ba8`. Resized from 80B to 16B. | 1 caller / 0 callees |
+| `0x600e0bfe` |  76 | Crypto / Stack | **`crypto_stack_dup_deep`** — OpenSSL/BoringSSL `OPENSSL_sk_dup`: clones stack structure, reallocates element buffer via `crypto_realloc` (`0x600e093e`), copies pointer array via `memcpy`. Called by `ex_data__600919d4`. | 1 caller / 4 callees |
+| `0x600e0c4a` |  16 | Crypto / Mutex | **`crypto_mutex_lock_and_panic_check`** — Locks crypto mutex via `FUN_600ee100`, panics via `FUN_6010209a` on deadlock/error. Called by `dsa__60091098`, `bcm__600ebf76`. | 2 callers / 2 callees |
+| `0x600e0c5a` |  14 | Crypto / Mutex | **`crypto_mutex_lock_1`** — Locks crypto mutex via `thunk_EXT_FUN_0000b28c`, panics on failure. | 1 caller / 2 callees |
+| `0x600e0c68` |   4 | Crypto / Mutex | **`crypto_mutex_lock_1_thunk`** — Trampoline thunk to `crypto_mutex_lock_1` (`0x600e0c5a`). Called by `FUN_60086740`. | 1 caller / 1 callee |
+| `0x600e0c6c` |  14 | Crypto / Mutex | **`crypto_mutex_unlock_1`** — Unlocks crypto mutex via `thunk_EXT_FUN_0000b294`, panics on failure. | 1 caller / 2 callees |
+| `0x600e0c7a` |   4 | Crypto / Mutex | **`crypto_mutex_unlock_1_thunk`** — Trampoline thunk to `crypto_mutex_unlock_1` (`0x600e0c6c`). Called by `FUN_60086740`. | 1 caller / 1 callee |
+| `0x600e0c7e` |   4 | Crypto / Mutex | **`crypto_mutex_lock_2_thunk`** — Trampoline thunk to `FUN_600ee0c8`. Called by `FUN_600910dc`, `FUN_6008ea5c`, `bcm__600ebf76`. | 3 callers / 1 callee |
+| `0x600e0c82` |  14 | Crypto / Mutex | **`crypto_mutex_lock_global`** — Locks global crypto mutex via `thunk_EXT_FUN_0000b28c`, panics on failure. Called by 6 crypto subsystems (`obj.c`, `ex_data.c`, etc.). | 6 callers / 2 callees |
+| `0x600e0c90` |   4 | Crypto / Mutex | **`crypto_mutex_lock_global_thunk`** — Trampoline thunk to `crypto_mutex_lock_global` (`0x600e0c82`). Called by 5 subsystems. | 5 callers / 1 callee |
+| `0x600e0c94` |  14 | Crypto / Mutex | **`crypto_mutex_unlock_global`** — Unlocks global crypto mutex via `thunk_EXT_FUN_0000b294`, panics on failure. Called by 5 subsystems. | 5 callers / 2 callees |
+
+
 
 
 
