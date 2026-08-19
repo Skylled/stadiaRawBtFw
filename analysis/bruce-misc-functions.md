@@ -2052,6 +2052,34 @@ Decompiled and documented 20 functions (1,012 bytes across `0x600d3b80`–`0x600
 | `0x600d4036` |  32 | State / String | **`app_state_string_format`** — Application state string formatter: formats state description via `FUN_60079adc` and appends via `FUN_60101ba2`. Called from `application_state.cc`. | 2 callers / 2 callees |
 | `0x600d4084` |  40 | System / Events | **`app_state_event_notify`** — Application state event notifier: queries event source via `thunk_EXT_FUN_0000714c` and posts event via `thunk_EXT_FUN_00007a2c`. Called from `FUN_6005c8a0`. | 1 caller / 2 callees |
 
+## Session 64 (Wave 34) — Gotham State Setters, GATT Characteristic Handlers, Audio Receiver & BT Adapter State (20 functions, 632 bytes)
+
+Decompiled and documented 20 functions (632 bytes across `0x600d40ac`–`0x600d8a6e`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d40ac` |  22 | System / Init | **`system_table_init_da0`** — System table initializer: calls `FUN_6005bc58` and zeroes 3,488-byte (`0xda0`) table via `thunk_EXT_FUN_0000b52e`. | 0 callers / 2 callees |
+| `0x600d40c2` |  10 | Gotham / Interface | **`gotham_tx_forward_thunk`** — Gotham TX forwarding helper: forwards payload buffer `*(param_1 + 0x20)` and length `*(param_1 + 0x18)` to `FUN_600cedd8`. Called from `FUN_6005be94`. | 1 caller / 1 callee |
+| `0x600d40cc` |  20 | Gotham / Task | **`gotham_task_state_set`** — Gotham task state context setter: sets context pointer `*(param_1 + 0x110) = param_2` and asserts state active flag `*(param_1 + 0x114) = 1`. Called by `gotham_task__6005bdb4`. | 2 callers / 0 callees |
+| `0x600d410c` |  16 | Memory / Cleanup | **`heap_free_if_nonnull`** — Null-guarded pointer free helper: calls `thunk_EXT_FUN_0000b52a(*param_1)` if `*param_1 != 0`. Called by `FUN_6005ccd8` and `FUN_600d62f8`. | 2 callers / 1 callee |
+| `0x600d411c` |  60 | Audio / Radio | **`audio_receiver_mode_select`** — Audio/radio receiver mode dispatcher: evaluates mode `param_2` (0..3), configuring receiver channels via `FUN_60074ba8(0xb/10)`, `FUN_6007ec20`/`FUN_6007ec28`, or `receiver__6007ec48`. | 0 callers / 6 callees |
+| `0x600d415c` |  32 | State / String | **`app_state_string_format_alt`** — Alternate application state string formatter: formats state string via `FUN_60079bd4` and appends via `FUN_60101ba2`. | 0 callers / 2 callees |
+| `0x600d41ec` |  26 | State / Timer | **`app_state_timer_dispatch_type9`** — State timer type 9 event forwarder: forwards timer event to `app_state_timer_dispatch(9, *param_2)`. | 0 callers / 1 callee |
+| `0x600d4224` |  26 | State / Timer | **`app_state_timer_dispatch_type1`** — State timer type 1 event forwarder: forwards timer event to `app_state_timer_dispatch(1, *param_2)`. | 0 callers / 1 callee |
+| `0x600d424c` |  22 | System / Init | **`system_table_init_588`** — System table initializer: calls `FUN_6005ccd8` and zeroes 1,416-byte (`0x588`) table. | 0 callers / 2 callees |
+| `0x600d4262` |  22 | System / Init | **`system_table_init_2658`** — System table initializer: calls `FUN_6005cd08` and zeroes 9,816-byte (`0x2658`) table. | 0 callers / 2 callees |
+| `0x600d4308` |  40 | Thermal / Events | **`thermal_event_notify`** — Thermal subsystem asynchronous event poster: queries event source via `thunk_EXT_FUN_0000714c` and posts event via `thunk_EXT_FUN_00007a2c`. Called from `thermal.cc` (`0x6005d634`, `0x6005d1e4`). | 2 callers / 2 callees |
+| `0x600d43c6` |  70 | Bluetooth / GATT | **`gatt_char_write_buffer_copy`** — GATT characteristic write buffer copier: checks length against limit `*(ushort *)(uVar2 + 0x1c)`, copies up to 20 bytes (`0x14`) to stack buffer `auStack_28`, null-terminates, and dispatches write handler `**(param_1 + 0x34)`. | 0 callers / 1 callee |
+| `0x600d44b0` |  66 | Bluetooth / GATT | **`gatt_service_notification_send`** — GATT service notification sender: gets service handle via `gatt_service_handle__6005d9a8`, formats 20-byte payload, computes checksum/length via `FUN_6004cb28`, and dispatches notification callback `*puVar1`. | 0 callers / 3 callees |
+| `0x600d44f2` |  94 | Bluetooth / GATT | **`gatt_service_record_init`** — GATT service record structure initializer: zeroes struct fields, sets identifier tags 9 and 2, and zeroes 4 31-byte (`0x1f`) sub-buffers via `thunk_EXT_FUN_0000b5ba`. Called from `types.cc` (`0x600810bc`). | 2 callers / 1 callee |
+| `0x600d4566` |  48 | Diagnostics / JSON | **`json_format_object_close`** — JSON object serializer and closer: formats object via `FUN_60050c18` and closes JSON object with `}` (`0x7d`) delimiter via `FUN_601019da`. Called from `FUN_6005dcc0` and `FUN_6005dbec`. | 2 callers / 3 callees |
+| `0x600d8a12` |   6 | Bluetooth / Adapter | **`bt_adapter_enable_thunk`** — Bluetooth adapter enable helper: forwards call to `adapter__600d89ec(param_1, param_2, 1)`. Called from `adapter.cc` (`0x60069780`). | 1 caller / 1 callee |
+| `0x600d8a18` |  14 | Bluetooth / Adapter | **`bt_adapter_assert_state2`** — Bluetooth adapter state assertion: asserts `*(param_1 + 0xc) == 2`, triggering kernel halt `FUN_6010209a` on mismatch. Called from `adapter.cc`. | 2 callers / 1 callee |
+| `0x600d8a26` |  14 | Bluetooth / Adapter | **`bt_adapter_assert_state1`** — Bluetooth adapter state assertion: asserts `*(param_1 + 0xc) == 1`, triggering kernel halt `FUN_6010209a` on mismatch. Called from `adapter.cc`. | 3 callers / 1 callee |
+| `0x600d8a62` |  12 | Bluetooth / GATT | **`comparator_ushort_less`** — Unsigned 16-bit less-than comparator predicate: returns `*param_1 < param_2`. Called by `gatt_server.cc` (`0x6006a634`). | 2 callers / 0 callees |
+| `0x600d8a6e` |  12 | Bluetooth / GATT | **`comparator_ushort_less_alt`** — Alternate unsigned 16-bit less-than comparator predicate: returns `*param_1 < param_2`. Called by `0x6006a4d4`. | 1 caller / 0 callees |
+
+
 
 
 
