@@ -83,7 +83,8 @@ zero_prog = [x for x in per_file_sorted if x[2] == 0]
 lines = []
 lines.append("# Bruce — full-decompile tracking status\n")
 lines.append("Data-driven status doc for the \"decompile all of `bruce` to source-reconstruction quality\" effort. Regenerate the numbers here whenever `bruce_functions.csv`, `bruce_srcmap.csv`, or `analysis/decomp/` change materially — don't hand-edit stale tables into new prose, just re-run the join described in [Methodology](#methodology) below.\n")
-lines.append(f"**Snapshot: 2026-08-18 (full regeneration, session 64 / Wave 34).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 64 ({len(decomp_files)} decomp files, {len(in_census_decomp)} in-census). Decompiled in-census functions grew to **{len(in_census_decomp)}** ({in_census_decomp_bytes:,} bytes, {in_census_decomp_bytes/tot_census_bytes*100:.2f}% of code), with **139 of 139** attributed source files fully decompiled.\n")
+lines.append(f"**Snapshot: 2026-08-18 (full regeneration, session 65 / Wave 35).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 65 ({len(decomp_files)} decomp files, {len(in_census_decomp)} in-census). Decompiled in-census functions grew to **{len(in_census_decomp)}** ({in_census_decomp_bytes:,} bytes, {in_census_decomp_bytes/tot_census_bytes*100:.2f}% of code), with **139 of 139** attributed source files fully decompiled.\n")
+
 
 
 
@@ -161,23 +162,60 @@ for i, x in enumerate(zero_prog[:10], 1):
 lines.append("\n### 3b. Unattributed contiguous address ranges — candidate whole modules\n")
 lines.append("| # | Start | End | Span (B) | Code bytes | Funcs | Already decompiled | Density | Largest function in range |")
 lines.append("|---:|---|---|---:|---:|---:|---:|---:|---|")
-lines.append(f"| 1★ | `0x600921b8` | `0x600c9cc4` | 228108 | {bta_tot_bytes} | {len(bta_funcs)} | {len(bta_decomp)} | {bta_decomp_bytes/bta_tot_bytes*100:.1f}% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |")
 
+sorted_census = sorted(census_funcs, key=lambda x: int(x[0], 16))
+runs = []
+curr_run = []
+for f in sorted_census:
+    if f[0] not in attributed_in_census:
+        curr_run.append(f)
+    else:
+        if curr_run:
+            runs.append(curr_run)
+            curr_run = []
+if curr_run:
+    runs.append(curr_run)
 
-lines.append("| 2† | `0x600ecb72` | `0x6013d4e4` | 330098 | 95117 | 1006 | 14 | 28.8% | `FUN_601054dc` (2546B @ `601054dc`) |")
-lines.append("| 3† | `0x600df286` | `0x600ea868` | 46562 | 44326 | 316 | 15 | 95.2% | `FUN_600e398a` (6270B @ `600e398a`) |")
-lines.append("| 4† | `0x600cc6e4` | `0x600d4560` | 32380 | 24998 | 304 | 35 | 77.2% | `FUN_600ccfb4` (1568B @ `600ccfb4`) |")
-lines.append("| 5† | `0x600d8a12` | `0x600df24c` | 26682 | 23204 | 399 | 16 | 87.0% | `FUN_600dcf8c` (984B @ `600dcf8c`) |")
-lines.append("| 6 | `0x6004cd58` | `0x60051164` | 17420 | 17174 | 10 | 1 | 98.6% | `FUN_6004cdb8` (15662B @ `6004cdb8`) |")
-lines.append("| 7 | `0x60086720` | `0x6008ac36` | 17686 | 14608 | 19 | 0 | 82.6% | `FUN_60087970` (4036B @ `60087970`) |")
-lines.append("| 8 | `0x60040500` | `0x60047038` | 27448 | 12698 | 92 | 10 | 46.3% | `FUN_60043ecc` (1364B @ `60043ecc`) |")
-lines.append("| 9 | `0x60054f30` | `0x60058570` | 13888 | 10908 | 66 | 1 | 78.5% | `FUN_60056fa4` (1694B @ `60056fa4`) |")
-lines.append("| 10 | `0x6004898c` | `0x6004cb5c` | 16848 | 10520 | 171 | 25 | 62.4% | `FUN_6004a4e6` (840B @ `6004a4e6`) |")
-lines.append("| 11 | `0x600d56b8` | `0x600d89ec` | 13108 | 10254 | 177 | 3 | 78.2% | `FUN_600d80f4` (260B @ `600d80f4`) |")
-lines.append("| 12 | `0x6007b96c` | `0x6007e69c` | 11568 | 9552 | 53 | 0 | 82.6% | `FUN_6007d144` (980B @ `6007d144`) |")
-lines.append("| 13 | `0x60052294` | `0x60054a46` | 10162 | 8254 | 99 | 3 | 81.2% | `FUN_600526a0` (472B @ `600526a0`) |")
-lines.append("| 14 | `0x60072260` | `0x60073b7c` | 6428 | 6400 | 3 | 2 | 99.6% | `FUN_600723b4` (6088B @ `600723b4`) |")
-lines.append("| 15 | `0x6006c35c` | `0x6006e480` | 8484 | 5784 | 53 | 0 | 68.2% | `FUN_6006d998` (712B @ `6006d998`) |\n")
+run_stats = []
+for r in runs:
+    start_addr = int(r[0][0], 16)
+    end_addr = int(r[-1][0], 16) + r[-1][2]
+    span = end_addr - start_addr
+    code_bytes = sum(f[2] for f in r)
+    num_funcs = len(r)
+    decomp_funcs = [f for f in r if f[0] in in_census_decomp]
+    decomp_count = len(decomp_funcs)
+    decomp_bytes = sum(f[2] for f in decomp_funcs)
+    largest_func = max(r, key=lambda x: x[2])
+    name_str = largest_func[1]
+    sz_val = largest_func[2]
+    hex_str = largest_func[0]
+    density = (code_bytes / span * 100) if span > 0 else 0
+    run_stats.append({
+        "start": "0x%08x" % start_addr,
+        "end": "0x%08x" % end_addr,
+        "span": span,
+        "code_bytes": code_bytes,
+        "funcs": num_funcs,
+        "decomp_count": decomp_count,
+        "decomp_bytes": decomp_bytes,
+        "density": density,
+        "largest": "`%s` (%dB @ `%s`)" % (name_str, sz_val, hex_str)
+    })
+
+run_stats.sort(key=lambda x: x["code_bytes"], reverse=True)
+
+for i, r in enumerate(run_stats[:15], 1):
+    tag = ""
+    if r["start"] == "0x600921b8":
+        tag = "★"
+    elif r["start"] in ("0x600ecb72", "0x600df286", "0x600cc6e4", "0x600d8a12"):
+        tag = "†"
+    lines.append("| %d%s | `%s` | `%s` | %d | %d | %d | %d | %.1f%% | %s |" % (
+        i, tag, r["start"], r["end"], r["span"], r["code_bytes"], r["funcs"], r["decomp_count"], r["density"], r["largest"]
+    ))
+lines.append("")
+
 
 lines.append("## 4. The honest bottom line\n")
 lines.append(f"Of **{tot_census_funcs:,} total functions** (the current census):\n")

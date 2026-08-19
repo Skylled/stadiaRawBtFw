@@ -2079,6 +2079,34 @@ Decompiled and documented 20 functions (632 bytes across `0x600d40ac`–`0x600d8
 | `0x600d8a62` |  12 | Bluetooth / GATT | **`comparator_ushort_less`** — Unsigned 16-bit less-than comparator predicate: returns `*param_1 < param_2`. Called by `gatt_server.cc` (`0x6006a634`). | 2 callers / 0 callees |
 | `0x600d8a6e` |  12 | Bluetooth / GATT | **`comparator_ushort_less_alt`** — Alternate unsigned 16-bit less-than comparator predicate: returns `*param_1 < param_2`. Called by `0x6006a4d4`. | 1 caller / 0 callees |
 
+## Session 65 (Wave 35) — GATT Server, LP5562 RGB LED Driver, TUSB320 USB Port Controller & WM8904 Codec (20 functions, 1,310 bytes)
+
+Decompiled and documented 20 functions (1,310 bytes across `0x600d8a7a`–`0x600d8fa6`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d8a7a` |  76 | Bluetooth / GATT | **`gatt_server_client_record_alloc`** — GATT server client record allocator: allocates/zeroes a 284-byte (`0x11c`) client record in array `param_1 + 0x230`, copies descriptor info, and increments client count `*(param_1 + 0x1714)`. | 1 caller / 2 callees |
+| `0x600d8ac6` |  34 | Bluetooth / GATT | **`gatt_server_format_uint16`** — GATT server uint16 formatter: formats 16-bit value via `FUN_60050c18` and appends to buffer via `FUN_60101ba2`. 4 callers in `gatt_server.cc`. | 4 callers / 2 callees |
+| `0x600d8ae8` |  82 | Bluetooth / GATT | **`gatt_server_client_find_or_alloc`** — GATT server client lookup/allocator: searches client records in `param_1 + 0x230` via `FUN_6006a448`, returning index `param_3` if found or allocating via `FUN_600d8a7a` (capped at 8 clients max). Called from `gatt_server.cc` (`0x6006a944`). | 1 caller / 2 callees |
+| `0x600d8b3a` |  50 | Bluetooth / GATT | **`gatt_server_client_find`** — GATT server client record lookup: searches client records in `param_1 + 0x230` via `FUN_6006a448` and returns pointer to client record struct. Called by `activation_sequence.cc` (`0x60068f88`). | 1 caller / 1 callee |
+| `0x600d8b9e` |  76 | Bluetooth / GATT | **`gatt_server_handle_binary_search`** — GATT server attribute handle binary search: binary searches 8-byte sorted entry table `param_1` for attribute handle `param_2` via comparator `FUN_600d8a62`, returning attribute context pointer `*(puVar4 + 2)`. 3 callers in `gatt_server.cc`. | 3 callers / 1 callee |
+| `0x600d8bea` |  32 | Bluetooth / GATT | **`gatt_server_format_uuid_or_string`** — GATT server UUID/string formatter: formats string via `FUN_60068e98` and appends via `FUN_60101ba2`. 6 callers in `gatt_server.cc`. | 6 callers / 2 callees |
+| `0x600d8c0a` |  16 | Gotham / Interface | **`gotham_tx_disable_thunk`** — Gotham TX disable thunk: disables interface via `FUN_600cedd8(*(iVar1 + 0x20), *(iVar1 + 0x18), 0)`. Called by `0x600718b8`. | 1 caller / 1 callee |
+| `0x600d8c1a` |  36 | Drivers / LP5562 | **`lp5562_i2c_write_reg`** — TI LP5562 RGB LED driver I2C 2-byte register write: writes 2-byte register/value pair to I2C slave via `thunk_EXT_FUN_00001ea4`. 5 callers in `led_driver_lp5562.cc`. | 5 callers / 1 callee |
+| `0x600d8c3e` |  60 | Drivers / LP5562 | **`lp5562_led_driver_init`** — TI LP5562 RGB LED driver initialization: resets chip via reg `0x01` (0x00), configures clock/power via reg `0x00` (`0x40`/`0xc0`), and configures engine mode via reg `0x70`. Called by `led_driver_lp5562.cc`. | 2 callers / 1 callee |
+| `0x600d8c7a` | 224 | Drivers / LP5562 | **`lp5562_program_load`** — TI LP5562 micro-engine SRAM program loader: loads LED pattern microcode sequences (16 words per engine) across program memory banks `0x10`, `0x30`, `0x50` into LP5562 SRAM via I2C bursts. Called from `FUN_600d7ad6`. | 1 caller / 3 callees |
+| `0x600d8d5a` |  88 | Drivers / LP5562 | **`lp5562_set_rgb_current_atomic`** — TI LP5562 RGB channel current setter: checks busy state via `led_driver_lp5562__6006b10c`, stores R/G/B/W current settings `param_2`..`param_5` into `param_1 + 0x10`..`0x13` guarded by ARM `DMB` barriers. | 0 callers / 1 callee |
+| `0x600d8db2` |  30 | Drivers / LP5562 | **`lp5562_clear_rgb_current`** — TI LP5562 RGB channel current clear / disable: clears pending flag `*(param_1 + 0x14) = 0` with ARM `DMB` and zeroes current via `led_driver_lp5562__6006b10c`. Called by `FUN_600d7ad6`. | 1 caller / 1 callee |
+| `0x600d8dd0` |  34 | Drivers / TUSB320 | **`tusb320_format_port_status`** — TI TUSB320 USB Type-C CC port status string formatter: formats status via `FUN_60050c18` and appends via `FUN_60101ba2`. Called by `usb_port_controller_tusb320.cc` (`0x6006b350`). | 1 caller / 2 callees |
+| `0x600d8df2` |  58 | System / State | **`usb_port_state_flag_set`** — USB port controller state flag setter: updates state byte `*(param_1 + 0x181)` with ARM `DMB` barriers and triggers notification via `FUN_600926a0`. Called from `application_state.cc`. | 1 caller / 1 callee |
+| `0x600d8e2c` |  64 | Drivers / TUSB320 | **`tusb320_state_change_notify`** — TI TUSB320 Type-C attach/detach state listener notifier: mutex-locks `param_1 + 0x74`, iterates listener callback list `*(param_1 + 0x20)` notifying each listener of state change `param_2`, and unlocks mutex. Called by `usb_port_controller_tusb320.cc`. | 2 callers / 2 callees |
+| `0x600d8e6c` | 104 | Drivers / TUSB320 | **`tusb320_i2c_read_reg`** — TI TUSB320 I2C register read helper: acquires mutex at `param_1 + 200`, writes register address `param_2` and reads register value `*param_3` via `thunk_EXT_FUN_00001ea4` with retries. 4 callers in `usb_port_controller_tusb320.cc`. | 4 callers / 3 callees |
+| `0x600d8ed4` |  80 | Drivers / TUSB320 | **`tusb320_poll_interrupt_status`** — TI TUSB320 Type-C interrupt status poller: reads interrupt/status register 9 via `FUN_600d8e6c`, parses CC attached mode (DFP/UFP/DRP), and dispatches state update `FUN_600d8e2c`. Called from `usb_port_controller_tusb320.cc` (`0x6006b290`). | 1 caller / 2 callees |
+| `0x600d8f24` |  64 | Drivers / TUSB320 | **`tusb320_i2c_write_reg`** — TI TUSB320 I2C 2-byte register write helper: acquires mutex at `param_1 + 200`, writes register address `param_2` and byte `param_3` via `thunk_EXT_FUN_00001ea4`. Called by `usb_port_controller_tusb320.cc`. | 2 callers / 3 callees |
+| `0x600d8f64` |  58 | Drivers / TUSB320 | **`tusb320_clear_interrupt`** — TI TUSB320 Type-C interrupt clear: reads interrupt register 9 via `FUN_600d8e6c` and writes back clear bit via `FUN_600d8f24`. Called from `usb_port_controller_tusb320.cc` (`0x6006b290`). | 1 caller / 2 callees |
+| `0x600d8fa6` |  44 | Drivers / WM8904 | **`wm8904_i2c_write_reg_16`** — Wolfson WM8904 Audio Codec I2C 16-bit register write: writes 3-byte packet (register address + 16-bit big-endian value) to WM8904 via `thunk_EXT_FUN_00001ea4`. 6 callers in `sound_codec_wm8904.cc`. | 6 callers / 1 callee |
+
+
 
 
 

@@ -2,7 +2,7 @@
 
 Data-driven status doc for the "decompile all of `bruce` to source-reconstruction quality" effort. Regenerate the numbers here whenever `bruce_functions.csv`, `bruce_srcmap.csv`, or `analysis/decomp/` change materially — don't hand-edit stale tables into new prose, just re-run the join described in [Methodology](#methodology) below.
 
-**Snapshot: 2026-08-18 (full regeneration, session 64 / Wave 34).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 64 (2194 decomp files, 2194 in-census). Decompiled in-census functions grew to **2194** (403,014 bytes, 56.31% of code), with **139 of 139** attributed source files fully decompiled.
+**Snapshot: 2026-08-18 (full regeneration, session 65 / Wave 35).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 65 (2214 decomp files, 2214 in-census). Decompiled in-census functions grew to **2214** (404,324 bytes, 56.49% of code), with **139 of 139** attributed source files fully decompiled.
 
 ## 1. Top-line stats
 
@@ -10,9 +10,9 @@ Data-driven status doc for the "decompile all of `bruce` to source-reconstructio
 |---|---:|---:|---:|---:|
 | **Total functions (census)** | 5,539 | 100% | 715,731 | 100% |
 | **Attributed** (leaked `__FILE__` → 139 src files) | 448 | 8.09% | 97,450 | 13.62% |
-| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 2,194 | 39.61% | 403,014 | 56.31% |
-| **Attributed ∪ Decompiled** (understood in *some* way) | 2,194 | 39.61% | 403,014 | **56.31%** |
-| **Totally unknown** (no attribution, no decompile) | 3,345 | 60.39% | 312,717 | **43.69%** |
+| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 2,214 | 39.97% | 404,324 | 56.49% |
+| **Attributed ∪ Decompiled** (understood in *some* way) | 2,214 | 39.97% | 404,324 | **56.49%** |
+| **Totally unknown** (no attribution, no decompile) | 3,325 | 60.03% | 311,407 | **43.51%** |
 
 ### 1a. Module-identified-but-not-formally-attributed (informational — not folded into "Attributed" above)
 
@@ -28,9 +28,9 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 
 | | Functions | % of 5,539 | Bytes | % of 715,731 |
 |---|---:|---:|---:|---:|
-| Totally unknown (§1, includes BTA-identified-but-undecompiled) | 3,345 | 60.39% | 312,717 | 43.69% |
+| Totally unknown (§1, includes BTA-identified-but-undecompiled) | 3,325 | 60.03% | 311,407 | 43.51% |
 | — of which: BTA-identified, module known, just not decompiled | 0 | 0.00% | 0 | 0.00% |
-| **— truly unidentified (no attribution, no decompile, no module ID)** | **3,345** | **60.39%** | **312,717** | **43.69%** |
+| **— truly unidentified (no attribution, no decompile, no module ID)** | **3,325** | **60.03%** | **311,407** | **43.51%** |
 
 ## 2. Per-source-file table (all 139 attributed files, sorted by total byte size descending)
 
@@ -189,23 +189,21 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 
 | # | Start | End | Span (B) | Code bytes | Funcs | Already decompiled | Density | Largest function in range |
 |---:|---|---|---:|---:|---:|---:|---:|---|
-| 1★ | `0x600921b8` | `0x600c9cc4` | 228108 | 213911 | 1116 | 1116 | 100.0% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |
-| 2† | `0x600ecb72` | `0x6013d4e4` | 330098 | 95117 | 1006 | 14 | 28.8% | `FUN_601054dc` (2546B @ `601054dc`) |
-| 3† | `0x600df286` | `0x600ea868` | 46562 | 44326 | 316 | 15 | 95.2% | `FUN_600e398a` (6270B @ `600e398a`) |
-| 4† | `0x600cc6e4` | `0x600d4560` | 32380 | 24998 | 304 | 35 | 77.2% | `FUN_600ccfb4` (1568B @ `600ccfb4`) |
-| 5† | `0x600d8a12` | `0x600df24c` | 26682 | 23204 | 399 | 16 | 87.0% | `FUN_600dcf8c` (984B @ `600dcf8c`) |
-| 6 | `0x6004cd58` | `0x60051164` | 17420 | 17174 | 10 | 1 | 98.6% | `FUN_6004cdb8` (15662B @ `6004cdb8`) |
-| 7 | `0x60086720` | `0x6008ac36` | 17686 | 14608 | 19 | 0 | 82.6% | `FUN_60087970` (4036B @ `60087970`) |
-| 8 | `0x60040500` | `0x60047038` | 27448 | 12698 | 92 | 10 | 46.3% | `FUN_60043ecc` (1364B @ `60043ecc`) |
-| 9 | `0x60054f30` | `0x60058570` | 13888 | 10908 | 66 | 1 | 78.5% | `FUN_60056fa4` (1694B @ `60056fa4`) |
-| 10 | `0x6004898c` | `0x6004cb5c` | 16848 | 10520 | 171 | 25 | 62.4% | `FUN_6004a4e6` (840B @ `6004a4e6`) |
-| 11 | `0x600d56b8` | `0x600d89ec` | 13108 | 10254 | 177 | 3 | 78.2% | `FUN_600d80f4` (260B @ `600d80f4`) |
-| 12 | `0x6007b96c` | `0x6007e69c` | 11568 | 9552 | 53 | 0 | 82.6% | `FUN_6007d144` (980B @ `6007d144`) |
-| 13 | `0x60052294` | `0x60054a46` | 10162 | 8254 | 99 | 3 | 81.2% | `FUN_600526a0` (472B @ `600526a0`) |
+| 1★ | `0x600921b8` | `0x600c9cc4` | 228108 | 213911 | 1116 | 1116 | 93.8% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |
+| 2† | `0x600ecb72` | `0x6013d4e4` | 330098 | 97677 | 1040 | 17 | 29.6% | `FUN_601054dc` (2546B @ `601054dc`) |
+| 3† | `0x600df286` | `0x600ea868` | 46562 | 44824 | 331 | 20 | 96.3% | `FUN_600e398a` (6270B @ `600e398a`) |
+| 4† | `0x600cc6e4` | `0x600d4596` | 32434 | 27319 | 342 | 341 | 84.2% | `FUN_600ccfb4` (1568B @ `600ccfb4`) |
+| 5 | `0x60040500` | `0x6004712c` | 27692 | 25488 | 172 | 61 | 92.0% | `FUN_60043ecc` (1364B @ `60043ecc`) |
+| 6† | `0x600d8a12` | `0x600df24c` | 26682 | 24440 | 432 | 46 | 91.6% | `FUN_600dcf8c` (984B @ `600dcf8c`) |
+| 7 | `0x6004cd58` | `0x60051164` | 17420 | 17174 | 10 | 1 | 98.6% | `FUN_6004cdb8` (15662B @ `6004cdb8`) |
+| 8 | `0x6004898c` | `0x6004cbd2` | 16966 | 15324 | 324 | 67 | 90.3% | `FUN_6004a4e6` (840B @ `6004a4e6`) |
+| 9 | `0x60086720` | `0x6008ac36` | 17686 | 15170 | 20 | 0 | 85.8% | `FUN_60087970` (4036B @ `60087970`) |
+| 10 | `0x60054f30` | `0x60058570` | 13888 | 11202 | 70 | 4 | 80.7% | `FUN_60056fa4` (1694B @ `60056fa4`) |
+| 11 | `0x600d56b8` | `0x600d89ec` | 13108 | 10756 | 193 | 6 | 82.1% | `FUN_600d80f4` (260B @ `600d80f4`) |
+| 12 | `0x6007b96c` | `0x6007e69c` | 11568 | 10562 | 55 | 0 | 91.3% | `FUN_6007d144` (980B @ `6007d144`) |
+| 13 | `0x60052294` | `0x60054a46` | 10162 | 8444 | 102 | 3 | 83.1% | `FUN_600526a0` (472B @ `600526a0`) |
 | 14 | `0x60072260` | `0x60073b7c` | 6428 | 6400 | 3 | 2 | 99.6% | `FUN_600723b4` (6088B @ `600723b4`) |
 | 15 | `0x6006c35c` | `0x6006e480` | 8484 | 5784 | 53 | 0 | 68.2% | `FUN_6006d998` (712B @ `6006d998`) |
-
-⚠️ **§3b is stale — flagged QA session 64, a third instance of the same "full regeneration doesn't actually recompute this section" defect class already caught twice in the methodology section (sessions 61/62).** Session 64's wave commit claimed "Run #4 (`0x600cc6e4`..`0x600d4560`) is now 100% decompiled" — independently re-derived by walking the current census fresh for that exact range: **340 functions total, 339 decompiled**, not the table's stale "304 / 35". The milestone claim itself is **confirmed true**: the sole remaining entry is `0x600d33f6` (`caseD_7`, 10B), the same jump-table case-body split inside `usb_host_param_query` already confirmed harmless and fully folded into that function's complete decompilation in session 61's QA (`bruce-misc-functions.md`) — a Rule-8 duplicate, not real missing work, so Run #4 is genuinely 100% complete once correctly de-duplicated. Row 5 is stale too: fresh count gives **432 functions total, 26 decompiled** (this wave added 5 at the very start of the range), not "399 / 16". Both rows' `Funcs` totals have also drifted from the underlying census (which has grown/shifted via several sessions' boundary fixes since these rows were last computed) — recomputing `Density` (`Code bytes / Span`) for row 4 alone with a fresh `code_bytes` sum gives ~84.2%, not 77.2%, confirming the whole row predates several census changes, not just the decompiled-count. **Did not attempt a full 15-row §3b recomputation this turn** (out of scope for one QA pass — needs the doc's own methodology script re-run, not hand edits); flagging so whoever maintains the regeneration process treats §3b as a third confirmed instance of this bug class, alongside the methodology-section items already fixed at the source in session 63.
 
 ## 4. The honest bottom line
 
@@ -214,11 +212,11 @@ Of **5,539 total functions** (the current census):
 | | Functions | Bytes |
 |---|---:|---:|
 | Attributed to a source file | 448 | 97,450 |
-| Decompiled (in census) | 2,194 | 403,014 |
+| Decompiled (in census) | 2,214 | 404,324 |
 | — of which both attributed AND decompiled | 448 | 97,450 |
 | — of which in the identified-but-not-formally-attributed BTA/BTE stack (§1a) | 1,116 | 213,911 |
-| **Understood in some way (union)** | **2,194 (39.6%)** | **403,014 (56.3%)** |
-| **Completely unknown — no attribution, no decompile, no module ID** | 3,345 (60.4%), or **3,345 (60.4%) excluding BTA-identified** | 312,717 (43.7%), or **312,717 (43.7%) excluding BTA-identified** |
+| **Understood in some way (union)** | **2,214 (40.0%)** | **404,324 (56.5%)** |
+| **Completely unknown — no attribution, no decompile, no module ID** | 3,325 (60.0%), or **3,325 (60.0%) excluding BTA-identified** | 311,407 (43.5%), or **311,407 (43.5%) excluding BTA-identified** |
 
 ## Methodology (for regenerating this doc)
 
