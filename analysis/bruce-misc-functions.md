@@ -2756,6 +2756,34 @@ Decompiled and documented 20 functions (398 bytes across `0x600e0a54`–`0x600e0
 | `0x600e0c90` |   4 | Crypto / Mutex | **`crypto_mutex_lock_global_thunk`** — Trampoline thunk to `crypto_mutex_lock_global` (`0x600e0c82`). Called by 5 subsystems. | 5 callers / 1 callee |
 | `0x600e0c94` |  14 | Crypto / Mutex | **`crypto_mutex_unlock_global`** — Unlocks global crypto mutex via `thunk_EXT_FUN_0000b294`, panics on failure. Called by 5 subsystems. | 5 callers / 2 callees |
 
+## Session 90 (Wave 60) — Curve25519 / Ed25519 / X25519 Field Arithmetic & Point Operations (20 functions, 3,936 bytes)
+
+Decompiled and documented 20 functions (3,936 bytes across `0x600e0ca2`–`0x600e1c92`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600e0ca2` |    4 | Crypto / Mutex | **`crypto_mutex_unlock_global_thunk`** — Trampoline thunk to `crypto_mutex_unlock_global` (`0x600e0c94`). | 5 callers / 1 callee |
+| `0x600e0ca6` |    6 | Crypto / Stack | **`crypto_stack_is_sorted`** — Returns `*(stack + 8)` (sorted boolean flag). | 1 caller / 0 callees |
+| `0x600e0cac` |   56 | Crypto / Stack | **`crypto_stack_find_element`** — `OPENSSL_sk_find`: linear search through stack elements for matching item via comparator `FUN_600edc52`, returns index or -1. | 0 callers / 3 callees |
+| `0x600e0ce4` |   38 | Crypto / Stack | **`crypto_stack_sort_and_find`** — Sorts stack if unsorted and binary searches for matching element via `crypto_stack_value_at_index` (`0x600e0ab8`). | 0 callers / 2 callees |
+| `0x600e0d54` |   38 | Crypto / ExData | **`crypto_ex_data_get_typed_item`** — Retrieves application-specific extra data (`ex_data`) item for given object type (`obj__60091c10`) and index. Resized from 112B to 38B. | 1 caller / 1 callee |
+| `0x600e0e02` | 1190 | Crypto / Curve25519 | **`fe25519_mul`** — 10-limb Curve25519 field multiplication ($2^{25.5}$ radix representation, limbs 0..9 with alternating 26-bit/25-bit representation). Multiplies 10 limbs by 10 limbs, performing polynomial multiplication and modular reduction modulo $2^{255} - 19$ with $19 \times \text{high}$ fold-back. | 8 callers / 0 callees |
+| `0x600e12a8` | 1160 | Crypto / Curve25519 | **`fe25519_sq`** — 10-limb Curve25519 field squaring ($2^{25.5}$ radix, optimized squaring with $19 \times \text{high}$ modular reduction). | 1 caller / 0 callees |
+| `0x600e1730` |  156 | Crypto / Curve25519 | **`fe25519_carry`** — Curve25519 field carry propagation: carries overflow bits across all 10 limbs (`>> 26`, `>> 25`), reducing limb values modulo $2^{255} - 19$. | 2 callers / 0 callees |
+| `0x600e17cc` |  100 | Crypto / Curve25519 | **`fe25519_add`** — 10-limb field addition: adds corresponding limbs element-wise. | 5 callers / 0 callees |
+| `0x600e1830` |  158 | Crypto / Curve25519 | **`fe25519_sub`** — 10-limb field subtraction: subtracts corresponding limbs element-wise with borrow/bias addition ($2 \times p$) to prevent underflow. | 5 callers / 0 callees |
+| `0x600e18ce` |  286 | Crypto / Curve25519 | **`fe25519_frombytes`** — Converts 32-byte little-endian byte array to 10-limb $2^{25.5}$ radix representation (limbs with 26/25 bits: `& 0x3ffffff`, `& 0x1ffffff`). | 1 caller / 0 callees |
+| `0x600e19ec` |   38 | Crypto / Curve25519 | **`fe25519_cmov`** — Constant-time conditional move for 10-limb field element: `out[i] = (b[i] ^ out[i]) & -b_flag ^ out[i]`. | 1 caller / 0 callees |
+| `0x600e1a12` |  328 | Crypto / Curve25519 | **`fe25519_invert`** — Field element inversion modulo $2^{255} - 19$ using Fermat's Little Theorem ($a^{2^{255}-21}$ via square-and-multiply chain with `fe25519_sq` and `fe25519_mul`). | 2 callers / 2 callees |
+| `0x600e1b5a` |  146 | Crypto / Ed25519 | **`ge25519_p2_dbl`** — Ed25519 point doubling on projective coordinates (`X, Y, Z`): computes $2P$ via `fe25519_add`, `fe25519_sub`, `fe25519_mul`, `fe25519_carry`. | 1 caller / 4 callees |
+| `0x600e1bec` |   20 | Crypto / Ed25519 | **`ge25519_p3_0`** — Ed25519 neutral/identity point initializer: sets `X = 0, Y = 1, Z = 1, T = 0`. | 1 caller / 1 callee |
+| `0x600e1c00` |    8 | Crypto / Curve25519 | **`fe25519_0`** — Zeroes 40-byte (10-limb) field element via `memset_zero`. | 1 caller / 1 callee |
+| `0x600e1c08` |   20 | Crypto / Curve25519 | **`fe25519_1`** — Sets field element to 1 (limb 0 = 1, limbs 1..9 = 0). | 1 caller / 1 callee |
+| `0x600e1c1c` |   44 | Crypto / Curve25519 | **`fe25519_copy_and_invert`** — Copies 40-byte (10-limb) field element and computes its modular inverse via `fe25519_invert`. | 1 caller / 1 callee |
+| `0x600e1c48` |   74 | Crypto / Ed25519 | **`ge25519_p3_to_p2`** — Converts extended point $(X, Y, Z, T)$ to affine/projective $(X/Z, Y/Z)$ by inverting $Z$ via `fe25519_invert` and multiplying coordinates. | 1 caller / 3 callees |
+| `0x600e1c92` |   66 | Crypto / Ed25519 | **`ge25519_p3_to_cached`** — Converts point $(X, Y, Z, T)$ to precomputed/cached representation $(Y+X, Y-X, 2dXY, 2Z)$ via `fe25519_mul`. | 1 caller / 1 callee |
+
+
 
 
 
