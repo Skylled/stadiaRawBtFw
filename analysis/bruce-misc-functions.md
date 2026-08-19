@@ -2594,6 +2594,34 @@ Decompiled and documented 20 functions (1,350 bytes across `0x600debb4`–`0x600
 | `0x600df218` |  12 | Power / State | **`power_state_machine_status_word_read`** — Power state machine status word reader: issues `dmb`, returns status word `*(param_1 + 4)`. Called by `state_machine__6008099c`, `state_machine__600805e4`, `state_machine__600df264`. | 3 callers / 0 callees |
 | `0x600df224` |  40 | Synapse / Priority | **`synapse_audio_stream_priority_configure`** — Synapse audio stream priority configuration: configures stream priorities via `FUN_600d3dd8(6, 2)` and `FUN_600d3dd8(0, 5)`. | 0 callers / 1 callee |
 
+## Session 84 (Wave 54) — Power Services, RPC Handlers & Protobuf Serializer / Varint Encoder (20 functions, 936 bytes)
+
+Decompiled and documented 20 functions (936 bytes across `0x600df286`–`0x600df878`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600df286` |  32 | Power / State | **`power_state_format_entry_1`** — Formats power state entry into string/stream via `FUN_60079bb4` and `FUN_60101ba2`. Called by `state_machine__6008099c`. | 1 caller / 2 callees |
+| `0x600df2a6` |  32 | Power / State | **`power_state_format_entry_2`** — Formats power state entry into string/stream via `FUN_6008067c` and `FUN_60101ba2`. Called by `state_machine__6008099c`. | 1 caller / 2 callees |
+| `0x600df2c6` |   2 | Power / Service | **`power_service_noop_stub`** — No-op stub function (`bx lr`). | 0 callers / 0 callees |
+| `0x600df2ce` |  22 | Bluetooth / GATT | **`gatt_manager_context_cleanup_8748b`** — GATT manager context cleanup: calls `gatt_manager_task__60080af8`, zeroes 8,748 bytes (`0x222c`) at `param_1` via `memset_zero` (`thunk_EXT_FUN_0000b52e`). | 0 callers / 2 callees |
+| `0x600df2e4` |  14 | Bluetooth / GATT | **`gatt_manager_state_zero_20b`** — Zeroes 20 bytes (`0x14`) at `param_1` via `memset_zero` (`thunk_EXT_FUN_0000b52e`). | 0 callers / 1 callee |
+| `0x600df2f6` |  22 | Bluetooth / GATT | **`gatt_manager_virtual_destructor_free`** — Virtual destructor & heap free wrapper: calls virtual destructor on `*(param_1 + 0x10)`, then frees via `vPortFree` (`thunk_EXT_FUN_0000b52a`). | 0 callers / 1 callee |
+| `0x600df30c` |  90 | Power / State | **`power_state_machine_send_command_13`** — Power state machine command dispatcher: builds command packet (opcode `0xd`), dispatches via `thunk_EXT_FUN_00006a74` to target `*(param_1 + 0x2188)`. Called by `state_machine__600df264`. | 1 caller / 3 callees |
+| `0x600df366` |  14 | Power / State | **`power_state_wrapper_release`** — Releases reference wrapper at `param_1 + 4` via `thunk_EXT_FUN_00001680`. | 0 callers / 1 callee |
+| `0x600df38e` |  26 | RPC / Service | **`rpc_channel_callback_invoke`** — RPC channel callback invoker: invokes callback `*(code **)(param_1 + 0x3c)` on context `*(param_1 + 0x40)` with payload `&local_10`. | 0 callers / 0 callees |
+| `0x600df3a8` |  48 | RPC / Service | **`rpc_channel_packet_validate_and_forward`** — RPC packet validator: checks packet length `param_3` against minimum threshold `*(ushort *)(param_1[1] + 0x1c)`, forwards to handler callback `*(param_1 + 0x34)`. | 0 callers / 0 callees |
+| `0x600df3d8` | 136 | RPC / Service | **`rpc_service_handler_table_register`** — RPC service handler table registration: registers service methods across 7 slot offsets (`+0x168`, `+0x124`, `+0xe0`, `+0x9c`, `+0x58`, `+0x14`), stores handler pointer at `param_1 + 0x10`. | 0 callers / 0 callees |
+| `0x600df610` |  28 | Protobuf / Stream | **`protobuf_stream_writer_init`** — Protobuf stream writer struct initializer: initializes internal buffer pointers `+4` and `+0x1c` pointing to embedded buffers `+0xc` and `+0x24`. | 0 callers / 0 callees |
+| `0x600df62c` |  20 | Protobuf / Stream | **`protobuf_stream_writer_cleanup`** — Protobuf stream writer cleanup: cleans up stream buffers at `+0x1c` and `+4` via `FUN_600d4550`. | 0 callers / 1 callee |
+| `0x600df64c` |  14 | Protobuf / Memory | **`protobuf_context_zero_132b`** — Zeroes 132 bytes (`0x84`) at `param_1` via `memset_zero` (`thunk_EXT_FUN_0000b52e`). | 0 callers / 1 callee |
+| `0x600df65a` |  26 | Protobuf / Buffer | **`protobuf_buffer_append_bytes`** — Protobuf buffer byte appender: appends `param_3` bytes from `param_2` into output buffer `*(param_1 + 4)`. | 0 callers / 0 callees |
+| `0x600df674` | 152 | Protobuf / Presence | **`protobuf_field_presence_eval`** — Protobuf field presence and default-value evaluator: checks wire type flags `*(param_1 + 4) & 0x30`, field offset `+9`, evaluates string/sub-message emptiness. | 2 callers / 3 callees |
+| `0x600df70c` |  82 | Protobuf / Varint | **`protobuf_encode_varint64`** — Protobuf 64-bit varint encoder: writes 7-bit chunks with MSB continuation bit (`| 0x80`) until value is exhausted, flushes to stream via `FUN_60081d50`. | 4 callers / 1 callee |
+| `0x600df7f0` |  32 | Protobuf / Varint | **`protobuf_encode_tag`** — Protobuf field tag encoder: packs field number and wire type `(field_number << 3) | wire_type`, writes via `protobuf_encode_varint64`. | 2 callers / 1 callee |
+| `0x600df810` | 104 | Protobuf / Serialize | **`protobuf_serialize_message_fields`** — Protobuf message serializer: iterates through field descriptor table (`FUN_600dfadc`/`FUN_600dfb00`), evaluates field presence, encodes primitive fields via `FUN_60081ea4` or invokes custom serializer callback. | 4 callers / 3 callees |
+| `0x600df878` |  40 | Protobuf / Serialize | **`protobuf_message_compute_size`** — Protobuf message size computer: initializes 20-byte stack context `auStack_24`, executes field serializer `FUN_600df810`, returns total serialized byte size in `*param_1`. | 1 caller / 2 callees |
+
+
 
 
 
