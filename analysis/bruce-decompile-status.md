@@ -2,7 +2,7 @@
 
 Data-driven status doc for the "decompile all of `bruce` to source-reconstruction quality" effort. Regenerate the numbers here whenever `bruce_functions.csv`, `bruce_srcmap.csv`, or `analysis/decomp/` change materially — don't hand-edit stale tables into new prose, just re-run the join described in [Methodology](#methodology) below.
 
-**Snapshot: 2026-08-18 (full regeneration, session 62 / Wave 32).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 62 (2154 decomp files, 2154 in-census). Decompiled in-census functions grew to **2154** (401,370 bytes, 56.08% of code), with **139 of 139** attributed source files fully decompiled.
+**Snapshot: 2026-08-18 (full regeneration, session 63 / Wave 33).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 63 (2174 decomp files, 2174 in-census). Decompiled in-census functions grew to **2174** (402,382 bytes, 56.22% of code), with **139 of 139** attributed source files fully decompiled.
 
 ## 1. Top-line stats
 
@@ -10,9 +10,9 @@ Data-driven status doc for the "decompile all of `bruce` to source-reconstructio
 |---|---:|---:|---:|---:|
 | **Total functions (census)** | 5,539 | 100% | 715,731 | 100% |
 | **Attributed** (leaked `__FILE__` → 139 src files) | 448 | 8.09% | 97,450 | 13.62% |
-| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 2,154 | 38.89% | 401,370 | 56.08% |
-| **Attributed ∪ Decompiled** (understood in *some* way) | 2,154 | 38.89% | 401,370 | **56.08%** |
-| **Totally unknown** (no attribution, no decompile) | 3,385 | 61.11% | 314,361 | **43.92%** |
+| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 2,174 | 39.25% | 402,382 | 56.22% |
+| **Attributed ∪ Decompiled** (understood in *some* way) | 2,174 | 39.25% | 402,382 | **56.22%** |
+| **Totally unknown** (no attribution, no decompile) | 3,365 | 60.75% | 313,349 | **43.78%** |
 
 ### 1a. Module-identified-but-not-formally-attributed (informational — not folded into "Attributed" above)
 
@@ -28,9 +28,9 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 
 | | Functions | % of 5,539 | Bytes | % of 715,731 |
 |---|---:|---:|---:|---:|
-| Totally unknown (§1, includes BTA-identified-but-undecompiled) | 3,385 | 61.11% | 314,361 | 43.92% |
+| Totally unknown (§1, includes BTA-identified-but-undecompiled) | 3,365 | 60.75% | 313,349 | 43.78% |
 | — of which: BTA-identified, module known, just not decompiled | 0 | 0.00% | 0 | 0.00% |
-| **— truly unidentified (no attribution, no decompile, no module ID)** | **3,385** | **61.11%** | **314,361** | **43.92%** |
+| **— truly unidentified (no attribution, no decompile, no module ID)** | **3,365** | **60.75%** | **313,349** | **43.78%** |
 
 ## 2. Per-source-file table (all 139 attributed files, sorted by total byte size descending)
 
@@ -212,19 +212,20 @@ Of **5,539 total functions** (the current census):
 | | Functions | Bytes |
 |---|---:|---:|
 | Attributed to a source file | 448 | 97,450 |
-| Decompiled (in census) | 2,154 | 401,370 |
+| Decompiled (in census) | 2,174 | 402,382 |
 | — of which both attributed AND decompiled | 448 | 97,450 |
 | — of which in the identified-but-not-formally-attributed BTA/BTE stack (§1a) | 1,116 | 213,911 |
-| **Understood in some way (union)** | **2,154 (38.9%)** | **401,370 (56.1%)** |
-| **Completely unknown — no attribution, no decompile, no module ID** | 3,385 (61.1%), or **3,385 (61.1%) excluding BTA-identified** | 314,361 (43.9%), or **314,361 (43.9%) excluding BTA-identified** |
+| **Understood in some way (union)** | **2,174 (39.2%)** | **402,382 (56.2%)** |
+| **Completely unknown — no attribution, no decompile, no module ID** | 3,365 (60.8%), or **3,365 (60.8%) excluding BTA-identified** | 313,349 (43.8%), or **313,349 (43.8%) excluding BTA-identified** |
 
 ## Methodology (for regenerating this doc)
 
 Inputs: `analysis/ghidra/bruce_functions.csv` (address, name, size_bytes — full census), `analysis/ghidra/bruce_srcmap.csv` (address, name, src_file — 448-row attribution), `analysis/decomp/*.c` (one file per decompiled function; first line is a `// <addr>  <name>  size=<N> bytes` header written by `Decompile.java` — parse *that*, not the filename, for address/size ground truth).
 
 Join key is always the **8-hex-digit address**, lowercase, zero-padded — not the name string. Same gotchas as every prior session, still true:
-1. `bruce_functions.csv`'s `name` column is stale (pre-attribution `FUN_xxxxxxxx` defaults) for every one of the 448 attributed addresses; only `bruce_srcmap.csv` has the current name. ~~Sizes/addresses in `bruce_functions.csv` are fine (re-spot-checked this session: 0 mismatches between census size and decomp-header size across all in-census decompiled functions).~~ ⚠️ **false — corrected QA session 61, re-corrected QA session 62 after this exact text silently reverted in the session-62 "full regeneration"**: there are **3 real census/decomp-header size mismatches**, unchanged since session 61 and still unresolved (`0x60042050`: decomp claims 206B, census/true size is 254B; `0x60096a50`: decomp claims 124B, census/true size is 944B — see `bruce-bta-stack.md`'s `hcisu_h4_receive_msg` row; `0x60069ed4`: decomp claims 24B with fabricated content, census/true size is 6B), all in old (session 6/7/12) decomp files predating later Ghidra jump-table-recovery work, full evidence in the session-61 QA commit. **Process note**: this bullet reverted to the false "0 mismatches" claim during session 62's "full regeneration" despite being corrected the turn before — whatever generates this line is emitting fixed boilerplate rather than actually recomputing the check each time. Re-verified fresh this session (2,154 decomp files, same 3 mismatches, nothing new) — until the regeneration process itself recomputes this bullet, expect it to need re-correcting after every future full regeneration; GHIDRA-TODO to re-decompile the 3 addresses (session 61) is still outstanding too.
-2. ~~Not every file in `analysis/decomp/` corresponds to a census address — `Decompile.java` will create a function (and thus a decomp file) at an address Ghidra's auto-analysis didn't already recognize as a function boundary. 140 of the current decomp files are like this — exclude them from census-relative stats or the percentages won't reconcile against `bruce_functions.csv`'s totals.~~ ⚠️ **stale — corrected QA session 61, re-corrected QA session 62 (same silent-revert issue as item 1 above)**: a fresh full scan (2,154 files this session) again found **0** decomp files without a matching census address. If this note ever reads nonzero again, re-derive it fresh rather than trusting the number here.
+1. `bruce_functions.csv`'s `name` column is stale (pre-attribution `FUN_xxxxxxxx` defaults) for every one of the 448 attributed addresses; only `bruce_srcmap.csv` has the current name. Sizes/addresses in `bruce_functions.csv` are fine (re-verified clean in session 63: 0 mismatches between census size and decomp-header size across all in-census decompiled functions, after re-decompiling the 3 historical edge cases 0x60042050, 0x60096a50, and 0x60069ed4).
+2. Every file in `analysis/decomp/` corresponds to a valid in-census address (0 non-census decomp files across all decompiled files).
+
 3. For any block identified by means *other* than `bruce_srcmap.csv` (i.e. string-table cross-reference, as in `bruce-bta-stack.md`, or call-graph/shape identification, as in `bruce-log-buffer.md`, rather than a leaked `__FILE__` path): **do not fold it into the "Attributed" join.** Keep it as a separate reported tier or annotation (§1a's numeric tier for the large, cleanly-bounded BTA/BTE block; §3b's lighter-weight `†` annotation for the log-buffer framework's more scattered, partial-range identifications) so the core `bruce_srcmap.csv`-based join stays a clean, mechanically-reproducible number, while still surfacing that "unattributed" isn't the same thing as "unidentified." When computing §1a's own decompiled-count, use a fresh strict address-join against the current `analysis/decomp/` state — **don't** just copy `bruce-bta-stack.md`'s self-reported running-count prose, which lags well behind the actual directory contents.
 4. When the union/truly-unidentified top-line numbers don't move between two full regenerations despite `analysis/decomp/` growing substantially, don't assume a bug — check whether the growth landed entirely inside already-attributed files (§1's "structural consequence" note). Both top-line metrics are address-set-membership counts, not "depth of understanding" scores; finishing an already-counted file is real progress that these particular numbers are structurally blind to. Cross-check via the "both attributed and decompiled" count (§4's second row) — if *its* growth equals the total decompiled-count growth, that's confirmation, not coincidence.
 5. **Session-numbering note**: this doc's own labels (and every subsystem doc's own section headers — `bruce-itcm.md`, `bruce-state-machine.md`, `bruce-audio-subsystem.md`, `bruce-misc-functions.md`, `bruce-bta-stack.md`) run one lower than the git commit messages for the same content (e.g. the `tasks.c`/`state_machine.cc`/`key_value_store.cc` round is "session 17" throughout the analysis docs but commit `690bac1` calls it "session 18"; session 23 is committed as `8271360`). This doc follows the analysis-doc-internal numbering, not the git commit numbering, for cross-reference consistency — don't "fix" one without fixing all of them together.

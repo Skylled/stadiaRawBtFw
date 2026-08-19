@@ -1,9 +1,15 @@
-// 60096a50  FUN_60096a50  size=124 bytes
+// 60096a50  FUN_60096a50  size=944 bytes
 // --- callers ---
 //   60097174 FUN_60097174
 // --- callees ---
+//   600b9afc FUN_600b9afc
 //   6006ed2c FUN_6006ed2c
+//   6006dbac FUN_6006dbac
 //   6006de78 FUN_6006de78
+//   6006dd90 FUN_6006dd90
+//   600b9d18 FUN_600b9d18
+//   6006dcdc FUN_6006dcdc
+//   6006ddd8 FUN_6006ddd8
 
 
 short FUN_60096a50(int *param_1)
@@ -81,7 +87,7 @@ short FUN_60096a50(int *param_1)
           uStack_14 = (ushort)bStack_19;
           if ((char)param_1[2] == '\x02') {
             uStack_14 = (ushort)*(byte *)((int)param_1 + 9) + uStack_14 * 0x100;
-            iVar4 = func_0x600b9afc(*param_1);
+            iVar4 = FUN_600b9afc(*param_1);
             *param_1 = iVar4;
             if (*param_1 == 0) {
               *(ushort *)(param_1 + 1) = uStack_14;
@@ -151,7 +157,7 @@ short FUN_60096a50(int *param_1)
             FUN_6006ddd8(*param_1,DAT_60096e34,0x2b7);
             *(undefined1 *)((int)param_1 + 10) = 0;
           }
-          else if (((char)param_1[2] == '\x02') && (iVar4 = func_0x600b9d18(), iVar4 == 0)) {
+          else if (((char)param_1[2] == '\x02') && (iVar4 = FUN_600b9d18(), iVar4 == 0)) {
             *(undefined1 *)((int)param_1 + 10) = 0;
           }
           else {

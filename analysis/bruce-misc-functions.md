@@ -2025,6 +2025,34 @@ Decompiled and documented 20 functions (684 bytes across `0x600d37ce`–`0x600d3
 | `0x600d3b50` |  18 | Device / Info | **`device_info_vtable_release`** — Device info virtual destructor / release dispatch: invokes vtable destructor `**(code **)(*(int *)*param_1 + 4)()`. Called by `device_info.cc`. | 1 caller / 0 callees |
 | `0x600d3b62` |  30 | Utils / String | **`string_to_lower`** — ASCII string to lowercase converter: iterates string buffer, replacing uppercase ASCII characters `0x41`..`0x5A` ('A'..'Z') with lowercase `+ 0x20` ('a'..'z'). Called by `device_info.cc` (`0x6005a4cc`). | 1 caller / 0 callees |
 
+## Session 63 (Wave 33) — Application State Machine Actions, Memory Barriers, Event Post & Binary Search Tables (20 functions, 1,012 bytes)
+
+Decompiled and documented 20 functions (1,012 bytes across `0x600d3b80`–`0x600d4084`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d3b80` |  24 | Utils / Memory | **`memcpy_1_or_n`** — Memory copy helper: single byte direct copy if `param_3 == 1` or `memcpy` via `thunk_EXT_FUN_0000b572` if `param_3 > 1`. 7 callers across flash writer, keys, and network stack. | 7 callers / 1 callee |
+| `0x600d3b98` |  24 | Utils / Memory | **`memmove_1_or_n`** — Overlapping memory copy helper: single byte direct copy if `param_3 == 1` or `memmove` via `thunk_EXT_FUN_0000b588` if `param_3 > 1`. Called by `FUN_6005a9fc`. | 1 caller / 1 callee |
+| `0x600d3c7c` |  64 | State / Flags | **`state_flag_eval`** — State flag / property evaluator: queries object interface property via `**(param_2 + 0x5c) + 0x1c` and packs boolean status flags. | 0 callers / 0 callees |
+| `0x600d3ccc` |  68 | Math / LUT | **`key_binary_search_14`** — 14-entry sorted binary search lookup table: searches key `param_2` in 8-byte entry table `*(param_1 + 0x70)` and returns associated value `piVar4[1]`. | 0 callers / 0 callees |
+| `0x600d3d10` |  68 | Math / LUT | **`key_binary_search_20`** — 20-entry sorted binary search lookup table: searches key `param_2` in 8-byte entry table `*(param_1 + 0x74)` and returns associated value `piVar4[1]`. | 0 callers / 0 callees |
+| `0x600d3d54` |  40 | System / Events | **`event_notify_async`** — Asynchronous event notification sender: queries event source via `thunk_EXT_FUN_0000714c` and posts event via `thunk_EXT_FUN_00007a2c`. Called from `application_state.cc` (`0x6005b8dc`). | 1 caller / 2 callees |
+| `0x600d3d7c` |  30 | Audio / Haptics | **`pattern_player_event_post`** — Pattern player event poster: posts event to queue via `thunk_EXT_FUN_00007a2c(param_1, 3, 0, 0, 10, param_2, param_3)`. Called from `pattern_player.cc` (`0x6005af04`). | 1 caller / 1 callee |
+| `0x600d3d9a` |  62 | Power / State | **`device_power_state_validate`** — Device power/connection state validator: checks 5 power/connectivity state flags (types 2, 8, 10, 9, 1) via `FUN_600dffe8`. Called from `application_state.cc`. | 1 caller / 1 callee |
+| `0x600d3dd8` |  28 | State / Timer | **`app_state_timer_dispatch`** — Application state timer / event dispatcher: gets timer context via `FUN_6005bdac` and dispatches via `thunk_EXT_FUN_00001834`. 10 callers across application state machine and Gotham interface. | 10 callers / 2 callees |
+| `0x600d3e22` |  40 | State / Atomic | **`app_state_memory_barrier_write`** — Atomic application state writer: executes ARM `DMB` barriers around state byte write `*(param_1 + 4) = param_2` and notifies state listener `FUN_6005ae68`. Called from `application_state.cc` (`0x6005b1c0`). | 1 caller / 1 callee |
+| `0x600d3e4a` |  22 | State / Flags | **`app_state_flag_getter`** — Application state flag getter: checks flag byte `*(param_2 + 0x28)` and retrieves value `*(param_2 + 0x24)`. Called by `FUN_600d3e60`. | 1 caller / 0 callees |
+| `0x600d3e60` |  52 | State / Transition | **`app_state_transition_execute`** — Application state transition executor: queries transition status via `FUN_600d3e4a`, dispatches to virtual handler `*param_1 + 0x10`, or triggers error halt `FUN_6010209a`. Called from `application_state.cc`. | 2 callers / 2 callees |
+| `0x600d3e94` |  32 | Diagnostics / JSON | **`json_builder_init_object_200`** — JSON object builder initializer: initializes 200-byte (`199`) buffer with `{` and `}` delimiters. Called from `FUN_6005b4f4`. | 1 caller / 0 callees |
+| `0x600d3eb4` |  26 | State / Struct | **`app_state_record_copy`** — Application state record structure copier: copies structure fields and validity flags. Called by `FUN_600d3ece`. | 1 caller / 0 callees |
+| `0x600d3ece` | 280 | State / Dispatch | **`app_state_action_dispatch`** — Application state hierarchical action dispatcher: binary searches state table `param_2[0x1a]`, matches action ID `param_4`, copies parameters via `FUN_600d3eb4`, and dispatches action handler `**(param_2 + 0x28)`. | 0 callers / 1 callee |
+| `0x600d3fe6` |  38 | Memory / Cleanup | **`descriptor_array_free`** — Descriptor pointer array deallocator: iterates pointer array `param_1[5]`..`param_1[9]` freeing each descriptor via `thunk_EXT_FUN_0000b52a`, and frees array root `*param_1`. 6 callers! | 6 callers / 1 callee |
+| `0x600d400c` |  20 | System / Init | **`system_table_init_60`** — System table initializer: calls `FUN_6005b740` and zeroes 96-byte (`0x60`) table. | 0 callers / 2 callees |
+| `0x600d4020` |  22 | System / Init | **`system_table_init_120`** — System table initializer: calls `FUN_6005b764` and zeroes 288-byte (`0x120`) table. | 0 callers / 2 callees |
+| `0x600d4036` |  32 | State / String | **`app_state_string_format`** — Application state string formatter: formats state description via `FUN_60079adc` and appends via `FUN_60101ba2`. Called from `application_state.cc`. | 2 callers / 2 callees |
+| `0x600d4084` |  40 | System / Events | **`app_state_event_notify`** — Application state event notifier: queries event source via `thunk_EXT_FUN_0000714c` and posts event via `thunk_EXT_FUN_00007a2c`. Called from `FUN_6005c8a0`. | 1 caller / 2 callees |
+
+
 
 
 
