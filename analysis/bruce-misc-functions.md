@@ -1998,6 +1998,34 @@ Decompiled and documented 20 functions (850 bytes across `0x600d33b2`–`0x600d3
 | `0x600d373a` | 100 | Math / LUT | **`lut_piecewise_linear_interp_3point`** — 3-point piecewise linear interpolation table lookup: binary searches breakpoints using `FUN_600d3672` and computes interpolated value `y0 + (y1 - y0) * (x - x0) / (x1 - x0)`. | 0 callers / 1 callee |
 | `0x600d379e` |  14 | Math / Predicate | **`comparator_uint32_less`** — 32-bit unsigned less-than comparison predicate: returns `*param_1 < *param_2`. Called from `FUN_600593f4` and `FUN_600db43e`. | 2 callers / 0 callees |
 
+## Session 62 (Wave 32) — JSON Serializer, Firmware Image Upload Thunk & Device Info Utilities (20 functions, 684 bytes)
+
+Decompiled and documented 20 functions (684 bytes across `0x600d37ce`–`0x600d3b62`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d37ce` |  48 | Diagnostics / JSON | **`json_format_key_int_curly`** — JSON key-value integer formatter: formats integer value into JSON `{key: int}` structure via `FUN_60101b0c` and `FUN_601019da` with closing `}` (`0x7d`). Called from `FUN_600593f4` and `FUN_600cbbc0`. | 5 callers / 3 callees |
+| `0x600d37fe` |  48 | Diagnostics / JSON | **`json_format_int_bracket`** — JSON array integer formatter: formats integer into JSON `[int]` array via `FUN_60101b0c` and `FUN_601019da` with closing `]` (`0x5d`). Called from `FUN_600593f4`. | 1 caller / 3 callees |
+| `0x600d3888` |  32 | Diagnostics / JSON | **`json_builder_init_object_256`** — JSON object builder initializer: initializes 256-byte buffer `auStack` with `{` (`0x7b`) and `}` (`0x7d`) delimiters. Called from `FUN_60059280` and `FUN_600d38c8`. | 2 callers / 0 callees |
+| `0x600d38a8` |  32 | Diagnostics / JSON | **`json_builder_init_array_256`** — JSON array builder initializer: initializes 256-byte buffer with `[` (`0x5b`) and `]` (`0x5d`) delimiters. Called from `FUN_600593f4` and `FUN_600d38c8`. | 2 callers / 0 callees |
+| `0x600d38c8` | 112 | Diagnostics / JSON | **`json_format_uint32_array`** — JSON uint32 array serializer: iterates array `param_2`, formats elements into JSON array `[e0, e1, ...]`, and emits formatted JSON string via `FUN_6010138c`. Called from `FUN_60059560`. | 1 caller / 7 callees |
+| `0x600d3938` |  48 | Diagnostics / JSON | **`json_format_key_int_curly_alt`** — JSON key-value integer formatter: formats integer value into JSON `{key: int}` structure. Called from `FUN_60059280`. | 1 caller / 3 callees |
+| `0x600d3968` |  34 | Diagnostics / JSON | **`json_builder_init_object_512`** — JSON object builder initializer: initializes 512-byte (`0x1ff`) buffer with `{` and `}` delimiters. Called from `FUN_600593f4` and `FUN_60059360`. | 2 callers / 0 callees |
+| `0x600d398a` |  48 | Diagnostics / JSON | **`json_format_hex_bracket`** — JSON array hex/buffer formatter: formats buffer chunk via `FUN_60050c18` into JSON array `[...]`. Called from `FUN_600593f4`. | 1 caller / 3 callees |
+| `0x600d3a14` |   2 | System / Stub | **`nop_stub`** — No-operation stub: returns immediately (`bx lr`). Called from `FUN_60059cd8`. | 1 caller / 0 callees |
+| `0x600d3a16` |   4 | Firmware / Upload | **`firmware_upload_cmd_thunk`** (`thunk_FUN_60059eb8`) — Firmware image upload command submission thunk: tail-call to `FUN_60059eb8`. Called from `firmware_image_upload.cc` and `application_state.cc`. | 5 callers / 0 callees |
+| `0x600d3a38` |  22 | Crypto / Keys | **`key_deref_or_copy`** — Key store value getter/dereferencer: copies pointer if `param_3 == 1` or dereferences value if `param_3 == 2`. Called by `keys.cc` (`0x60066370`). | 1 caller / 0 callees |
+| `0x600d3a56` |  14 | System / Init | **`system_table_init_18`** — System table zeroer: zeroes 24-byte (`0x18`) table via `thunk_EXT_FUN_0000b52e`. | 0 callers / 1 callee |
+| `0x600d3a64` |  20 | System / Init | **`system_table_init_20`** — System table initializer: calls `FUN_6005a01c` and zeroes 32-byte (`0x20`) table. | 0 callers / 2 callees |
+| `0x600d3a78` |  76 | Utils / RingBuffer | **`ring_buffer_write_bounded`** — Bounded circular / stream buffer writer: appends `param_3` bytes to buffer `param_1 + 0xc`, clamping to capacity `*(param_1 + 8)` and updating write index `*(param_1 + 0x14)`. | 0 callers / 1 callee |
+| `0x600d3ac4` |  34 | Diagnostics / JSON | **`json_format_int_append`** — JSON integer appending helper: formats integer into string buffer and calls `FUN_60101ba2`. Called by `device_info.cc` (`0x6005a0ac`). | 1 caller / 2 callees |
+| `0x600d3ae6` |  28 | Diagnostics / JSON | **`json_format_string_append`** — JSON string escaping and appending helper: escapes string `param_2` via `FUN_600cbb14` and appends via `FUN_60101b76`. Called by `device_info.cc` and `gotham.cc`. | 5 callers / 2 callees |
+| `0x600d3b02` |  16 | Device / Info | **`device_info_resource_release`** — Device info resource cleanup helper: invokes release helper `FUN_600e0242` if handle `*param_1 != 0`. Called by `device_info.cc`. | 2 callers / 1 callee |
+| `0x600d3b12` |  18 | Device / Info | **`device_info_buffer_clear_20`** — Device info 32-byte buffer clear helper: clears 32-byte (`0x20`) buffer via `thunk_EXT_FUN_0000b52e`. Called by `device_info.cc`. | 2 callers / 1 callee |
+| `0x600d3b50` |  18 | Device / Info | **`device_info_vtable_release`** — Device info virtual destructor / release dispatch: invokes vtable destructor `**(code **)(*(int *)*param_1 + 4)()`. Called by `device_info.cc`. | 1 caller / 0 callees |
+| `0x600d3b62` |  30 | Utils / String | **`string_to_lower`** — ASCII string to lowercase converter: iterates string buffer, replacing uppercase ASCII characters `0x41`..`0x5A` ('A'..'Z') with lowercase `+ 0x20` ('a'..'z'). Called by `device_info.cc` (`0x6005a4cc`). | 1 caller / 0 callees |
+
+
 
 
 

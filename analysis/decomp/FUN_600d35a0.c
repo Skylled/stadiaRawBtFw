@@ -3,27 +3,15 @@
 //   601025a8 FUN_601025a8
 // --- callees ---
 //   6013d128 thunk_EXT_FUN_00007f58
-//   6013d3a0 thunk_EXT_FUN_0000b572
 //   6013d180 thunk_EXT_FUN_000080d8
+//   6013d3a0 thunk_EXT_FUN_0000b572
 
 
-int FUN_600d35a0(undefined4 param_1,int param_2,int param_3)
+void FUN_600d35a0(undefined4 param_1,undefined4 param_2,undefined4 param_3)
 
 {
-  int iVar1;
-  
-  if (param_3 == 0) {
-    thunk_EXT_FUN_000080d8();
-    iVar1 = 0;
-  }
-  else {
-    iVar1 = thunk_EXT_FUN_00007f58(param_3);
-    if ((iVar1 != 0) && (param_2 != 0)) {
-      thunk_EXT_FUN_0000b572(iVar1,param_2,param_3);
-      thunk_EXT_FUN_000080d8(param_2);
-    }
-  }
-  return iVar1;
+  func_0x600d3566(param_2,param_3);
+  return;
 }
 
 
