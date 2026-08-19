@@ -204,7 +204,7 @@ Session 8 executed session 7's continuation plan: swept the remaining BTA/BTE tr
 | `0x60095f38` | 94 | **bta_sys_hw_btm_cback** (named) — BTA SYS (task/event-bus) helper |
 | `0x600961e0` | 84 | **bta_sys_event** (named) — BTA SYS (task/event-bus) helper |
 | `0x600962dc` | 42 | **bta_sys_sendmsg** (named) — BTA SYS (task/event-bus) helper |
-| `0x60096a50` | 124 | **hcisu_h4_receive_msg** (named) — HCI transport (H4) helper |
+| `0x60096a50` | ~~124~~ **944 (corrected, QA session 61)** | ~~**hcisu_h4_receive_msg** (named) — HCI transport (H4) helper~~ ⚠️ **stale/truncated decompile, corrected QA session 61** — disassembly confirms a real 7-way `ldr.w pc,[r2,r3,lsl#2]` jump-table dispatcher (dispatching on a byte at struct offset `+0xa`) whose case-handler bodies genuinely continue well past the committed file's 124-byte cutoff, matching the census's 944B size, not the stale decomp file's. Consistent with session 30 QA's independent finding (item 28, `CLAUDE.md`) that this whole "HCI H4 UART transport" cluster is a mislabeled internal event-dispatcher, not real HCI transport code — this function's real identity is unconfirmed pending a fresh decompile. GHIDRA-TODO tracked in `bruce-decompile-status.md`'s methodology section. |
 | `0x6009a7c0` | 54 | **btm_acl_reset_paging** (named) — BTM (device/link manager) internal function |
 | `0x6009b77c` | 306 | **BTM_BleDataSignature** (named) — BTM (device/link manager) internal function |
 | `0x6009c7c8` | 44 | **btm_ble_enqueue_direct_conn_req** (named) — BTM (device/link manager) internal function |
