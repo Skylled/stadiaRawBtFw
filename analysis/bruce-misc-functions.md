@@ -2702,6 +2702,34 @@ Decompiled and documented 20 functions (812 bytes across `0x600e02a8`–`0x600e0
 | `0x600e05bc` | 144 | Gotham / Log | **`gotham_log_msg_concat_and_enqueue`** — Concatenates `param_1` string arguments into dynamically grown buffer, null-terminates, enqueues via `gotham_log_packet_enqueue_or_free` (`0x600e04f4`). Called by `FUN_60086508`, `FUN_60091ddc`, `tasn_dec__6008fa18`. | 3 callers / 6 callees |
 | `0x600e064c` |  52 | Gotham / Log | **`gotham_log_msg_format_and_enqueue`** — Allocates 257-byte log buffer (`0x101`), formats log string via `thunk_FUN_600cdd6c`, null-terminates, enqueues via `gotham_log_packet_enqueue_or_free` (`0x600e04f4`). Called by `evp__6008506c`. | 1 caller / 3 callees |
 
+## Session 88 (Wave 58) — Crypto EVP/ASN.1, Ed25519/X25519 Key Management & Safe String Helpers (20 functions, 510 bytes)
+
+Decompiled and documented 20 functions (510 bytes across `0x600e0680`–`0x600e0a14`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600e0680` |  22 | Crypto / EVP | **`crypto_evp_cipher_ctx_cleanup`** — EVP cipher context cleanup: invokes cipher-specific cleanup callback `*(ctx + 0xc) + 0x4c`, zeroes state fields `param_1 + 4` and `param_1 + 8`. Called by `evp__6008506c` and `0x600e0696`. | 2 callers / 0 callees |
+| `0x600e0696` |  30 | Crypto / EVP | **`crypto_evp_cipher_ctx_free`** — EVP cipher context destructor: verifies reference count via `FUN_600867c8`, cleans up context via `crypto_evp_cipher_ctx_cleanup` (`0x600e0680`), and frees memory via `thunk_EXT_FUN_0000ac5e`. | 0 callers / 3 callees |
+| `0x600e06b4` |  10 | Crypto / EVP | **`crypto_evp_cipher_init_stub`** — Initializes EVP cipher subsystem via `FUN_600867a4`, returns 1. | 0 callers / 1 callee |
+| `0x600e06be` |  18 | Crypto / EVP | **`crypto_evp_pkey_ctx_init`** — EVP pkey context initializer: invokes `FUN_60085040`, if successful triggers ASN.1 key handler `FUN_600ea86e`. | 0 callers / 2 callees |
+| `0x600e06e6` |   8 | Crypto / ASN1 | **`crypto_asn1_error_dispatch_6`** — ASN.1 error reporting wrapper: calls `func_0x600e06d0(param_1, 6, param_2)`. | 0 callers / 0 callees |
+| `0x600e06f6` |  10 | Crypto / ASN1 | **`crypto_asn1_error_dispatch_198`** — ASN.1 error reporting wrapper: calls `func_0x600e06d0(param_1, 0x198, param_2)`. Called by `FUN_60085528`. | 1 caller / 0 callees |
+| `0x600e080c` |  22 | Crypto / Ed25519 | **`crypto_ed25519_pubkey_import`** — Ed25519 public key importer: extracts key data from ASN.1 structure `*(param_2 + 8)` via `FUN_600ea886`, imports key into BCM crypto context `*(param_1 + 8)` via `bcm__6008d6b8`. | 0 callers / 2 callees |
+| `0x600e0822` |  32 | Crypto / Ed25519 | **`crypto_ed25519_key_decode`** — Ed25519 key decoder: parses ASN.1 key structure via `FUN_600ea886`/`FUN_600ea7fa`, extracts key via `FUN_600e7450`, or records error via `thunk_EXT_FUN_0000ac1e`. | 0 callers / 4 callees |
+| `0x600e084e` |  58 | Crypto / Ed25519 | **`crypto_ed25519_key_compare`** — Ed25519 key comparator: extracts key material lengths and pointers from both parameters via `FUN_600ea886`/`FUN_600ea88e`, compares keys via constant-time comparison helper `bcm__6008db08`, maps 0 to 1 (equal), 1 to 0 (unequal), other to -2. | 0 callers / 3 callees |
+| `0x600e0890` |  16 | Crypto / Ed25519 | **`crypto_ed25519_key_free`** — Ed25519 key destructor: frees key buffer `*(param_1 + 8)` via `thunk_EXT_FUN_0000ac5e`, clears pointer. Called by `p_ed25519_asn1__60085728`. | 1 caller / 1 callee |
+| `0x600e0904` |  16 | Crypto / X25519 | **`crypto_x25519_key_free`** — X25519 key destructor: frees key buffer `*(param_1 + 8)` via `thunk_EXT_FUN_0000ac5e`, clears pointer. Called by `p_x25519_asn1__60085c98`. | 1 caller / 1 callee |
+| `0x600e0914` |  20 | Crypto / X25519 | **`crypto_x25519_key_memcmp_32b`** — X25519 constant-time 32-byte key comparison: compares 32-byte (`0x20`) buffers `*(param_1 + 8)` and `*(param_2 + 8)` via `thunk_EXT_FUN_0000b554`, returns true if identical. | 0 callers / 1 callee |
+| `0x600e0928` |   4 | Crypto / Heap | **`crypto_heap_thunk_8844`** — Heap allocator trampoline thunk forwarding to `thunk_EXT_FUN_00008844`. | 0 callers / 1 callee |
+| `0x600e093e` |  56 | Crypto / Memory | **`crypto_realloc`** — Crypto memory reallocator: if `ptr == NULL` delegates to `malloc(param_2)` (`0x600e092c`); otherwise retrieves old size `*(ptr - 8)`, allocates new buffer, copies `min(old_size, new_size)` bytes via `memcpy` (`thunk_EXT_FUN_0000b572`), frees old buffer via `free` (`thunk_EXT_FUN_0000ac5e`), and returns new pointer. Called across ASN.1 / PEM / crypto subsystems. | 7 callers / 3 callees |
+| `0x600e0976` |  26 | Crypto / Util | **`crypto_constant_time_memcmp_diff`** — Constant-time memory difference accumulator: computes bitwise difference `bVar1 = bVar1 \| (*(param_1 + i) ^ *(param_2 + i))` over `param_3` bytes, preventing timing side-channel attacks. Called by `FUN_600ed3a0`. | 1 caller / 0 callees |
+| `0x600e0990` |  38 | Crypto / String | **`crypto_strdup`** — String duplicator: calculates length via `strlen` (`FUN_6004cb28`), allocates `len + 1` bytes via `malloc` (`0x600e092c`), copies string plus null terminator via `memcpy`. | 0 callers / 3 callees |
+| `0x600e09c2` |  26 | Crypto / Log | **`crypto_log_vprintf_wrapper`** — Formatted log printer wrapper: passes arguments to `FUN_600cdd6c`. Called by `FUN_60091ddc`. | 1 caller / 1 callee |
+| `0x600e09dc` |   4 | Crypto / Log | **`crypto_log_printf_thunk`** — Formatted print trampoline thunk forwarding to `FUN_600cdd6c`. Called by `0x600e064c`. | 1 caller / 1 callee |
+| `0x600e09e0` |  48 | Crypto / String | **`crypto_strlcpy`** — Standard `strlcpy` string copy helper: bounded copy of `param_2` to `param_1` with size limit `param_3`, guarantees null termination, returns bytes copied plus source length. Called by `0x600e0a14`, `FUN_60086b98`, `FUN_60091ab4`. | 3 callers / 1 callee |
+| `0x600e0a14` |  46 | Crypto / PEM | **`crypto_pem_string_copy_safe`** — Safe PEM string copy helper: checks null pointers, verifies length `strlen(param_4) < param_2`, and copies string via `crypto_strlcpy` (`0x600e09e0`). Called by `pem_lib__60085f2c`. | 1 caller / 2 callees |
+
+
 
 
 
