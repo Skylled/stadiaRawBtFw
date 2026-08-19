@@ -2162,6 +2162,34 @@ Decompiled and documented 20 functions (692 bytes across `0x600d94c4`–`0x600d9
 | `0x600d96f4` |  12 | System / Validate | **`range_is_valid_1_to_3`** — Range validation predicate: returns true if `param_1 - 1U < 3` (values 1, 2, 3). | 0 callers / 0 callees |
 | `0x600d9700` | 154 | Controller / Calib | **`interpolate_float_curve`** — Floating-point piecewise-linear calibration curve interpolator: checks NaN / bounds, binary searches 8-byte entry float table `param_2` via `comparator_float_less`, converts fixed-point vector scale, and calculates linear interpolation. Called by `switch_pro_controller.cc` (`0x60070ad0`, `0x60070dcc`) and `0x600712c8`. | 3 callers / 1 callee |
 
+## Session 68 (Wave 38) — Piecewise Interpolators, Property Queries, Vtable Dispatch & Event Post (20 functions, 712 bytes)
+
+Decompiled and documented 20 functions (712 bytes across `0x600d97a6`–`0x600d9c7a`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d97a6` |  14 | Utilities / Compare | **`comparator_ushort_less`** — Unsigned 16-bit less-than comparator predicate: returns `*param_1 < *param_2`. Called by `FUN_600d97c4`. | 1 caller / 0 callees |
+| `0x600d97b6` |  14 | System / Init | **`struct_clear_12b_6`** — 12-byte structure zeroer: clears 12 bytes via `thunk_EXT_FUN_0000b52e(param_1, 0xc)`. | 0 callers / 1 callee |
+| `0x600d97c4` | 102 | Controller / Calib | **`interpolate_piecewise_linear_4b`** — 4-byte entry piecewise-linear calibration interpolator: binary searches 4-entry ushort table `param_1` using `comparator_ushort_less` and computes linear interpolation. Called by `0x60070bf4`. | 1 caller / 1 callee |
+| `0x600d9832` |  14 | System / Init | **`struct_clear_12b_7`** — 12-byte structure zeroer: clears 12 bytes via `thunk_EXT_FUN_0000b52e(param_1, 0xc)`. | 0 callers / 1 callee |
+| `0x600d9840` |  14 | Utilities / Compare | **`comparator_ushort_less_alt`** — Alternate unsigned 16-bit less-than comparator predicate: returns `*param_1 < *param_2`. Called by `FUN_600d988c`. | 1 caller / 0 callees |
+| `0x600d9850` |  46 | Controller / Calib | **`calib_descriptor_init_type9`** — Type-9 calibration descriptor initializer: zeroes 13 bytes via `thunk_EXT_FUN_0000b5ba`, sets `*param_2 = 9`, `param_2[3] = 9`, `param_2[5] = 3`, `param_2[10] = 0xff`, and stores upper bytes of `param_3` at `param_2[8]` and `param_4` at `param_2[9]`. | 0 callers / 1 callee |
+| `0x600d987e` |  14 | System / Init | **`struct_clear_12b_8`** — 12-byte structure zeroer: clears 12 bytes via `thunk_EXT_FUN_0000b52e(param_1, 0xc)`. | 0 callers / 1 callee |
+| `0x600d988c` | 102 | Controller / Calib | **`interpolate_piecewise_linear_4b_alt`** — Alternate 4-byte entry piecewise-linear calibration interpolator: binary searches 3-entry ushort table `param_1` using `comparator_ushort_less_alt` and computes linear interpolation. | 0 callers / 1 callee |
+| `0x600d9910` |  14 | System / Init | **`struct_clear_12b_9`** — 12-byte structure zeroer: clears 12 bytes via `thunk_EXT_FUN_0000b52e(param_1, 0xc)`. | 0 callers / 1 callee |
+| `0x600d9926` |  14 | System / Init | **`struct_clear_12b_10`** — 12-byte structure zeroer: clears 12 bytes via `thunk_EXT_FUN_0000b52e(param_1, 0xc)`. | 0 callers / 1 callee |
+| `0x600d9934` |  40 | System / Property | **`device_property_query_bit8`** — Device property query helper: queries property `0x26` via `FUN_60071348`, extracts bit 8 (`((local_c >> 8) ^ 1) & 1`), stores result at `*param_1`. Called by `0x600d7cdc` and `0x60077140`. | 2 callers / 1 callee |
+| `0x600d995c` |  44 | System / Property | **`device_property_query_mask_c00000`** — Device property query helper: queries property `6` via `FUN_60071348`, checks mask `(local_c & 0xc00000) != 0xc00000`, stores boolean at `*param_1`. Called by `0x600d7cc4` and `0x60077140`. | 2 callers / 1 callee |
+| `0x600d9988` |  36 | System / Property | **`device_property_query_val3`** — Device property query helper: queries property `0x2f` via `FUN_60071348`, checks `(local_c & 7) == 3`, stores boolean at `*param_1`. Called by `0x60077140`. | 1 caller / 1 callee |
+| `0x600d99ac` |   4 | System / Constants | **`constant_3_getter`** — Trivial constant getter: returns 3. Called by `0x60059100`. | 1 caller / 0 callees |
+| `0x600d99f2` |  14 | System / Init | **`struct_clear_216b`** — 216-byte structure zeroer: clears 216 bytes (`0xd8`) via `thunk_EXT_FUN_0000b52e(param_1, 0xd8)`. | 0 callers / 1 callee |
+| `0x600d9a00` |  38 | Gotham / RX | **`gotham_rx_event_dispatch_if_active`** — Gotham RX event forwarder: checks byte flag at `*(param_1 + 200)` with ARM `DMB` barriers, calling `FUN_600d4df0()` if non-zero. | 0 callers / 1 callee |
+| `0x600d9a26` |  48 | System / Vtable | **`vtable_chain_dispatch_4`** — 4-element vtable method chain dispatcher: iterates 4 pointers `param_1 + 4`..`param_1 + 0x14`, invoking method `*(vtable + 4)` on each until non-zero error or all 4 succeed. | 0 callers / 0 callees |
+| `0x600d9ae2` | 100 | Controller / Mode | **`controller_mode_code_map`** — Controller mode code lookup: switches on mode parameter `param_1` (cases 2/3 -> 1, 4 -> 3, 5 -> 4, 6 -> 5, default -> 0). Called by `0x60071478`. | 1 caller / 0 callees |
+| `0x600d9b4c` |  16 | System / Init | **`struct_clear_84b`** — 84-byte structure zeroer: zeroes 80 bytes (`0x50`) via `thunk_EXT_FUN_0000b5ba` and zeroes trailing word `*(iVar1 + 0x50) = 0`. Called by `0x600723b4`, `0x600722b0`, `0x60071660`. | 3 callers / 1 callee |
+| `0x600d9c7a` |  24 | Events / Async | **`async_event_post_type5`** — Asynchronous event poster: posts event type 5 with context `*(param_1 + 4)` via `thunk_EXT_FUN_00007a2c`. Called by `FUN_600d9c92`. | 1 caller / 1 callee |
+
+
 
 
 
