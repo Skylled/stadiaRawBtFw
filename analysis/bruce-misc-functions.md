@@ -2270,6 +2270,34 @@ Decompiled and documented 20 functions (1,092 bytes across `0x600da824`–`0x600
 | `0x600dacf6` |  24 | System / Locks | **`mutex_locked_action_invoke_1`** — Mutex-locked action invoker: acquires mutex via `thunk_EXT_FUN_0000b4c2()`, invokes action handler with context `&local_c` (`param_1 + 8`) via `thunk_EXT_FUN_0000887a(&local_c)`. | 0 callers / 2 callees |
 | `0x600dad0e` |  24 | System / Locks | **`mutex_locked_action_invoke_2`** — Mutex-locked action invoker: identical pattern to `0x600dacf6`, acquiring mutex and invoking action handler via `thunk_EXT_FUN_0000887a(&local_c)`. | 0 callers / 2 callees |
 
+## Session 72 (Wave 42) — Red-Black Tree Maps, Ring Buffers, Audio Pipes & Transport State (20 functions, 1,100 bytes)
+
+Decompiled and documented 20 functions (1,100 bytes across `0x600dadaa`–`0x600db2be`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600dadaa` |  50 | Audio / Buffer | **`buffer_slice_append_stream`** — Stream buffer slice appender: checks buffer capacity via `FUN_600cc3cc()`, appends data via `FUN_60050c18`, updates slice length with tag `0x7d` via `FUN_601019da`. Called by `0x6007694c`. | 1 caller / 3 callees |
+| `0x600daddc` |  34 | Audio / Buffer | **`buffer_slice_advance_int`** — Buffer slice advance helper: converts signed integer `param_2` via `FUN_60101b0c` into buffer slice and updates slice offset via `FUN_60101ba2`. Called by `0x60076ba0`. | 1 caller / 2 callees |
+| `0x600dadfe` |  30 | Data / Tree | **`rb_tree_destroy_nodes`** — Red-black tree recursive node destruction helper: traverses left/right children (`+0xc`, `+8`), frees tree node memory via `thunk_EXT_FUN_0000b52a` (`vPortFree`). | 3 callers / 2 callees |
+| `0x600dae1c` | 164 | Data / Tree | **`rb_tree_erase_range`** — Red-black tree key range eraser (`std::map::erase`): finds key bounds, deletes subtree nodes via `rb_tree_destroy_nodes` if root matches or unlinks node-by-node via `FUN_60101d22`/`FUN_60101e12` and `vPortFree`, decrementing tree size `*(param_1 + 0x14)`. Called by `0x60076ba0`. | 1 caller / 4 callees |
+| `0x600daec0` |  42 | Data / Tree | **`rb_tree_find_key`** — Red-black tree key lookup (`std::map::find`): traverses binary search tree root `*(param_1 + 8)` comparing key `*param_2` against node key `*(node + 0x10)`, returning node pointer or end sentinel `param_1 + 4`. Called by `0x60076e1c`. | 1 caller / 0 callees |
+| `0x600daeea` |  80 | Data / Tree | **`rb_tree_insert_lookup`** — Red-black tree insertion location finder: traverses BST to find parent insertion spot for key `*param_3`, returning `(node, 0)` if key exists or `(0, parent)` for new node insertion. | 2 callers / 1 callee |
+| `0x600daf3a` | 100 | Data / Tree | **`rb_tree_insert_node_1`** — Red-black tree node allocator & inserter: calls `rb_tree_insert_lookup`, allocates 20-byte node via `thunk_EXT_FUN_0000b532` (`pvPortMalloc`), sets node key `*(node + 0x10) = *param_3`, rebalances tree via `FUN_60101d4e`, and increments size `*(param_2 + 0x14)`. | 1 caller / 3 callees |
+| `0x600daf9e` | 100 | Data / Tree | **`rb_tree_insert_node_2`** — Red-black tree node allocator & inserter: duplicate instantiation of `0x600daf3a`. Called by `0x60076ba0`. | 1 caller / 3 callees |
+| `0x600db002` |  18 | Utilities / String | **`strnlen_custom`** — Bounded string length scanner (`strnlen`): scans string `param_1` up to maximum length `param_2` until null terminator, returning byte count. 8 callers across `key_value_store.cc` and utilities! | 8 callers / 0 callees |
+| `0x600db056` |  76 | Audio / Stream | **`dual_buffer_stream_copy`** — Dual-buffer streaming copy helper: computes available bytes from primary buffer `(param_1 + 8, +0xc)` or secondary buffer `(param_1 + 0x10, +0x14)`, copies data via `thunk_EXT_FUN_0000b572` (`memcpy`), advances read offsets `+0x18` / `+0x1c`, and writes copied length to `*param_4`. | 0 callers / 1 callee |
+| `0x600db0a2` |  14 | System / Init | **`struct_clear_32b`** — 32-byte structure zeroer: clears 32 bytes (`0x20`) via `thunk_EXT_FUN_0000b52e(param_1, 0x20)`. | 0 callers / 1 callee |
+| `0x600db0b0` |  14 | System / Init | **`struct_clear_20b_3`** — 20-byte structure zeroer: clears 20 bytes (`0x14`) via `thunk_EXT_FUN_0000b52e(param_1, 0x14)`. | 0 callers / 1 callee |
+| `0x600db0be` |  24 | Audio / Buffer | **`audio_buffer_pool_init_6080b`** — Audio buffer pool initializer: calls `FUN_6007758c()` and initializes 6080-byte buffer pool (`0x17c0`) with 32-byte element stride (`0x20`) via `FUN_60101c60`. | 0 callers / 2 callees |
+| `0x600db11a` |  34 | Audio / Stream | **`audio_stream_buffer_fetch`** — Audio stream buffer fetch helper: calls `FUN_60050c18` on buffer slice and updates offset via `FUN_60101ba2`. Called by `0x60077948` and `0x60077a48`. | 2 callers / 2 callees |
+| `0x600db14c` |  60 | Audio / RingBuf | **`ring_buffer_pop_front_256b`** — 256-byte ring buffer pop helper: pops up to `param_3` bytes from buffer `param_1`, copies to destination `param_2` via `memcpy`, shifts remaining bytes down via `memmove` (`thunk_EXT_FUN_0000b588`), and decrements size `*(param_1 + 0x100)`. Called by `0x60077750`. | 1 caller / 2 callees |
+| `0x600db188` |  40 | Audio / RingBuf | **`ring_buffer_push_back_256b`** — 256-byte ring buffer push helper: appends up to `param_3` bytes into buffer `param_1` at offset `*(param_1 + 0x100)` via `memcpy`, and increments size `*(param_1 + 0x100)`. | 0 callers / 1 callee |
+| `0x600db1b0` |  62 | Audio / Pipe | **`audio_pipe_receive_packet_256b`** — Audio pipe packet receiver: receives 256-byte packet via `FUN_600d4f98`, resets lock/state at `param_1 + 0x108` via `FUN_60101818`, updates overflow flag at `+0x104`, and triggers event via `thunk_EXT_FUN_00000f80(param_1, 0x100)`. Called by `0x60077750`. | 1 caller / 3 callees |
+| `0x600db1ee` |  88 | Audio / Pipe | **`audio_pipe_send_packet_256b`** — Audio pipe packet transmitter: formats packet via `thunk_EXT_FUN_00000fac`, transmits via `FUN_600d4f6c`, handles timeout/completion at `param_1 + 0x108` via `FUN_60101818`/`FUN_60101822`, and clears buffer count `*(param_1 + 0x100) = 0`. | 0 callers / 5 callees |
+| `0x600db28e` |  18 | Audio / Cleanup | **`struct_cleanup_32b_if_nonnull`** — Null-guarded 32-byte structure cleanup: frees 32-byte payload at `*(param_1 + 4)` via `thunk_EXT_FUN_00008844(*(param_1 + 4), 0x20)` if non-null. | 0 callers / 1 callee |
+| `0x600db2be` |  52 | Audio / Transport | **`audio_transport_state_action_dispatch`** — Audio transport state action dispatcher: checks state `*(param_1 + 8) == 3` and mode `*(param_1 + 0x10) == 3`, calls `FUN_6005bdac()`, triggers transport event `(1, 7, 1, 0)` via `thunk_EXT_FUN_00001834`, and returns status 2. | 0 callers / 2 callees |
+
+
 
 
 
