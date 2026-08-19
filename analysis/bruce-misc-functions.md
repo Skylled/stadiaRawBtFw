@@ -2216,6 +2216,34 @@ Decompiled and documented 20 functions (1,238 bytes across `0x600d9c92`–`0x600
 | `0x600da3f8` |  20 | System / Init | **`system_object_init_12b`** — 12-byte object initializer: calls `FUN_60074d3c` and clears 12 bytes (`0xc`) via `thunk_EXT_FUN_0000b52e(param_1, 0xc)`. | 0 callers / 2 callees |
 | `0x600da40c` |  24 | System / Cleanup | **`system_object_destructor_free`** — System object destructor and deallocator: calls destructor `FUN_60074d3c(*(param_1 + 0x10))` and deallocates memory via `thunk_EXT_FUN_0000b52a` (`vPortFree`). | 0 callers / 2 callees |
 
+## Session 70 (Wave 40) — Audio State Moves, Ref-Counted Pointers, Headphone State & Mutex Dispatch (20 functions, 626 bytes)
+
+Decompiled and documented 20 functions (626 bytes across `0x600da424`–`0x600da810`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600da424` |  40 | Audio / State | **`audio_state_move_assignment`** — Audio state 8-byte move assignment: moves `(param_2[0], param_2[1])` to `(param_1[0], param_1[1])`, zeroes source `param_2`, and destroys old destination pointer via `thunk_EXT_FUN_00001680(&local_c)`. Called by `audio_states__60075088`. | 1 caller / 1 callee |
+| `0x600da44c` |  20 | Audio / State | **`audio_state_init_100b`** — 100-byte audio state initializer: calls `audio_states__60074e6c()` and zeroes 100 bytes via `thunk_EXT_FUN_0000b52e(param_1, 100)`. | 0 callers / 2 callees |
+| `0x600da460` |  24 | Audio / State | **`audio_state_destructor_free`** — Audio state destructor & deallocator: calls destructor `audio_states__60074e6c` on `*(param_1 + 0x10)` and frees memory via `thunk_EXT_FUN_0000b52a` (`vPortFree`). | 0 callers / 2 callees |
+| `0x600da478` |  18 | Audio / RefCount | **`ref_counted_ptr_copy`** — Reference-counted pointer copy constructor / assignment helper: copies `*param_2` to `*param_1` and calls add-ref `FUN_60074ec8()` if non-null. 9 callers across `audio_states.cc`, `recording_pipeline.cc`, `receiver.cc`, `audio_tasks.cc`! | 9 callers / 1 callee |
+| `0x600da48a` |  34 | Audio / RefCount | **`ref_counted_ptr_assign`** — Reference-counted pointer copy assignment operator: compares `*param_1` and `*param_2`, calls add-ref `FUN_60074ec8(*param_2)` on new pointer, release `FUN_6005c44c()` on old pointer, and stores `*param_1 = *param_2`. 5 callers! | 5 callers / 2 callees |
+| `0x600da4ac` |  54 | Audio / Config | **`audio_config_table_binary_search_13`** — 13-entry binary search: binary searches 13-entry / 8-byte stride table `param_1` for key `param_2`, returning matched/lower bound entry pointer. Called by `0x600da4e2` and `0x600da4fc`. | 2 callers / 0 callees |
+| `0x600da4e2` |  26 | Audio / Config | **`audio_config_lookup_param_74`** — Audio configuration property lookup: searches 13-entry table `*(param_1 + 0x74)` via `audio_config_table_binary_search_13`, returning value `piVar1[1]` (or default entry at `+0x68`). | 0 callers / 1 callee |
+| `0x600da4fc` |  26 | Audio / Config | **`audio_config_lookup_param_74_alt`** — Alternate audio configuration property lookup: duplicate of `0x600da4e2`, searching 13-entry table `*(param_1 + 0x74)` and returning `piVar1[1]`. | 0 callers / 1 callee |
+| `0x600da58a` |   6 | Audio / Dispatch | **`audio_event_dispatch_tail_7b0`** — Audio event dispatch thunk: offsets context `param_1 + 8` and tail-calls `FUN_600da7b0`. | 0 callers / 1 callee |
+| `0x600da590` |   6 | Audio / Dispatch | **`audio_event_dispatch_tail_71e`** — Audio event dispatch thunk: offsets context `param_1 + 8` and tail-calls `0x600da71e`. Called by `audio_states__60074d54`. | 1 caller / 0 callees |
+| `0x600da596` |  20 | Headphone / Init | **`headphone_state_init_224b`** — 224-byte headphone state initializer: calls `FUN_60075b00()` and clears 224 bytes (`0xe0`) via `thunk_EXT_FUN_0000b52e(param_1, 0xe0)`. | 0 callers / 2 callees |
+| `0x600da62e` |  64 | Audio / State | **`audio_channel_state_query`** — Audio channel state query helper: invokes indirect method `*(vtable + 0x1c)` from `**(param_2 + 0x5c)`, unpacks status flags, and sets output struct `param_1`. | 0 callers / 0 callees |
+| `0x600da67e` |  30 | Headphone / State | **`headphone_buffer_slice_update`** — Headphone buffer slice updater: computes slice offset `*param_1 + param_1[2]` and length `param_1[1] - param_1[2]`, calls `FUN_600cc4a8`, and stores result via `FUN_60101ba2(param_1, uVar1)`. Called by `headphone_state_machine__60075c50`. | 1 caller / 2 callees |
+| `0x600da6da` |  68 | Audio / State | **`audio_state_transition_search_8b`** — 4-entry audio state transition table binary search: binary searches 4-entry / 8-byte stride table `*(param_1 + 0x74)` for key `param_2`, returns `piVar4[1]` (or fallback at `+0x20`). | 0 callers / 0 callees |
+| `0x600da766` |  22 | Audio / Tasks | **`audio_task_handle_copy`** — Audio task handle copy helper: checks flag `*(param_2 + 0x28)`, copies 4-byte handle `*(param_2 + 0x24)` to `*param_1` and sets boolean flag `*(param_1 + 1)`. Called by `audio_task_status_poll` (`0x600da77c`). | 1 caller / 0 callees |
+| `0x600da77c` |  52 | Audio / Tasks | **`audio_task_status_poll`** — Audio task status poller & exception check: queries task handle via `audio_task_handle_copy`, invokes vtable method `*(vtable + 0x10)` on `param_1` if flag is 0, or raises panic exception via `FUN_6010209a()` on fatal condition. Called by `audio_task_is_active_predicate` (`0x600da7b0`). | 1 caller / 2 callees |
+| `0x600da7b0` |  14 | Audio / Tasks | **`audio_task_is_active_predicate`** — Audio task active status predicate: calls `audio_task_status_poll()` and returns boolean `iVar1 != 0`. Called by `audio_event_dispatch_tail_7b0` (`0x600da58a`). | 1 caller / 1 callee |
+| `0x600da7be` |  62 | Headphone / State | **`headphone_state_event_dispatch_mutex`** — Mutex-guarded headphone state event dispatcher: acquires mutex at `param_1 + 0x80` via `thunk_EXT_FUN_0000b4c2`, dispatches event code `param_2` (case 1 -> `headphone_state_machine__60075c50`, case 2 -> `headphone_state_machine__60075d78`), and releases mutex via `thunk_EXT_FUN_00007d10`. | 0 callers / 4 callees |
+| `0x600da7fc` |  20 | Headphone / Init | **`headphone_object_init_96b`** — 96-byte headphone object initializer: calls `FUN_60075ee0()` and clears 96 bytes (`0x60`) via `thunk_EXT_FUN_0000b52e(param_1, 0x60)`. | 0 callers / 2 callees |
+| `0x600da810` |  20 | Headphone / Init | **`headphone_object_init_216b`** — 216-byte headphone object initializer: calls `FUN_60075f04()` and clears 216 bytes (`0xd8`) via `thunk_EXT_FUN_0000b52e(param_1, 0xd8)`. | 0 callers / 2 callees |
+
+
 
 
 
