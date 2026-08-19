@@ -2243,6 +2243,34 @@ Decompiled and documented 20 functions (626 bytes across `0x600da424`–`0x600da
 | `0x600da7fc` |  20 | Headphone / Init | **`headphone_object_init_96b`** — 96-byte headphone object initializer: calls `FUN_60075ee0()` and clears 96 bytes (`0x60`) via `thunk_EXT_FUN_0000b52e(param_1, 0x60)`. | 0 callers / 2 callees |
 | `0x600da810` |  20 | Headphone / Init | **`headphone_object_init_216b`** — 216-byte headphone object initializer: calls `FUN_60075f04()` and clears 216 bytes (`0xd8`) via `thunk_EXT_FUN_0000b52e(param_1, 0xd8)`. | 0 callers / 2 callees |
 
+## Session 71 (Wave 41) — State Machine Engines, Async Events, Headphone Inits & Neutral Joystick Predicates (20 functions, 1,092 bytes)
+
+Decompiled and documented 20 functions (1,092 bytes across `0x600da824`–`0x600dad0e`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600da824` |  26 | App / State | **`state_record_copy_5b_twin`** — 5-byte state record copier: conditionally copies 4-byte payload `*param_2` to `*param_1` when `*(param_2 + 1) != 0`, setting `*(param_1 + 1)`, `*(param_1 + 2)`, `*(param_1 + 9)`, and `*(param_1 + 10)`. Called by `app_state_machine_transition_engine_3_twin` (`0x600da83e`). | 1 caller / 0 callees |
+| `0x600da83e` | 270 | App / State | **`app_state_machine_transition_engine_3_twin`** — Application state machine transition engine (3-entry table): binary searches 3-entry / 12-byte stride table `param_2[0x1a]` for state `param_3`, checks event `param_4` in transition list `piVar4[1]` (or fallback array `param_2[0x1b]`), executes action handler `*(param_2 + 0x28)`, copies state record via `state_record_copy_5b_twin`, and sets transition status `*(param_1 + 10)`. | 0 callers / 1 callee |
+| `0x600da952` |   2 | System / Stubs | **`noop_stub_600da952`** — Trivial empty return stub (`bx lr`). Called by `FUN_60076040`. | 1 caller / 0 callees |
+| `0x600da9ba` |  68 | App / State | **`state_transition_search_8entry_8b`** — 8-entry state transition table binary search: binary searches 8-entry / 8-byte stride table `*(param_1 + 0x70)` for key `param_2`, returns value `piVar4[1]` (or fallback entry at `+0x40`). | 0 callers / 0 callees |
+| `0x600da9fe` |  68 | App / State | **`state_transition_search_10entry_8b`** — 10-entry state transition table binary search: binary searches 10-entry / 8-byte stride table `*(param_1 + 0x74)` for key `param_2`, returns value `piVar4[1]` (or fallback entry at `+0x50`). | 0 callers / 0 callees |
+| `0x600daa60` |  40 | Events / Async | **`async_event_post_type1_with_timestamp`** — Timed event poster (event type 1): fetches system tick count via `thunk_EXT_FUN_0000714c()`, posts type 1 event via `thunk_EXT_FUN_00007a2c(param_1, 1, timestamp, 0, 10, param_2)`, returns status 0 on success / 4 on failure. | 0 callers / 2 callees |
+| `0x600daa88` |  30 | Events / Async | **`async_event_post_type3`** — Asynchronous event poster (event type 3): posts event type 3 via `thunk_EXT_FUN_00007a2c(param_1, 3, 0, 0, 10, param_2, param_3)`, returns status 0 (if 1) / 4. Called by `async_event_post_type3_triple` (`0x600daaa6`). | 1 caller / 1 callee |
+| `0x600daaa6` |  32 | Events / Async | **`async_event_post_type3_triple`** — Triple event poster: invokes `async_event_post_type3` on descriptors at offsets `*(param_1 + 0x110)`, `*(param_1 + 0x150)`, and `*(param_1 + 0x190)`. | 0 callers / 1 callee |
+| `0x600daac6` |  26 | App / State | **`state_record_copy_5b_quad`** — 5-byte state record copier: conditionally copies 4-byte payload `*param_2` to `*param_1` when `*(param_2 + 1) != 0`. Called by `app_state_machine_transition_engine_8` (`0x600daae0`). | 1 caller / 0 callees |
+| `0x600daae0` | 226 | App / State | **`app_state_machine_transition_engine_8`** — Application state machine transition engine (8-entry table): binary searches 8-entry / 12-byte stride table `*(param_2 + 0x68)` for state `param_3`, checks event `param_4` in transition list `piVar1[1]` (or fallback array `*(param_2 + 0x6c)`), copies state record via `state_record_copy_5b_quad`, and sets transition status `*(param_1 + 10)`. Called by `app_state_lookup_and_format` (`0x600dabc2`). | 1 caller / 1 callee |
+| `0x600dabc2` |  62 | App / State | **`app_state_lookup_and_format`** — Application state query and transition wrapper: invokes `app_state_machine_transition_engine_8` on `*(param_2 + 0x5c)`, formats return struct flags in `param_1`. | 0 callers / 1 callee |
+| `0x600dac00` |  22 | Headphone / Init | **`headphone_object_init_464b`** — 464-byte headphone object initializer: calls `FUN_60075fd0()` and clears 464 bytes (`0x1d0`) via `thunk_EXT_FUN_0000b52e(param_1, 0x1d0)`. | 0 callers / 2 callees |
+| `0x600dac16` |  20 | Headphone / Init | **`headphone_object_init_96b_alt`** — 96-byte headphone object initializer: calls `FUN_60075fac()` and clears 96 bytes (`0x60`) via `thunk_EXT_FUN_0000b52e(param_1, 0x60)`. | 0 callers / 2 callees |
+| `0x600dac3c` |  22 | Headphone / Init | **`headphone_object_init_1056b`** — 1056-byte headphone object initializer: calls `FUN_600763b0()` and clears 1056 bytes (`0x420`) via `thunk_EXT_FUN_0000b52e(param_1, 0x420)`. | 0 callers / 2 callees |
+| `0x600dac52` |  22 | Headphone / Init | **`headphone_object_init_4344b`** — 4344-byte headphone object initializer: calls `FUN_600763e8()` and clears 4344 bytes (`0x10f8`) via `thunk_EXT_FUN_0000b52e(param_1, 0x10f8)`. | 0 callers / 2 callees |
+| `0x600dac8a` |  10 | System / Events | **`system_reset_or_event_trigger_type2`** — System event trigger wrapper: invokes `thunk_EXT_FUN_00002480(2)`. | 0 callers / 1 callee |
+| `0x600dac94` |  48 | Controller / Sticks | **`joystick_neutral_pos_predicate_5arg`** — 5-argument joystick neutral position validator: checks if stick axes `*param_3 == 0x800` (2048, center), `param_3[1] == 0x800`, `*param_2 == 0x800`, `param_2[1] == 0x800`, and triggers `param_4 == 0`, `param_5 == 0`. Returns true if all at center / rest. | 0 callers / 0 callees |
+| `0x600dacc4` |  50 | Controller / Sticks | **`joystick_neutral_pos_predicate_struct`** — Struct-based joystick neutral position validator: checks if fields `param_2 + 0x1c`, `+0x20`, `+0x24`, `+0x28` are all `0x800` (2048, center), and `+0x2c`, `+0x30` are 0. Returns true if all at rest. | 0 callers / 0 callees |
+| `0x600dacf6` |  24 | System / Locks | **`mutex_locked_action_invoke_1`** — Mutex-locked action invoker: acquires mutex via `thunk_EXT_FUN_0000b4c2()`, invokes action handler with context `&local_c` (`param_1 + 8`) via `thunk_EXT_FUN_0000887a(&local_c)`. | 0 callers / 2 callees |
+| `0x600dad0e` |  24 | System / Locks | **`mutex_locked_action_invoke_2`** — Mutex-locked action invoker: identical pattern to `0x600dacf6`, acquiring mutex and invoking action handler via `thunk_EXT_FUN_0000887a(&local_c)`. | 0 callers / 2 callees |
+
+
 
 
 
