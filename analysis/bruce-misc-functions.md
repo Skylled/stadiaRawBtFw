@@ -2106,6 +2106,34 @@ Decompiled and documented 20 functions (1,310 bytes across `0x600d8a7a`–`0x600
 | `0x600d8f64` |  58 | Drivers / TUSB320 | **`tusb320_clear_interrupt`** — TI TUSB320 Type-C interrupt clear: reads interrupt register 9 via `FUN_600d8e6c` and writes back clear bit via `FUN_600d8f24`. Called from `usb_port_controller_tusb320.cc` (`0x6006b290`). | 1 caller / 2 callees |
 | `0x600d8fa6` |  44 | Drivers / WM8904 | **`wm8904_i2c_write_reg_16`** — Wolfson WM8904 Audio Codec I2C 16-bit register write: writes 3-byte packet (register address + 16-bit big-endian value) to WM8904 via `thunk_EXT_FUN_00001ea4`. 6 callers in `sound_codec_wm8904.cc`. | 6 callers / 1 callee |
 
+## Session 66 (Wave 36) — WM8904 Codec Control, Radio Power Clocks, Flash Streaming & Sensor Calibration (20 functions, 626 bytes)
+
+Decompiled and documented 20 functions (626 bytes across `0x600d8fd2`–`0x600d94c0`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d8fd2` | 108 | Drivers / WM8904 | **`wm8904_soft_reset_and_init`** — Wolfson WM8904 audio codec soft reset & initialization: performs soft reset via reg `0x00` (`0x0000`) and applies bias/clocking configuration across 8 core registers (`0x16`, `0x14`, `0x04`, `0x05`, `0x18`, `0x1a`, `0x44`, `0x45`). Called by `sound_codec_wm8904.cc`. | 1 caller / 1 callee |
+| `0x600d903e` |  56 | Drivers / WM8904 | **`wm8904_set_volume_atomic`** — Wolfson WM8904 volume setter: stores left/right volume and mute status into struct `param_1 + 0xc` guarded by ARM `DMB` memory barriers. 4 callers in `sound_codec_wm8904.cc`. | 4 callers / 1 callee |
+| `0x600d9076` |  24 | Drivers / WM8904 | **`wm8904_i2c_write_reg_thunk`** — Wolfson WM8904 16-bit register write thunk: forwards reg `param_2` and val `param_3` to `wm8904_i2c_write_reg_16`. Called by `sound_codec_wm8904.cc` (`0x6006b804`). | 1 caller / 1 callee |
+| `0x600d92fc` |  10 | System / State | **`system_flag_equal_1`** — State predicate: checks `*(char *)(param_1 + 4) == 1`. 11 callers across system modules. | 11 callers / 0 callees |
+| `0x600d9306` |  10 | System / State | **`system_flag_equal_0`** — State predicate: checks `*(char *)(param_1 + 4) == 0`. 6 callers across system modules. | 6 callers / 0 callees |
+| `0x600d9310` |  10 | System / State | **`system_flag_equal_2`** — State predicate: checks `*(char *)(param_1 + 4) == 2`. | 1 caller / 0 callees |
+| `0x600d931a` |  16 | System / State | **`system_state_byte_getter`** — State byte getter: returns `*(char *)(param_1 + 4)`. | 1 caller / 0 callees |
+| `0x600d932a` |  74 | Radio / Clock | **`hardware_radio_power_config`** — Hardware radio clock/crystal configuration: gates RF clocks via `thunk_EXT_FUN_00007d64` / `thunk_EXT_FUN_00007dac` and signals power manager via `thunk_EXT_FUN_0000714c`. 3 callers. | 3 callers / 0 callees |
+| `0x600d9374` |   4 | System / Power | **`thunk_EXT_FUN_0000714c`** — External power manager event dispatch thunk. | 1 caller / 0 callees |
+| `0x600d9378` |   4 | System / Clock | **`thunk_EXT_FUN_00007d64`** — External peripheral clock enable thunk (11 callers). | 11 callers / 0 callees |
+| `0x600d937c` |   4 | System / Clock | **`thunk_EXT_FUN_00007dac`** — External peripheral clock disable thunk (11 callers). | 11 callers / 0 callees |
+| `0x600d9380` |  10 | System / Clock | **`clock_gate_disable_thunk`** — Peripheral clock gating disable helper: calls `thunk_EXT_FUN_00007dac`. 7 callers. | 7 callers / 1 callee |
+| `0x600d938a` |   4 | System / Clock | **`thunk_EXT_FUN_00007dac_alt`** — External peripheral clock disable thunk duplicate. | 11 callers / 0 callees |
+| `0x600d938e` |   4 | System / Clock | **`thunk_EXT_FUN_00007d64_alt`** — External peripheral clock enable thunk duplicate. | 11 callers / 0 callees |
+| `0x600d9392` |   4 | System / Clock | **`thunk_EXT_FUN_00007f58`** — External crystal oscillator enable thunk. | 2 callers / 0 callees |
+| `0x600d93a8` |  58 | Flash / Verify | **`flash_page_verify_chunk`** — Flash memory page verification helper: verifies written buffer chunk against expected data. | 1 caller / 3 callees |
+| `0x600d93e2` |  10 | Flash / Stream | **`flash_status_callback_dispatch`** — Flash operation callback dispatcher: invokes status handler `FUN_6006e854(param_2)` upon completion. | 1 caller / 0 callees |
+| `0x600d93ec` |  40 | Flash / Stream | **`flash_stream_write_loop`** — Flash stream write block loop: iteratively writes memory chunks of size `param_2` via `FUN_6006eb00`. | 1 caller / 1 callee |
+| `0x600d9414` | 172 | Sensors / I2C | **`sensor_i2c_read_and_calibrate`** — I2C sensor status register poller & calibration: polls sensor registers 5 and 7 via `thunk_EXT_FUN_00001ea4`, checks calibration ready bit, and computes calibration offset via `FUN_6006f018`. Called from `timer.cc` (`0x60074658`). | 1 caller / 2 callees |
+| `0x600d94c0` |   4 | Audio / DSP | **`thunk_FUN_6006f088`** — Audio SoC DSP/codec hardware initialization routine thunk: full system audio hardware initialization sequencing 30+ register configuration writes. | 1 caller / 0 callees |
+
+
 
 
 
