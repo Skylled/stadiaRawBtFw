@@ -2189,6 +2189,34 @@ Decompiled and documented 20 functions (712 bytes across `0x600d97a6`–`0x600d9
 | `0x600d9b4c` |  16 | System / Init | **`struct_clear_84b`** — 84-byte structure zeroer: zeroes 80 bytes (`0x50`) via `thunk_EXT_FUN_0000b5ba` and zeroes trailing word `*(iVar1 + 0x50) = 0`. Called by `0x600723b4`, `0x600722b0`, `0x60071660`. | 3 callers / 1 callee |
 | `0x600d9c7a` |  24 | Events / Async | **`async_event_post_type5`** — Asynchronous event poster: posts event type 5 with context `*(param_1 + 4)` via `thunk_EXT_FUN_00007a2c`. Called by `FUN_600d9c92`. | 1 caller / 1 callee |
 
+## Session 69 (Wave 39) — Event Cascades, State Machine Engines, Table Zeroers & Object Cleanup (20 functions, 1,238 bytes)
+
+Decompiled and documented 20 functions (1,238 bytes across `0x600d9c92`–`0x600da40c`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d9c92` |  50 | Events / Async | **`async_event_post_type5_chain`** — Asynchronous event cascade poster: posts event type 5 with context `*(param_1 + 0x6be4)` via `thunk_EXT_FUN_00007a2c`, then invokes `async_event_post_type5` (`0x600d9c7a`) on sub-structures `param_1 + 0x6ad0` and `param_1 + 0x6a2c`. | 0 callers / 2 callees |
+| `0x600d9cc4` | 152 | Controller / Descr | **`controller_descriptor_init_with_mode`** — Controller descriptor structure builder: delegates to `FUN_60071478` with 14 arguments, maps mode code `param_7` (1..5) and length `param_8` (< 16 vs >= 16) to 16-bit status code `0x50`..`0x59` (or `0xff80` default) at `param_1 + 0x2c`, setting `*(param_1 + 0x38) = param_8`, `*(param_1 + 0x30) = 5`, `*(param_1 + 0x34) = param_7`. Called from `0x600723b4`. | 1 caller / 1 callee |
+| `0x600d9e28` |  64 | App / State | **`app_state_query_handler`** — Application state query helper: invokes indirect method `*(vtable + 0x1c)` from `**(param_2 + 0x5c)`, unpacks status flags `local_14`/`local_13`/`local_12`, and sets output struct fields `*param_1 = local_1c[0]`, `*(param_1 + 1) = 1`, `*(param_1 + 2) = 1`, `*(param_1 + 9) = local_13`, `*(param_1 + 10) = 1` (zeroes fields on false). | 0 callers / 0 callees |
+| `0x600d9eee` |  64 | App / State | **`app_state_query_handler_alt`** — Alternate application state query helper: duplicate structure of `0x600d9e28`, invoking `*(vtable + 0x1c)` from `**(param_2 + 0x5c)` and populating output state struct `param_1`. | 0 callers / 0 callees |
+| `0x600d9f4e` |  14 | System / Init | **`struct_clear_4b`** — 4-byte structure zeroer: clears 4 bytes via `thunk_EXT_FUN_0000b52e(param_1, 4)`. | 0 callers / 1 callee |
+| `0x600d9f5c` |  14 | System / Init | **`struct_clear_20b_1`** — 20-byte structure zeroer: clears 20 bytes (`0x14`) via `thunk_EXT_FUN_0000b52e(param_1, 0x14)`. | 0 callers / 1 callee |
+| `0x600d9f6a` |  14 | System / Init | **`struct_clear_20b_2`** — 20-byte structure zeroer: clears 20 bytes (`0x14`) via `thunk_EXT_FUN_0000b52e(param_1, 0x14)`. | 0 callers / 1 callee |
+| `0x600d9fbe` |  68 | App / State | **`state_transition_table_binary_search_8b`** — 8-byte entry transition table binary search: binary searches 4-entry / 8-byte stride table `*(param_1 + 0x70)` for key `param_2`, returns value `piVar4[1]` (or fallback entry `+0x20`). | 0 callers / 0 callees |
+| `0x600da0d8` |  26 | App / State | **`state_record_copy_5b`** — 5-byte state record copier: conditionally copies 4-byte payload `*param_2` to `*param_1` when `*(param_2 + 1) != 0`, setting `*(param_1 + 1)`, `*(param_1 + 2)`, `*(param_1 + 9)`, and `*(param_1 + 10)`. Called by `app_state_machine_transition_engine_4` (`0x600da0f2`). | 1 caller / 0 callees |
+| `0x600da0f2` | 280 | App / State | **`app_state_machine_transition_engine_4`** — Application state machine transition engine (4-entry table): binary searches 4-entry / 12-byte stride table `param_2[0x1a]` for state `param_3`, checks event `param_4` in transition list `piVar4[1]` (or fallback array `param_2[0x1b]`), executes action handler `*(param_2 + 0x28)`, copies state record via `state_record_copy_5b`, and sets transition status `*(param_1 + 10)`. | 0 callers / 1 callee |
+| `0x600da230` |  26 | App / State | **`state_record_copy_5b_alt`** — Alternate 5-byte state record copier: conditionally copies 4-byte payload `*param_2` to `*param_1` when `*(param_2 + 1) != 0`, setting `*(param_1 + 1)`, `*(param_1 + 2)`, `*(param_1 + 9)`, and `*(param_1 + 10)`. Called by `app_state_machine_transition_engine_3` (`0x600da24a`). | 1 caller / 0 callees |
+| `0x600da24a` | 270 | App / State | **`app_state_machine_transition_engine_3`** — Application state machine transition engine (3-entry table): binary searches 3-entry / 12-byte stride table `param_2[0x1a]` for state `param_3`, checks event `param_4` in transition list `piVar4[1]` (or fallback array `param_2[0x1b]`), executes action handler `*(param_2 + 0x28)`, copies state record via `state_record_copy_5b_alt`, and sets transition status `*(param_1 + 10)`. Called by `app_state_event_dispatch_flag_set` (`0x600da358`). | 1 caller / 1 callee |
+| `0x600da358` |  52 | App / State | **`app_state_event_dispatch_flag_set`** — Application state event pre-filter & dispatcher: updates flag bytes `*(param_2 + 0x78)` (cases 8/9 -> 1/0) or `*(param_2 + 0x79)` (cases 2/3 -> 1/0) and forwards to `app_state_machine_transition_engine_3` (`0x600da24a`). | 0 callers / 1 callee |
+| `0x600da394` |  20 | System / Init | **`system_object_init_96b_1`** — 96-byte object initializer: calls `FUN_60074cc8` and clears 96 bytes (`0x60`) via `thunk_EXT_FUN_0000b52e(param_1, 0x60)`. | 0 callers / 2 callees |
+| `0x600da3a8` |  20 | System / Init | **`system_object_init_96b_2`** — 96-byte object initializer: calls `FUN_60074ce4` and clears 96 bytes (`0x60`) via `thunk_EXT_FUN_0000b52e(param_1, 0x60)`. | 0 callers / 2 callees |
+| `0x600da3bc` |  20 | System / Init | **`system_object_init_128b_1`** — 128-byte object initializer: calls `FUN_60074cf8` and clears 128 bytes (`0x80`) via `thunk_EXT_FUN_0000b52e(param_1, 0x80)`. | 0 callers / 2 callees |
+| `0x600da3d0` |  20 | System / Init | **`system_object_init_96b_3`** — 96-byte object initializer: calls `FUN_60074d10` and clears 96 bytes (`0x60`) via `thunk_EXT_FUN_0000b52e(param_1, 0x60)`. | 0 callers / 2 callees |
+| `0x600da3e4` |  20 | System / Init | **`system_object_init_128b_2`** — 128-byte object initializer: calls `FUN_60074d24` and clears 128 bytes (`0x80`) via `thunk_EXT_FUN_0000b52e(param_1, 0x80)`. | 0 callers / 2 callees |
+| `0x600da3f8` |  20 | System / Init | **`system_object_init_12b`** — 12-byte object initializer: calls `FUN_60074d3c` and clears 12 bytes (`0xc`) via `thunk_EXT_FUN_0000b52e(param_1, 0xc)`. | 0 callers / 2 callees |
+| `0x600da40c` |  24 | System / Cleanup | **`system_object_destructor_free`** — System object destructor and deallocator: calls destructor `FUN_60074d3c(*(param_1 + 0x10))` and deallocates memory via `thunk_EXT_FUN_0000b52a` (`vPortFree`). | 0 callers / 2 callees |
+
+
 
 
 

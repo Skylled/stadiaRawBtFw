@@ -83,7 +83,8 @@ zero_prog = [x for x in per_file_sorted if x[2] == 0]
 lines = []
 lines.append("# Bruce — full-decompile tracking status\n")
 lines.append("Data-driven status doc for the \"decompile all of `bruce` to source-reconstruction quality\" effort. Regenerate the numbers here whenever `bruce_functions.csv`, `bruce_srcmap.csv`, or `analysis/decomp/` change materially — don't hand-edit stale tables into new prose, just re-run the join described in [Methodology](#methodology) below.\n")
-lines.append(f"**Snapshot: 2026-08-18 (full regeneration, session 68 / Wave 38).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 68 ({len(decomp_files)} decomp files, {len(in_census_decomp)} in-census). Decompiled in-census functions grew to **{len(in_census_decomp)}** ({in_census_decomp_bytes:,} bytes, {in_census_decomp_bytes/tot_census_bytes*100:.2f}% of code), with **139 of 139** attributed source files fully decompiled.\n")
+lines.append(f"**Snapshot: 2026-08-18 (full regeneration, session 69 / Wave 39).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 69 ({len(decomp_files)} decomp files, {len(in_census_decomp)} in-census). Decompiled in-census functions grew to **{len(in_census_decomp)}** ({in_census_decomp_bytes:,} bytes, {in_census_decomp_bytes/tot_census_bytes*100:.2f}% of code), with **139 of 139** attributed source files fully decompiled.\n")
+
 
 
 
