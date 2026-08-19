@@ -2675,6 +2675,34 @@ Decompiled and documented 20 functions (1,198 bytes across `0x600dfd6a`–`0x600
 | `0x600e028e` |  10 | BIO / Event | **`bio_channel_11_event_trigger`** — Triggers BIO event on channel 11 (`0xb`) via `bio__60084c90`. Called by `device_info__6005a4cc` and `firmware_image_upload__60078340`. | 2 callers / 1 callee |
 | `0x600e0298` |  16 | Gotham / Packet | **`gotham_packet_list_append`** — Gotham packet singly-linked list appender: traverses `+0x20` pointer chain to end of list, appends new packet `param_2`. Called by `device_info__6005a4cc`. | 1 caller / 0 callees |
 
+## Session 87 (Wave 57) — Gotham Channel Node Allocators, Hexdump Formatter & Log Packet Queue (20 functions, 812 bytes)
+
+Decompiled and documented 20 functions (812 bytes across `0x600e02a8`–`0x600e064c`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600e02a8` |   6 | Gotham / Packet | **`gotham_packet_next_ptr_read`** — Gotham packet next pointer reader: returns `*(param_1 + 0x20)`. Called by `gotham__60067a68`, `FUN_600d7ebc`, `FUN_600d7e56`. | 3 callers / 0 callees |
+| `0x600e02ae` |  34 | Gotham / Channel | **`gotham_channel_node_alloc_init`** — Gotham channel node allocator: allocates 40-byte node (`0x28`) via `FUN_600e092c`, zeroes 32-byte payload via `memset_zero`, initializes header fields `param_1` and `param_2`. Called by `gotham__600679d4`. | 1 caller / 2 callees |
+| `0x600e02d0` |   6 | Gotham / Channel | **`gotham_channel_field_1c_set`** — Stores `param_2` at `*(param_1 + 0x1c)`. Called by `gotham__600679d4`. | 1 caller / 0 callees |
+| `0x600e02d6` |   6 | Gotham / Channel | **`gotham_channel_field_20_set`** — Stores `param_2` at `*(param_1 + 0x20)`. Called by `gotham__600679d4`. | 1 caller / 0 callees |
+| `0x600e02dc` |   6 | Gotham / Channel | **`gotham_channel_field_08_set`** — Stores `param_2` at `*(param_1 + 0x08)`. Called by `gotham__600679d4`. | 1 caller / 0 callees |
+| `0x600e02e2` |   6 | Gotham / Channel | **`gotham_channel_field_0c_set`** — Stores `param_2` at `*(param_1 + 0x0c)`. Called by `gotham__600679d4`. | 1 caller / 0 callees |
+| `0x600e02e8` |   6 | Gotham / Channel | **`gotham_channel_field_14_set`** — Stores `param_2` at `*(param_1 + 0x14)`. Called by `gotham__600679d4`. | 1 caller / 0 callees |
+| `0x600e02ee` |   6 | Gotham / Channel | **`gotham_channel_field_18_set`** — Stores `param_2` at `*(param_1 + 0x18)`. Called by `gotham__600679d4`. | 1 caller / 0 callees |
+| `0x600e02f4` |   4 | Gotham / Packet | **`gotham_packet_field_1c_set`** — Stores `param_2` at `*(param_1 + 0x1c)`. Called by `gotham__60067d14`, `FUN_600d7d6c`, `FUN_600d7d50`. | 3 callers / 0 callees |
+| `0x600e02f8` |   4 | Gotham / Packet | **`gotham_packet_field_1c_get`** — Returns `*(param_1 + 0x1c)`. Called by `gotham__60067b50`, `gotham__60067d14`, `gotham__60067c3c`, `gotham__60067a68`. | 5 callers / 0 callees |
+| `0x600e02fc` |   4 | Gotham / Packet | **`gotham_packet_field_04_set`** — Stores `param_2` at `*(param_1 + 4)`. Called by `gotham__60067d14`, `FUN_600d7d6c`. | 2 callers / 0 callees |
+| `0x600e0300` |   4 | Gotham / Channel | **`gotham_channel_status_check`** — Returns 1. Called by `gotham__600679d4`. | 1 caller / 0 callees |
+| `0x600e0304` | 340 | Firmware / Hexdump | **`firmware_hexdump_formatter`** — Canonical standard 16-byte hex dump formatter with ASCII sidebar: formats 16 bytes per line with 8-byte column spacing (`uVar3 = 4` at column 7, `uVar3 = 5` with `\|` delimiter at column 15), printable character sanitization (`.` for unprintable characters `< 0x20` or `> 0x7e`), and line-ending delimiter `\|\n` (`0xa7c`), writing chunks via `thunk_EXT_FUN_00006668`. Called by `firmware_image_upload__60078340`. | 1 caller / 4 callees |
+| `0x600e049a` |  46 | Gotham / Connection | **`gotham_connection_close_and_notify`** — Gotham connection close & notify: invokes custom connection close callback `*(param_1 + 0x1c) + 0x14` or cleanup cascade `FUN_600ea886`/`FUN_600ea7fa`/`FUN_600e7474`, tail-calls `func_0x600e0458`. Resized from 112B to 46B. | 0 callers / 3 callees |
+| `0x600e04c8` |  44 | Gotham / Channel | **`gotham_channel_array_cleanup`** — Cleans up 16 16-byte channel descriptors (`0x100` bytes) via `thunk_EXT_FUN_0000ac06`, frees `*(param_1 + 0x108)` and `param_1` via `thunk_EXT_FUN_0000ac5e`. | 0 callers / 2 callees |
+| `0x600e04f4` |  46 | Gotham / Log | **`gotham_log_packet_enqueue_or_free`** — Gotham log packet queue inserter: retrieves log context via `thunk_EXT_FUN_000066b8`, inserts packet `param_1` into queue slot if not full, or frees packet via `thunk_EXT_FUN_0000ac5e`. Called by `FUN_600e064c` and `FUN_600e05bc`. | 2 callers / 2 callees |
+| `0x600e0522` |  24 | Gotham / Channel | **`gotham_channel_config_zero`** — Invokes `FUN_60084f04(0, 0, 0, 0, 0, 0, param_3)`. Called by `FUN_60086508`. | 1 caller / 1 callee |
+| `0x600e053a` |  24 | Gotham / Channel | **`gotham_channel_config_init_mode_1`** — Invokes `FUN_60084f04(0, 1, 0, 0, 0, 0, param_3)`. Called by `bcm__6008e700`. | 1 caller / 1 callee |
+| `0x600e05bc` | 144 | Gotham / Log | **`gotham_log_msg_concat_and_enqueue`** — Concatenates `param_1` string arguments into dynamically grown buffer, null-terminates, enqueues via `gotham_log_packet_enqueue_or_free` (`0x600e04f4`). Called by `FUN_60086508`, `FUN_60091ddc`, `tasn_dec__6008fa18`. | 3 callers / 6 callees |
+| `0x600e064c` |  52 | Gotham / Log | **`gotham_log_msg_format_and_enqueue`** — Allocates 257-byte log buffer (`0x101`), formats log string via `thunk_FUN_600cdd6c`, null-terminates, enqueues via `gotham_log_packet_enqueue_or_free` (`0x600e04f4`). Called by `evp__6008506c`. | 1 caller / 3 callees |
+
+
 
 
 
