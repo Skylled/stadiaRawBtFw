@@ -2837,6 +2837,34 @@ Decompiled and documented 20 functions (1,434 bytes across `0x600e650a`–`0x600
 | `0x600e6ccc` |   38 | Crypto / AES | **`crypto_aes_bitsliced_bit_permute_2`** — Inverse 32-bit word bit permutation using masks `0xf0f0` (shift 12) and `0xcc00cc` (shift 6). | 1 caller / 0 callees |
 | `0x600e6cf2` |  210 | Crypto / AES | **`crypto_aes_bitsliced_unpack_state`** — Unpacks bitsliced state matrix back into standard 128-bit AES block byte representation using `crypto_aes_bitsliced_bit_permute_2`. | 5 callers / 2 callees |
 
+## Session 93 (Wave 63) — Bitsliced AES-GCM Encrypt/Decrypt Engine & OpenSSL BIGNUM Arithmetic Primitives (20 functions, 1,506 bytes)
+
+Decompiled and documented 20 functions (1,506 bytes across `0x600e6dfe`–`0x600e7434`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600e6dfe` |   40 | Crypto / AES | **`crypto_aes_gcm_mode_dispatch_encrypt`** — AES-GCM encryption acceleration dispatcher: checks hardware acceleration via `FUN_600ec354`, forwarding to HW engine `0x6013d130` if available, else bitsliced SW fallback `0x600e6dc4`. Resized from 102B spurious split to 40B (`0x600e6dfe`..`0x600e6e25`). | 0 callers / 1 callee |
+| `0x600e6e26` |  174 | Crypto / AES | **`crypto_aes_gcm_encrypt_blocks`** — Multi-block AES-GCM counter-mode encryption loop: performs bitsliced state transformation, key schedule expansion (`0x600e6b3a`), block XORs (`0x600e22ee`), and round encryption (`0x600e22a2`). | 0 callers / 5 callees |
+| `0x600e6edc` |  158 | Crypto / BN | **`crypto_bn_add_words_with_carry`** — BigNum multi-word addition with full carry propagation across 32-bit limbs using `crypto_constant_time_is_zero_u32` (`0x600e1e54`). | 2 callers / 1 callee |
+| `0x600e6f7a` |  262 | Crypto / AES | **`crypto_aes_bitsliced_full_round_decrypt`** — Complete bitsliced AES decryption round combining ShiftRows (`0x600e20c2`), SubBytes (`0x600e21aa`), MixColumns (`0x600e2158`), nibble rotate (`0x600e219a`), and round key XORs (`0x600e1e5e`). | 1 caller / 6 callees |
+| `0x600e70ba` |   40 | Crypto / AES | **`crypto_aes_gcm_mode_dispatch_decrypt`** — AES-GCM decryption acceleration dispatcher: checks hardware acceleration via `FUN_600ec354`, forwarding to HW engine `0x6008ee70` or bitsliced SW fallback `0x600e7080`. Resized from 136B spurious split to 40B (`0x600e70ba`..`0x600e70e1`). | 0 callers / 1 callee |
+| `0x600e70e2` |  312 | Crypto / AES | **`crypto_aes_gcm_decrypt_blocks`** — Multi-block AES-GCM counter-mode decryption loop: handles bitsliced key expansion (`0x600e6b3a`), state initialization (`0x600e6c88`), round decryption (`0x600e6f7a`), and state unpacking (`0x600e6cf2`). Resized from 106B spurious entry (`0x600e7124`) to 312B (`0x600e70e2`..`0x600e7219`). | 0 callers / 7 callees |
+| `0x600e721a` |    8 | Crypto / BN | **`crypto_bn_ctx_clear_20b`** — BigNum context helper: zeroes 20-byte context structure using `memset_zero` (`thunk_EXT_FUN_0000af90`). | 4 callers / 1 callee |
+| `0x600e7222` |   24 | Crypto / BN | **`crypto_bn_ctx_init`** — BigNum context initializer: zeroes 20-byte context header at `param_1 + 0x24` via `0x600e721a` and clears context state fields at `+0xc0` and `+0x110`. | 0 callers / 1 callee |
+| `0x600e723a` |   60 | Crypto / BN | **`crypto_bn_free`** — OpenSSL `BN_free` / `BN_clear_free`: checks pointer non-null, securely wipes limb memory via `thunk_EXT_FUN_0000ac52` if `flags & 2` is set, and frees via `thunk_EXT_FUN_0000ac5e`. | 2 callers / 2 callees |
+| `0x600e7276` |   92 | Crypto / BN | **`crypto_bn_count_bits_u32`** — OpenSSL `BN_num_bits_word`: returns bit length (1..32) of 32-bit unsigned word using binary-search shift/mask reduction. | 3 callers / 0 callees |
+| `0x600e72d2` |   32 | Crypto / BN | **`crypto_bn_is_zero_limbs`** — Tests if BigNum limbs from index `param_2` through `top` are all zero. | 4 callers / 0 callees |
+| `0x600e72f2` |   10 | Crypto / BN | **`crypto_bn_is_negative`** — OpenSSL `BN_is_negative`: checks BigNum negative sign flag (`*(int*)(param_1 + 0xc) != 0`). | 1 caller / 0 callees |
+| `0x600e732a` |   44 | Crypto / BN | **`crypto_bn_dup`** — OpenSSL `BN_dup`: allocates new BIGNUM via `bcm__6008b384`, copies value via `FUN_600e72fc`, and returns duplicate (or frees via `FUN_600e6a22` on error). | 0 callers / 3 callees |
+| `0x600e7356` |   28 | Crypto / BN | **`crypto_bn_set_word_1`** — OpenSSL `BN_set_word` 1-limb core: expands capacity via `bcm__6008b43c`, sets limb 0, clears sign (`neg = 0`), and sets `top = 1`. Created as new function (`0x600e7356`..`0x600e7371`). | 2 callers / 1 callee |
+| `0x600e7372` |   16 | Crypto / BN | **`crypto_bn_set_word`** — OpenSSL `BN_set_word`: if scalar != 0 calls `crypto_bn_set_word_1`, else zeroes `top` and sign. | 3 callers / 1 callee |
+| `0x600e7382` |    6 | Crypto / BN | **`crypto_bn_set_one`** — OpenSSL `BN_one`: sets BigNum to 1 via `crypto_bn_set_word_1(param_1, 1)`. | 3 callers / 1 callee |
+| `0x600e7388` |   36 | Crypto / BN | **`crypto_bn_copy_words`** — Copies `param_3` words from buffer `param_2` into BigNum `param_1` after expanding capacity via `bcm__6008b43c`. | 1 caller / 2 callees |
+| `0x600e73ac` |  102 | Crypto / BN | **`crypto_bn_set_bit`** — OpenSSL `BN_set_bit`: sets bit at index `param_4` in BigNum `param_1`, allocating and expanding limbs as necessary. | 1 caller / 3 callees |
+| `0x600e7412` |   34 | Crypto / BN | **`crypto_bn_init_zero`** — OpenSSL `BN_init`: initializes BigNum header structure `(d = NULL, top = 0, dmax = 0, neg = 0, flags = 0)`. | 11 callers / 0 callees |
+| `0x600e7434` |   28 | Crypto / BN | **`crypto_bn_normalize_top`** — Normalizes BigNum limb count: decrements `top` while highest limbs are zero. | 4 callers / 0 callees |
+
+
 
 
 
