@@ -2972,6 +2972,34 @@ Decompiled and documented 20 functions (1,686 bytes across `0x600e96c6`–`0x600
 | `0x600e9ba8` |   26 | Crypto / BN | **`crypto_bn_is_bit_set`** — OpenSSL `BN_is_bit_set`: tests if bit at index `param_3` is set in limb array of length `param_2` (5 callers). | 5 callers / 0 callees |
 | `0x600e9bc2` |  410 | Crypto / BN | **`crypto_bn_mod_exp_mont_sliding_window`** — Full windowed Montgomery modular exponentiation engine with precomputed power table. | 1 caller / 7 callees |
 
+## Session 98 (Wave 68) — OpenSSL EVP Cipher Framework & DES / 3DES Encryption Engine (20 functions, 2,464 bytes)
+
+Decompiled and documented 20 functions (2,464 bytes across `0x600e9d5c`–`0x600ea6f8`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600e9d5c` |   26 | Crypto / BN | **`crypto_bn_mod_exp_mont_step_trampoline`** — Trampoline forwarding to windowed Montgomery modular exponentiation engine `0x600e9bc2`. | 1 caller / 2 callees |
+| `0x600e9d76` |   96 | Crypto / BN | **`crypto_bn_mod_exp_mont_consttime_core`** — Constant-time sliding-window Montgomery exponentiation helper. | 2 callers / 3 callees |
+| `0x600e9dd6` |   20 | Crypto / BN | **`crypto_bn_mod_exp_mont_consttime_wrapper`** — Trampoline setting up modulus and calling `crypto_bn_mod_exp_mont_consttime_core` (`0x600e9d76`). Created as new function (`0x600e9dd6`..`0x600e9de9`). | 0 callers / 1 callee |
+| `0x600e9dea` |   16 | Crypto / BN | **`crypto_bn_is_bit_set_checked`** — Bounds-checked wrapper around `crypto_bn_is_bit_set` (`0x600e9ba8`). | 4 callers / 1 callee |
+| `0x600e9dfa` |    8 | Crypto / EVP | **`crypto_evp_cipher_ctx_zero`** — OpenSSL `EVP_CIPHER_CTX_init`: zeroes 136-byte (`0x88`) cipher context structure via `thunk_EXT_FUN_0000af90`. | 1 caller / 1 callee |
+| `0x600e9e02` |   34 | Crypto / EVP | **`crypto_evp_cipher_ctx_cleanup`** — OpenSSL `EVP_CIPHER_CTX_cleanup`: invokes cipher context cleanup callback and frees allocation. | 2 callers / 2 callees |
+| `0x600e9e24` |  248 | Crypto / EVP | **`crypto_evp_cipher_update_core`** — OpenSSL `EVP_CipherUpdate` core: performs stream/block cipher buffering and block processing. | 1 caller / 1 callee |
+| `0x600e9f1c` |  198 | Crypto / EVP | **`crypto_evp_cipher_final_core`** — OpenSSL `EVP_CipherFinal_ex` core: handles block padding and finalization. | 1 caller / 2 callees |
+| `0x600e9fe2` |   18 | Crypto / EVP | **`crypto_evp_cipher_ctx_free`** — OpenSSL `EVP_CIPHER_CTX_free`: frees cipher context via `bcm__6008c834`. | 1 caller / 1 callee |
+| `0x600e9ff4` |    4 | Crypto / EVP | **`crypto_evp_cipher_ctx_get_flags`** — Returns cipher flags `*(int*)(param_1 + 0xc)`. | 1 caller / 0 callees |
+| `0x600e9ff8` |   16 | Crypto / DES | **`crypto_des_ecb_cipher_wrapper`** — Single-DES ECB mode wrapper forwarding to DES engine `0x6008c9e0`. | 0 callers / 1 callee |
+| `0x600ea008` |   42 | Crypto / DES | **`crypto_des_ede3_ecb_cipher_wrapper`** — Triple-DES (3DES / EDE3) ECB mode wrapper calling DES engine `0x6008c9e0` three times with 3 key schedules. | 0 callers / 1 callee |
+| `0x600ea032` |  182 | Crypto / DES | **`crypto_des_initial_permute`** — DES Initial Permutation (IP) bit-permutation engine with bit-slice transformations. | 1 caller / 1 callee |
+| `0x600ea0e8` |  184 | Crypto / DES | **`crypto_des_final_permute`** — DES Final Permutation (FP / $IP^{-1}$) bit-permutation engine. | 1 caller / 1 callee |
+| `0x600ea1a0` |  634 | Crypto / DES | **`crypto_des_cbc_encrypt_blocks`** — Single-DES CBC mode multi-block encryption/decryption loop with XOR chaining. Resized from 616B to 634B (`0x600ea1a0`..`0x600ea419`). | 1 caller / 1 callee |
+| `0x600ea41a` |   30 | Crypto / DES | **`crypto_des_cbc_cipher_wrapper`** — OpenSSL `EVP_des_cbc` cipher callback wrapper forwarding to `0x600ea1a0`. | 0 callers / 1 callee |
+| `0x600ea438` |  638 | Crypto / DES | **`crypto_des_ede3_cbc_encrypt_blocks`** — Triple-DES (3DES / EDE3) CBC mode multi-block encryption/decryption loop with 3-key EDE round chaining. Resized from 620B to 638B (`0x600ea438`..`0x600ea6b5`). | 1 caller / 2 callees |
+| `0x600ea6b6` |   46 | Crypto / DES | **`crypto_des_ede3_cbc_cipher_wrapper`** — OpenSSL `EVP_des_ede3_cbc` cipher callback wrapper forwarding to `0x600ea438`. Created as new function (`0x600ea6b6`..`0x600ea6e3`). | 0 callers / 1 callee |
+| `0x600ea6e4` |   20 | Crypto / Heap | **`crypto_heap_alloc_16b_struct`** — Allocates and initializes a 16-byte memory structure. | 1 caller / 2 callees |
+| `0x600ea6f8` |    4 | Crypto / Heap | **`thunk_crypto_heap_alloc_16b_struct`** — Trampoline to `0x600ea6e4`. | 1 caller / 1 callee |
+
+
 
 
 
