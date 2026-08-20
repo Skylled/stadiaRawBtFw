@@ -3134,6 +3134,34 @@ Decompiled and documented 20 functions (1,856 bytes across `0x600ec016`–`0x600
 | `0x600ec720` |   32 | Crypto / ASN1 | **`crypto_asn1_string_free`** — OpenSSL `ASN1_STRING_free`: frees data buffer and string structure (5 callers). | 5 callers / 1 callee |
 | `0x600ec740` |   22 | Crypto / ASN1 | **`crypto_asn1_check_eoc`** — Checks if current DER stream position points to End-Of-Contents (`0x00, 0x00`) markers (5 callers). | 5 callers / 0 callees |
 
+## Session 104 (Wave 74) — OpenSSL ASN.1 String Ops, Template Coders (d2i/i2d) & Type Instantiation (20 functions, 1,128 bytes)
+
+Decompiled and documented 20 functions (1,128 bytes across `0x600ec756`–`0x600ecbb6`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600ec756` |   34 | Crypto / ASN1 | **`crypto_asn1_string_copy_wrapper`** — OpenSSL `ASN1_STRING_copy`: duplicates string buffer and sets length/flags. | 1 caller / 1 callee |
+| `0x600ec778` |   52 | Crypto / ASN1 | **`crypto_asn1_string_dup`** — OpenSSL `ASN1_STRING_dup`: allocates new `ASN1_STRING` container and duplicates contents. | 0 callers / 1 callee |
+| `0x600ec7ac` |   30 | Crypto / ASN1 | **`crypto_asn1_string_cmp`** — OpenSSL `ASN1_STRING_cmp`: compares lengths and contents via `memcmp` (`0x6013d168`). | 0 callers / 1 callee |
+| `0x600ec7ca` |  234 | Crypto / ASN1 | **`crypto_asn1_template_d2i`** — OpenSSL ASN.1 template DER-to-internal decoder step (`asn1_template_d2i` / `asn1_template_noexp_d2i`). Boundary adjusted to 234B (`0x600ec7ca`..`0x600ec8b3`). | 1 caller / 3 callees |
+| `0x600ec8b4` |  166 | Crypto / ASN1 | **`crypto_asn1_template_i2d`** — OpenSSL ASN.1 template internal-to-DER encoder step (`asn1_template_i2d`). | 1 caller / 4 callees |
+| `0x600ec95a` |  106 | Crypto / ASN1 | **`crypto_asn1_item_i2d`** — OpenSSL `ASN1_item_i2d`: encodes top-level ASN.1 item to DER buffer. | 0 callers / 2 callees |
+| `0x600ec9c4` |    6 | Crypto / ASN1 | **`crypto_asn1_item_i2d_wrapper`** — Wrapper for `ASN1_item_i2d` passing default length/output pointers. Created as new function (`0x600ec9c4`..`0x600ec9c9`). | 0 callers / 0 callees |
+| `0x600ec9ca` |   34 | Crypto / ASN1 | **`crypto_asn1_primitive_free_dispatch`** — Dispatches custom primitive destructor callback (`item->funcs->prim_free`). | 2 callers / 1 callee |
+| `0x600ec9ec` |   22 | Crypto / ASN1 | **`crypto_asn1_item_combine_free_wrapper`** — Wrapper invoking `ASN1_item_combine_free` (`0x60090940`). Created as new function (`0x600ec9ec`..`0x600eca01`). | 0 callers / 1 callee |
+| `0x600eca02` |    6 | Crypto / ASN1 | **`crypto_asn1_item_free`** — OpenSSL `ASN1_item_free`: frees ASN.1 item and sub-fields (`0x60090940(val, it, 0)`). | 2 callers / 1 callee |
+| `0x600eca08` |   78 | Crypto / ASN1 | **`crypto_asn1_template_free`** — OpenSSL `asn1_template_free`: iterates sequence/set of template items and frees each member. | 4 callers / 4 callees |
+| `0x600eca56` |   48 | Crypto / ASN1 | **`crypto_asn1_primitive_new_default`** — Sets default primitive values (NULL/BOOLEAN/INTEGER). Created as new function (`0x600eca56`..`0x600eca85`). | 1 caller / 0 callees |
+| `0x600eca86` |   56 | Crypto / ASN1 | **`crypto_asn1_template_new`** — OpenSSL `asn1_template_new`: initializes optional/default template fields. Boundary adjusted to 56B (`0x600eca86`..`0x600ecabd`). | 1 caller / 1 callee |
+| `0x600ecabe` |  140 | Crypto / ASN1 | **`crypto_asn1_primitive_new`** — OpenSSL `asn1_primitive_new`: allocates and initializes primitive ASN.1 types (BIGNUM, OBJECT, STRING, INTEGER). Boundary adjusted to 140B (`0x600ecabe`..`0x600ecb49`). | 0 callers / 3 callees |
+| `0x600ecb4a` |    6 | Crypto / ASN1 | **`crypto_asn1_item_new`** — OpenSSL `ASN1_item_new`: allocates and instantiates new ASN.1 structure (`tasn_new.c`). Created as new function (`0x600ecb4a`..`0x600ecb4f`). | 2 callers / 0 callees |
+| `0x600ecb50` |   30 | Crypto / ASN1 | **`crypto_asn1_item_new_wrapper`** — Wrapper allocating new ASN.1 item and returning allocated pointer. Created as new function (`0x600ecb50`..`0x600ecb6d`). | 0 callers / 1 callee |
+| `0x600ecb6e` |    4 | Crypto / ASN1 | **`thunk_crypto_asn1_string_free`** — Trampoline thunk to `ASN1_STRING_free` (`0x600ec720`). Created as new function (`0x600ecb6e`..`0x600ecb71`). | 0 callers / 0 callees |
+| `0x600ecb72` |   34 | Crypto / ASN1 | **`crypto_asn1_get_field_ptr`** — Computes offset pointer to struct field given template header and base address. | 2 callers / 0 callees |
+| `0x600ecb94` |   34 | Crypto / ASN1 | **`crypto_asn1_get_enc_ptr`** — Returns pointer to cached ASN.1 encoding structure if present. | 4 callers / 0 callees |
+| `0x600ecbb6` |    8 | Crypto / ASN1 | **`crypto_asn1_get_field_val`** — Reads word at struct offset specified by template item. | 3 callers / 0 callees |
+
+
 
 
 
