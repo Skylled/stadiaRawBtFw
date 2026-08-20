@@ -595,6 +595,46 @@ public class FixSpuriousSplits extends GhidraScript {
             fdebf76.setBody(new AddressSet(adebf76, toAddr(0x600ebf7b)));
         }
         
+        // 52. Create 0x600ec12c function (180 bytes: 0x600ec12c..0x600ec1df)
+        Address adec12c = toAddr(0x600ec12c);
+        Function fdec12c = fm.getFunctionAt(adec12c);
+        if (fdec12c == null) {
+            createFunction(adec12c, "FUN_600ec12c");
+            fdec12c = fm.getFunctionAt(adec12c);
+        }
+        if (fdec12c != null) {
+            fdec12c.setBody(new AddressSet(adec12c, toAddr(0x600ec1df)));
+        }
+        
+        // 53. Create 0x600ec1e0 function (316 bytes: 0x600ec1e0..0x600ec31b)
+        Address adec1e0 = toAddr(0x600ec1e0);
+        Function fdec1e0 = fm.getFunctionAt(adec1e0);
+        if (fdec1e0 == null) {
+            createFunction(adec1e0, "FUN_600ec1e0");
+            fdec1e0 = fm.getFunctionAt(adec1e0);
+        }
+        if (fdec1e0 != null) {
+            fdec1e0.setBody(new AddressSet(adec1e0, toAddr(0x600ec31b)));
+        }
+        
+        // 54. Create 0x600ec31c function (46 bytes: 0x600ec31c..0x600ec349)
+        Address adec31c = toAddr(0x600ec31c);
+        Function fdec31c = fm.getFunctionAt(adec31c);
+        if (fdec31c == null) {
+            createFunction(adec31c, "FUN_600ec31c");
+            fdec31c = fm.getFunctionAt(adec31c);
+        }
+        if (fdec31c != null) {
+            fdec31c.setBody(new AddressSet(adec31c, toAddr(0x600ec349)));
+        }
+        
+        // 55. Fix 0x600ec584 boundary (6 bytes: 0x600ec584..0x600ec589)
+        Address adec584 = toAddr(0x600ec584);
+        Function fdec584 = fm.getFunctionAt(adec584);
+        if (fdec584 != null) {
+            fdec584.setBody(new AddressSet(adec584, toAddr(0x600ec589)));
+        }
+        
         println("FixSpuriousSplits completed successfully.");
     }
 }

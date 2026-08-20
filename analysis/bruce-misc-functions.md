@@ -3107,6 +3107,34 @@ Decompiled and documented 20 functions (1,728 bytes across `0x600eb956`–`0x600
 | `0x600ebf76` |    6 | Crypto / EC | **`crypto_ec_error_trampoline_8ed74`** — Error handler trampoline calling `0x6008ed74(0)`. Created as new function (`0x600ebf76`..`0x600ebf7b`). | 2 callers / 0 callees |
 | `0x600ebf7c` |  154 | Crypto / Digest | **`crypto_sha1_update_core`** — OpenSSL `SHA1_Update` streaming digest update engine (processes 64-byte blocks via compression function `0x60089fc8`). | 2 callers / 3 callees |
 
+## Session 103 (Wave 73) — OpenSSL SHA-2/SHA-384/SHA-512 Digest Engines & ASN.1 / X509 Parser Framework (20 functions, 1,856 bytes)
+
+Decompiled and documented 20 functions (1,856 bytes across `0x600ec016`–`0x600ec740`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600ec016` |  278 | Crypto / Digest | **`crypto_sha256_final_core`** — OpenSSL `SHA256_Final` / `SHA224_Final` / `SHA1_Final` completion engine: pads input with `0x80`, appends 64-bit length, and outputs big-endian digest (28/32 bytes). | 2 callers / 2 callees |
+| `0x600ec12c` |  180 | Crypto / Digest | **`crypto_sha512_update_core`** — OpenSSL `SHA512_Update` / `SHA384_Update` streaming digest update engine (processes 128-byte blocks via compression function `0x6004cdb8`). Created as new function (`0x600ec12c`..`0x600ec1df`). | 1 caller / 2 callees |
+| `0x600ec1e0` |  316 | Crypto / Digest | **`crypto_sha512_final_core`** — OpenSSL `SHA512_Final` / `SHA384_Final` completion engine: pads input with `0x80`, appends 128-bit length, and outputs big-endian digest (48/64 bytes). Created as new function (`0x600ec1e0`..`0x600ec31b`). | 1 caller / 2 callees |
+| `0x600ec31c` |   46 | Crypto / Digest | **`crypto_sha384_one_shot`** — OpenSSL `SHA384` one-shot digest calculation function. Created as new function (`0x600ec31c`..`0x600ec349`). | 1 caller / 4 callees |
+| `0x600ec34a` |   10 | Crypto / ASN1 | **`crypto_asn1_is_tag_10`** — Checks if tag value equals `0x10` (ASN.1 SEQUENCE). | 1 caller / 0 callees |
+| `0x600ec354` |   16 | Crypto / ASN1 | **`crypto_asn1_check_type_10`** — Checks if ASN.1 item type at `+0xf0` equals `10`. | 3 callers / 0 callees |
+| `0x600ec364` |   36 | Crypto / ASN1 | **`crypto_asn1_set_type_10`** — Sets ASN.1 item type to `10` and initializes pointers. | 2 callers / 0 callees |
+| `0x600ec388` |    4 | Crypto / ASN1 | **`thunk_crypto_asn1_set_type_10`** — Trampoline thunk to `crypto_asn1_set_type_10` (`0x600ec364`). | 0 callers / 1 callee |
+| `0x600ec38c` |  172 | Crypto / ASN1 | **`crypto_asn1_item_copy_data`** — Copies ASN.1 item data buffer. | 1 caller / 1 callee |
+| `0x600ec438` |  220 | Crypto / ASN1 | **`crypto_asn1_item_pack_data`** — Packs and serializes ASN.1 item data buffer into output structure. | 1 caller / 1 callee |
+| `0x600ec514` |  112 | Crypto / ASN1 | **`crypto_asn1_integer_to_uint32`** — Converts ASN.1 INTEGER structure (`ASN1_INTEGER`) to 32-bit unsigned integer with bounds checking. | 1 caller / 0 callees |
+| `0x600ec584` |    6 | Crypto / ASN1 | **`crypto_asn1_error_trampoline_91c90`** — Trampoline calling error handler `0x60091c90(0)`. Resized from 122B to 6B (`0x600ec584`..`0x600ec589`). | 1 caller / 0 callees |
+| `0x600ec58a` |   72 | Crypto / ASN1 | **`crypto_asn1_item_free_fields`** — Frees allocated buffers and fields within ASN.1 item structure. | 2 callers / 1 callee |
+| `0x600ec5d2` |   46 | Crypto / ASN1 | **`crypto_asn1_boolean_set`** — Sets boolean value in ASN.1 structure (`0xff` for true, `0x00` for false). | 1 caller / 1 callee |
+| `0x600ec600` |  166 | Crypto / ASN1 | **`crypto_asn1_put_object_header`** — OpenSSL `ASN1_put_object`: encodes tag, class, and length header bytes into DER stream. | 3 callers / 0 callees |
+| `0x600ec6a6` |   20 | Crypto / ASN1 | **`crypto_asn1_put_eoc`** — Encodes ASN.1 End-Of-Contents (`0x00, 0x00`) bytes. | 3 callers / 0 callees |
+| `0x600ec6ba` |   66 | Crypto / ASN1 | **`crypto_asn1_object_size`** — OpenSSL `ASN1_object_size`: computes total DER encoded size given tag, length, and construct flag. | 3 callers / 0 callees |
+| `0x600ec6fc` |   36 | Crypto / ASN1 | **`crypto_asn1_string_set_data`** — Sets data pointer and length on `ASN1_STRING` structure. | 0 callers / 1 callee |
+| `0x600ec720` |   32 | Crypto / ASN1 | **`crypto_asn1_string_free`** — OpenSSL `ASN1_STRING_free`: frees data buffer and string structure (5 callers). | 5 callers / 1 callee |
+| `0x600ec740` |   22 | Crypto / ASN1 | **`crypto_asn1_check_eoc`** — Checks if current DER stream position points to End-Of-Contents (`0x00, 0x00`) markers (5 callers). | 5 callers / 0 callees |
+
+
 
 
 

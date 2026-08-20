@@ -3,9 +3,9 @@
 //   600e1d72 FUN_600e1d72
 // --- callees ---
 //   600ec12c FUN_600ec12c
-//   6013cfb0 thunk_EXT_FUN_0000ac52
 //   60050b70 FUN_60050b70
 //   600ec1e0 FUN_600ec1e0
+//   6013cfb0 thunk_EXT_FUN_0000ac52
 
 
 undefined4 FUN_600ec31c(undefined4 param_1,undefined4 param_2,undefined4 param_3)
