@@ -2945,6 +2945,34 @@ Decompiled and documented 20 functions (4,234 bytes across `0x600e863c`–`0x600
 | `0x600e966c` |   20 | Crypto / BN | **`crypto_bn_sqr_wrapper`** — BigNum squaring wrapper calling `crypto_bn_sqr` (`0x600e957c`) with top fixup (`0x600e7480`). | 2 callers / 2 callees |
 | `0x600e9680` |   70 | Crypto / BN | **`crypto_bn_sqr_stack_dispatcher`** — Stack-allocated BigNum squaring dispatcher: routes 4/8-limb to Comba (`0x600e90aa`/`0x600e8b7a`) or normal (`0x600e7b96`) with stack clearing. | 1 caller / 5 callees |
 
+## Session 97 (Wave 67) — OpenSSL Montgomery Multiplication, Exponentiation & Bitwise Utilities (20 functions, 1,686 bytes)
+
+Decompiled and documented 20 functions (1,686 bytes across `0x600e96c6`–`0x600e9bc2`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600e96c6` |   84 | Crypto / BN | **`crypto_bn_mod_mul_montgomery`** — OpenSSL `BN_mod_mul_montgomery`: performs Montgomery modular multiplication $r = a \cdot b \cdot R^{-1} \pmod N$ using `BN_MONT_CTX`. | 5 callers / 5 callees |
+| `0x600e971a` |   18 | Crypto / BN | **`crypto_bn_mod_mul_montgomery_wrapper`** — OpenSSL `BN_mod_mul_montgomery` wrapper. | 0 callers / 1 callee |
+| `0x600e972c` |   26 | Crypto / BN | **`crypto_bn_to_montgomery`** — OpenSSL `BN_to_montgomery`: converts BigNum $a$ to Montgomery representation $a \cdot R \pmod N$. | 3 callers / 1 callee |
+| `0x600e9746` |   26 | Crypto / BN | **`crypto_bn_from_montgomery`** — OpenSSL `BN_from_montgomery`: converts BigNum from Montgomery representation $a \cdot R^{-1} \pmod N$. | 3 callers / 1 callee |
+| `0x600e9760` |  126 | Crypto / BN | **`crypto_bn_mod_exp_simple`** — Simple square-and-multiply modular exponentiation core. | 3 callers / 2 callees |
+| `0x600e97de` |  108 | Crypto / BN | **`crypto_bn_mod_exp_word`** — OpenSSL `BN_mod_exp_mont_word`: modular exponentiation with single-word base in Montgomery domain. | 1 caller / 4 callees |
+| `0x600e984a` |   90 | Crypto / BN | **`crypto_bn_mod_mul_wrapper`** — Modular multiplication wrapper: computes product and reduces modulo $m$ using `BN_CTX`. | 2 callers / 6 callees |
+| `0x600e98a4` |   34 | Crypto / BN | **`crypto_bn_mod_sqr_wrapper`** — Modular squaring wrapper: computes square via `BN_sqr` and reduces modulo $m$ via `bcm__6008bbdc` (`BN_mod`). | 2 callers / 2 callees |
+| `0x600e98c6` |  134 | Crypto / BN | **`crypto_bn_mod_exp_mont_consttime`** — Constant-time Montgomery modular exponentiation core for cryptographic operations. | 1 caller / 7 callees |
+| `0x600e994c` |   48 | Crypto / BN | **`crypto_bn_copy_limbs_reverse`** — Word-array reversal / copy utility. | 2 callers / 0 callees |
+| `0x600e997c` |   38 | Crypto / BN | **`crypto_bn_copy_limbs_reverse_cmov`** — Conditional word-array reversal using `crypto_bn_copy_limbs_reverse` and `crypto_constant_time_select_u32` (`0x600e7412`). | 1 caller / 2 callees |
+| `0x600e99a2` |  116 | Crypto / BN | **`crypto_bn_mod_exp_mont_driver`** — OpenSSL `BN_mod_exp_mont` driver: computes $a^p \pmod m$ in Montgomery domain with context setup. | 1 caller / 7 callees |
+| `0x600e9a16` |   42 | Crypto / BN | **`crypto_bn_copy_reverse`** — BigNum reverse copy helper: allocates capacity and copies limbs in reverse order, fixing up top. | 1 caller / 3 callees |
+| `0x600e9a40` |   78 | Crypto / BN | **`crypto_bn_set_bit_raw`** — Sets single bit at index `param_2` in limb array, expanding buffer as needed. | 2 callers / 1 callee |
+| `0x600e9a8e` |  102 | Crypto / BN | **`crypto_bn_mont_ctx_init_from_bignum`** — Initializes Montgomery context parameters ($R, R^2, N_0'$) directly from modulus BigNum. | 1 caller / 6 callees |
+| `0x600e9af4` |   40 | Crypto / BN | **`crypto_bn_mont_ctx_create_from_bignum`** — Allocates new `BN_MONT_CTX` and initializes from BigNum modulus. | 2 callers / 3 callees |
+| `0x600e9b1c` |   70 | Crypto / BN | **`crypto_bn_mont_ctx_init_consttime`** — Constant-time Montgomery context initializer with limb shift. | 1 caller / 3 callees |
+| `0x600e9b62` |   70 | Crypto / BN | **`crypto_bn_mont_ctx_create_consttime`** — Allocates new `BN_MONT_CTX` and initializes with constant-time parameters. | 2 callers / 5 callees |
+| `0x600e9ba8` |   26 | Crypto / BN | **`crypto_bn_is_bit_set`** — OpenSSL `BN_is_bit_set`: tests if bit at index `param_3` is set in limb array of length `param_2` (5 callers). | 5 callers / 0 callees |
+| `0x600e9bc2` |  410 | Crypto / BN | **`crypto_bn_mod_exp_mont_sliding_window`** — Full windowed Montgomery modular exponentiation engine with precomputed power table. | 1 caller / 7 callees |
+
+
 
 
 
