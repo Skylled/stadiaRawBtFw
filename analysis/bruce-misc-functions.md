@@ -2864,6 +2864,34 @@ Decompiled and documented 20 functions (1,506 bytes across `0x600e6dfe`–`0x600
 | `0x600e7412` |   34 | Crypto / BN | ~~**`crypto_bn_init_zero`** — OpenSSL `BN_init`: initializes BigNum header structure `(d = NULL, top = 0, dmax = 0, neg = 0, flags = 0)`.~~ ⚠️ **misidentified, corrected QA session 93** — real `BN_init` needs exactly one parameter (the struct to zero); this function takes **five** (`dst, mask, srcA, srcB, count`) and its body is a loop `dst[i] = (srcA[i]^srcB[i]) & mask ^ srcB[i]` for `i` in `[0, count)` — the exact `crypto_constant_time_select_u32` masking formula applied word-by-word across a caller-supplied-length array. It is the general, variable-length form of `crypto_ed25519_scalar_cmov_256` (`0x600e653e`, hardcoded to 8 words) — a generic **constant-time N-word array select**, not a zero-initializer. Its 11 callers (spanning `0x600e7xxx`–`0x600e9xxx`, both this BIGNUM neighborhood and the earlier Ed25519-scalar cluster) are consistent with a shared, reused primitive rather than a narrow `BN_init`. Real identity described rather than renamed. | 11 callers / 0 callees |
 | `0x600e7434` |   28 | Crypto / BN | **`crypto_bn_normalize_top`** — Normalizes BigNum limb count: decrements `top` while highest limbs are zero. | 4 callers / 0 callees |
 
+## Session 94 (Wave 64) — OpenSSL BIGNUM Core Arithmetic, Context Allocator & Comba Multiplier (20 functions, 1,380 bytes)
+
+Decompiled and documented 20 functions (1,380 bytes across `0x600e7450`–`0x600e7930`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600e7450` |   36 | Crypto / BN | **`crypto_bn_num_bits`** — OpenSSL `BN_num_bits`: returns total bit length of BigNum `(top - 1) * 32 + BN_num_bits_word(d[top - 1])`, returning 0 if BigNum is zero / empty. | 12 callers / 2 callees |
+| `0x600e7474` |   12 | Crypto / BN | **`crypto_bn_num_bytes`** — OpenSSL `BN_num_bytes`: returns byte length `(BN_num_bits(param_1) + 7) >> 3`. | 7 callers / 1 callee |
+| `0x600e7480` |   16 | Crypto / BN | **`crypto_bn_get_word`** — OpenSSL `BN_get_word`: returns lowest 32-bit limb `d[0]` if `top > 0`, else 0. | 10 callers / 1 callee |
+| `0x600e7490` |  116 | Crypto / BN | **`crypto_bn_bin2bn`** — OpenSSL `BN_bin2bn`: converts big-endian byte array `param_1` of length `param_2` into BigNum `param_3` (allocating or expanding as needed). | 4 callers / 3 callees |
+| `0x600e7504` |   68 | Crypto / BN | **`crypto_bn_bn2bin_padded`** — OpenSSL `BN_bn2bin_padded`: converts BigNum `param_3` to big-endian byte array `param_1` of fixed length `param_2` with leading zero-padding. | 1 caller / 1 callee |
+| `0x600e7548` |   12 | Crypto / BN | **`crypto_bn_ucmp_core`** — OpenSSL `BN_ucmp` core helper: compares two BigNum limb arrays via `FUN_600e6edc(a->d, a->top, b->d, b->top)`. | 7 callers / 1 callee |
+| `0x600e7554` |   52 | Crypto / BN | **`crypto_bn_cmp`** — OpenSSL `BN_cmp`: signed BigNum comparison taking sign flags into account (`neg`), returning -1, 0, or 1. | 8 callers / 1 callee |
+| `0x600e7588` |   16 | Crypto / BN | **`crypto_bn_ucmp_less_than`** — Constant-time BigNum unsigned less-than test: returns 1 if `a < b`, else 0. | 2 callers / 1 callee |
+| `0x600e7598` |   42 | Crypto / BN | **`crypto_bn_is_word`** — OpenSSL `BN_is_word`: checks if BigNum equals scalar word `param_2` (compares `d[0] == param_2` and verifies all remaining limbs are zero). | 4 callers / 0 callees |
+| `0x600e75c8` |   22 | Crypto / BN | **`crypto_bn_set_negative`** — OpenSSL `BN_set_negative`: sets or clears negative sign flag `param_1->neg` based on `param_2` (clears sign if value is zero via `FUN_600e75c2`). | 1 caller / 1 callee |
+| `0x600e75de` |  138 | Crypto / BN | **`crypto_bn_rshift`** — OpenSSL `BN_rshift`: right shifts BigNum by `param_2` bits, shifting whole words and fractional bit offsets, normalizing with `BN_normalize_top`. | 2 callers / 5 callees |
+| `0x600e7668` |  134 | Crypto / BN | **`crypto_bn_lshift`** — OpenSSL `BN_lshift`: left shifts BigNum by `param_2` bits with limb expansion via `bcm__6008b43c`. | 3 callers / 4 callees |
+| `0x600e76ee` |   24 | Crypto / BN | **`crypto_bn_is_one`** — OpenSSL `BN_is_one`: returns true if BigNum is positive and equals 1 (`!neg && BN_is_word(1)`). | 3 callers / 1 callee |
+| `0x600e7718` |   78 | Crypto / BN | **`crypto_bn_ctx_get`** — OpenSSL `BN_CTX_get`: allocates temporary BIGNUM from `BN_CTX` stack pool (19 callers across crypto and ECC modules). | 19 callers / 1 callee |
+| `0x600e7766` |   38 | Crypto / BN | **`crypto_bn_ctx_alloc_pool_entry`** — Allocates and expands a BIGNUM entry in `BN_CTX` pool. | 3 callers / 2 callees |
+| `0x600e778c` |   52 | Crypto / BN | **`crypto_bn_ctx_ensure_capacity`** — Ensures `BN_CTX` pool has sufficient capacity for `param_2` limbs. | 2 callers / 3 callees |
+| `0x600e77c0` |   20 | Crypto / BN | **`crypto_bn_ctx_end`** — OpenSSL `BN_CTX_end`: ends `BN_CTX` scope, unwinding stack pointer to previous frame. | 19 callers / 0 callees |
+| `0x600e77d4` |  206 | Crypto / BN | **`crypto_bn_mul_add_words`** — OpenSSL `bn_mul_add_words`: multiplies word array by single limb `param_4` and adds to destination array with 64-bit accumulator. | 3 callers / 0 callees |
+| `0x600e78a2` |  142 | Crypto / BN | **`crypto_bn_mul_words`** — OpenSSL `bn_mul_words`: multiplies word array by single limb `param_4` storing product in destination array with 64-bit accumulator. | 3 callers / 0 callees |
+| `0x600e7930` |  156 | Crypto / BN | **`crypto_bn_mul_comba`** — OpenSSL `bn_mul_comba` / BigNum multi-precision multiplication: multiplies two multi-word BigNums using Comba multiplication with `bn_mul_words` and `bn_mul_add_words`. | 4 callers / 3 callees |
+
+
 
 
 
