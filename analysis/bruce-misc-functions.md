@@ -2783,6 +2783,34 @@ Decompiled and documented 20 functions (3,936 bytes across `0x600e0ca2`–`0x600
 | `0x600e1c48` |   74 | Crypto / Ed25519 | ~~**`ge25519_p3_to_p2`** — Converts extended point $(X, Y, Z, T)$ to affine/projective $(X/Z, Y/Z)$ by inverting $Z$ via `fe25519_invert` and multiplying coordinates.~~ ⚠️ **misidentified, corrected QA session 90** — the body does invert `Z` and compute `X/Z`, `Y/Z` as the claim says, but it doesn't stop there: it then packs `Y/Z` to 32 output bytes via `FUN_600875a0` and **XORs the low bit of packed `X/Z` into the top bit of the last output byte** (`*(byte*)(param_1+0x1f) ^= local_a8[0]<<7`). That XOR-sign-bit-into-last-byte step is the unmistakable, textbook signature of Ed25519 **point compression / serialization** (`ge_p3_tobytes` — the function that produces a 32-byte compressed public key or signature `R`), not a bare coordinate-format conversion that leaves the result as two separate field elements. Renamed in spirit to `ge25519_p3_tobytes`. | 1 caller / 3 callees |
 | `0x600e1c92` |   66 | Crypto / Ed25519 | ~~**`ge25519_p3_to_cached`** — Converts point $(X, Y, Z, T)$ to precomputed/cached representation $(Y+X, Y-X, 2dXY, 2Z)$ via `fe25519_mul`.~~ ⚠️ **misidentified, corrected QA session 90** — the real `ge_p3_to_cached` needs one add, one sub, one copy, and one multiply by the curve constant `d2`; this body has **zero** add/sub calls and multiplies by no constant. It computes exactly four products from the extended-point fields `(X@0, Y@0x28, Z@0x50, T@0x78)`: `X·T`, `Y·Z`, `Z·T`, `X·Y` — a bit-exact match, in this exact order, to the real ref10 **`ge_p1p1_to_p3`** formula (`r->X=X·T; r->Y=Y·Z; r->Z=Z·T; r->T=X·Y`), which resolves a "completed point" (`p1p1`) intermediate — the output of an add/double formula — into the extended `p3` representation. Renamed in spirit to `ge25519_p1p1_to_p3`. | 1 caller / 1 callee |
 
+## Session 91 (Wave 61) — X25519 Key Derivation, Bitsliced AES Engine, Ed25519 Scalar Math & Curve25519 Montgomery Ladder (20 functions, 6,354 bytes)
+
+Decompiled and documented 20 functions (6,354 bytes across `0x600e1cd4`–`0x600e643a`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600e1cd4` |  158 | Crypto / Ed25519 | **`ge25519_add_p3_cached`** — Extended-coordinate point addition combining $P \in \mathcal{E}(p3)$ and precomputed $Q \in \mathcal{E}(\text{cached})$, producing $P + Q$ in $p1p1$ representation via `fe25519_add`, `fe25519_sub`, `fe25519_mul`, `fe25519_carry`. | 1 caller / 4 callees |
+| `0x600e1dde` |  118 | Crypto / X25519 | **`x25519_key_derive_public`** — X25519 public key derivation from private scalar: clamps 32-byte secret (`k[0] &= 0xf8; k[31] = (k[31] & 0x7f) \| 0x40`), computes base-point scalar multiplication via `ge25519_scalarmult_base` (`0x60087964`), converts Edwards $(X, Y, Z)$ to Montgomery $u = (Z+Y)/(Z-Y)$ via `fe25519_invert` and `fe25519_mul`, and serializes to 32 bytes via `fe25519_tobytes`. Called by `p_x25519_asn1__60085c98`. | 1 caller / 6 callees |
+| `0x600e1e54` |   10 | Crypto / Util | **`crypto_constant_time_is_zero_u32`** — Constant-time 32-bit zero test: computes `(val - 1 & ~val) >> 31`, returning `-1` (`0xffffffff`) if `val == 0`, else `0`. | 5 callers / 0 callees |
+| `0x600e1e5e` |   28 | Crypto / Util | **`crypto_xor_words_16b`** — 16-byte bitwise XOR accumulator: XORs 4 32-bit words from source into destination buffer in-place. | 2 callers / 0 callees |
+| `0x600e1e7a` |  584 | Crypto / AES | **`crypto_aes_bitsliced_sbox`** — Boyar-Peralta bitsliced AES S-box computation using boolean logic gates for constant-time side-channel resistance. | 3 callers / 0 callees |
+| `0x600e20c2` |  100 | Crypto / AES | **`crypto_aes_bitsliced_shiftrows`** — Bitsliced AES ShiftRows byte transposition across state words. | 1 caller / 0 callees |
+| `0x600e2126` |   50 | Crypto / AES | **`crypto_aes_bitsliced_mixcolumns_1`** — Bitsliced AES MixColumns linear diffusion matrix transformation. | 1 caller / 0 callees |
+| `0x600e2158` |   50 | Crypto / AES | **`crypto_aes_bitsliced_mixcolumns_2`** — Bitsliced AES inverse/alternative MixColumns transformation. | 1 caller / 0 callees |
+| `0x600e218a` |   16 | Crypto / AES | **`crypto_aes_bitsliced_rotate_2`** — Bitsliced 2-bit state word permutation. | 2 callers / 0 callees |
+| `0x600e219a` |   16 | Crypto / AES | **`crypto_aes_bitsliced_rotate_4`** — Bitsliced nibble swap / 4-bit permutation. | 2 callers / 0 callees |
+| `0x600e21aa` |  248 | Crypto / AES | **`crypto_aes_bitsliced_subbytes`** — Bitsliced AES SubBytes layer applying bit permutations and S-box core logic. | 2 callers / 2 callees |
+| `0x600e22a2` |   76 | Crypto / AES | **`crypto_aes_bitsliced_round_encrypt`** — Complete bitsliced AES encryption round combining SubBytes, ShiftRows, MixColumns, and AddRoundKey. | 3 callers / 4 callees |
+| `0x600e22ee` |   20 | Crypto / Util | **`crypto_xor_128b`** — 128-bit (16-byte) block XOR: `dst[i] = src1[i] ^ src2[i]`. | 3 callers / 0 callees |
+| `0x600e2308` |   14 | Crypto / Util | **`crypto_constant_time_select_u32`** — Constant-time 32-bit 2-to-1 multiplexer: `*dst = a ^ (-sel & (b ^ a))`. Selects `b` if `sel == 1`, else `a`. | 5 callers / 0 callees |
+| `0x600e5208` |  642 | Crypto / Curve25519 | **`crypto_curve25519_ladder_step`** — Montgomery ladder differential addition and point doubling step ($X_2, Z_2, X_3, Z_3$) using `fe25519` arithmetic. | 2 callers / 1 callee |
+| `0x600e548a` |  474 | Crypto / Curve25519 | **`crypto_curve25519_cswap_and_add`** — Constant-time conditional swap and ladder addition iteration for scalar multiplication. | 2 callers / 0 callees |
+| `0x600e5664` |  394 | Crypto / Ed25519 | **`crypto_ed25519_scalar_reduce_512`** — 512-bit (64-byte) scalar modular reduction modulo the group order $L = 2^{252} + 27742317777372353535851937790883648493$. | 2 callers / 0 callees |
+| `0x600e57ee` | 2998 | Crypto / Ed25519 | **`crypto_ed25519_scalarmult_variable_base`** — Variable-base scalar multiplication $[s]P$ on Ed25519 with 4-bit comb / windowed multiplication. | 2 callers / 1 callee |
+| `0x600e63a4` |  150 | Crypto / Ed25519 | **`crypto_ed25519_scalar_tobytes`** — Serializes 8 32-bit words (256-bit scalar) to 32 little-endian bytes. Resized from 44B + 106B spurious split to 150B (`0x600e63a4`..`0x600e6439`). | 6 callers / 0 callees |
+| `0x600e643a` |  208 | Crypto / Ed25519 | **`crypto_ed25519_scalar_frombytes`** — Deserializes 32 little-endian bytes into 8 32-bit scalar words (`r[0..7]`). | 6 callers / 0 callees |
+
+
 
 
 
