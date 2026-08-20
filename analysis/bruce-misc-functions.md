@@ -3080,6 +3080,34 @@ Decompiled and documented 20 functions (2,064 bytes across `0x600eb146`–`0x600
 | `0x600eb8b6` |    6 | Crypto / Digest | **`crypto_md5_init_wrapper`** — OpenSSL `EVP_DigestInit` wrapper for MD5: loads context (`+4`) and tail-calls `MD5_Init` (`0x6008de78`). Created as new function (`0x600eb8b6`..`0x600eb8bb`). | 0 callers / 0 callees |
 | `0x600eb8bc` |  154 | Crypto / Digest | **`crypto_md5_update_core`** — OpenSSL `MD5_Update` streaming digest update engine (processes 64-byte blocks via compression function `0x600898ec`). Created as new function (`0x600eb8bc`..`0x600eb955`). | 0 callers / 3 callees |
 
+## Session 102 (Wave 72) — OpenSSL MD5 Completion, RC4 Stream Cipher, CMAC Authentication & SHA1 Update (20 functions, 1,728 bytes)
+
+Decompiled and documented 20 functions (1,728 bytes across `0x600eb956`–`0x600ebf7c`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600eb956` |    6 | Crypto / Digest | **`crypto_md5_update_wrapper`** — OpenSSL `EVP_DigestUpdate` wrapper for `MD5_Update`: loads context (`+4`) and tail-calls `0x600eb8bc`. Created as new function (`0x600eb956`..`0x600eb95b`). | 0 callers / 1 callee |
+| `0x600eb95c` |  198 | Crypto / Digest | **`crypto_md5_final_core`** — OpenSSL `MD5_Final` engine: pads input with `0x80`, appends 64-bit length in bits, and emits 16-byte digest. Created as new function (`0x600eb95c`..`0x600eba21`). | 1 caller / 2 callees |
+| `0x600eba22` |   10 | Crypto / Digest | **`crypto_md5_final_wrapper`** — OpenSSL `EVP_DigestFinal` wrapper for `MD5_Final`: loads context (`+4`) and tail-calls `0x600eb95c`. Created as new function (`0x600eba22`..`0x600eba2b`). | 0 callers / 1 callee |
+| `0x600eba2c` |  188 | Crypto / Cipher | **`crypto_rc4_set_key`** — OpenSSL `RC4_set_key` / stream cipher S-box key scheduling algorithm (KSA). | 2 callers / 3 callees |
+| `0x600ebae8` |  334 | Crypto / Cipher | **`crypto_rc4_crypt_blocks`** — OpenSSL `RC4` pseudo-random generation algorithm (PRGA) stream encryption/decryption loop. | 2 callers / 3 callees |
+| `0x600ebc36` |   56 | Crypto / Cipher | **`crypto_rc4_cipher_wrapper`** — OpenSSL EVP cipher wrapper for RC4: checks key length and invokes `RC4` / `RC4_set_key`. | 0 callers / 2 callees |
+| `0x600ebc6e` |  102 | Crypto / MAC | **`crypto_poly1305_donna_mul`** — Poly1305 modular multiplication step ($d = a \cdot r \pmod{2^{130}-5}$) or CMAC subkey generation. | 1 caller / 0 callees |
+| `0x600ebcd4` |  100 | Crypto / MAC | **`crypto_cmac_init_ex`** — OpenSSL `CMAC_Init` / subkey initialization. | 1 caller / 2 callees |
+| `0x600ebd38` |  112 | Crypto / MAC | **`crypto_cmac_update`** — OpenSSL `CMAC_Update` streaming block processing engine. | 2 callers / 2 callees |
+| `0x600ebda8` |   84 | Crypto / MAC | **`crypto_cmac_final`** — OpenSSL `CMAC_Final` completion and MAC output generator. | 0 callers / 2 callees |
+| `0x600ebdfc` |  296 | Crypto / MAC | **`crypto_cmac_one_shot`** — Complete one-shot `CMAC` computation function. | 0 callers / 3 callees |
+| `0x600ebf24` |    8 | Crypto / MAC | **`crypto_cmac_ctx_cleanup`** — OpenSSL `CMAC_CTX_cleanup`: securely cleanses context (280 bytes via `0x6013cfb0`). | 0 callers / 1 callee |
+| `0x600ebf2c` |    8 | Crypto / Cipher | **`crypto_cipher_key_cleanup`** — Cleanses and frees cipher key buffer if non-null. Boundary adjusted from 266B to 8B (`0x600ebf2c`..`0x600ebf33`). | 1 caller / 0 callees |
+| `0x600ebf34` |   30 | Crypto / EC | **`crypto_ecdsa_sig_clear_free`** — Frees `ECDSA_SIG` struct and BigNums (`r` and `s`). | 1 caller / 2 callees |
+| `0x600ebf52` |    6 | Crypto / Digest | **`crypto_sha1_init_wrapper`** — OpenSSL `EVP_DigestInit` wrapper for SHA1: loads context (`+4`) and tail-calls `SHA1_Init` (`0x600e7450`). Created as new function (`0x600ebf52`..`0x600ebf57`). | 0 callers / 1 callee |
+| `0x600ebf58` |   12 | Crypto / EC | **`crypto_ec_group_get_cofactor_flag`** — Returns low bit of group cofactor field (`*(group + 0x28) & 1`). | 1 caller / 0 callees |
+| `0x600ebf64` |    6 | Crypto / Digest | **`crypto_sha1_ctx_load_wrapper`** — Loads SHA1 context (`+4`) and tail-calls `0x600e7474`. Created as new function (`0x600ebf64`..`0x600ebf69`). | 1 caller / 1 callee |
+| `0x600ebf6a` |   12 | Crypto / EC | **`crypto_ec_method_dispatch_14`** — Method dispatcher invoking `ec_method->+0x14` or falling back to `0x600ebf64`. Created as new function (`0x600ebf6a`..`0x600ebf75`). | 0 callers / 1 callee |
+| `0x600ebf76` |    6 | Crypto / EC | **`crypto_ec_error_trampoline_8ed74`** — Error handler trampoline calling `0x6008ed74(0)`. Created as new function (`0x600ebf76`..`0x600ebf7b`). | 2 callers / 0 callees |
+| `0x600ebf7c` |  154 | Crypto / Digest | **`crypto_sha1_update_core`** — OpenSSL `SHA1_Update` streaming digest update engine (processes 64-byte blocks via compression function `0x60089fc8`). | 2 callers / 3 callees |
+
+
 
 
 

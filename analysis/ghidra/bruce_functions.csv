@@ -4464,6 +4464,9 @@ address,name,size_bytes
 600eb7ce,FUN_600eb7ce,232
 600eb8b6,FUN_600eb8b6,6
 600eb8bc,FUN_600eb8bc,154
+600eb956,FUN_600eb956,6
+600eb95c,FUN_600eb95c,198
+600eba22,FUN_600eba22,10
 600eba2c,FUN_600eba2c,188
 600ebae8,FUN_600ebae8,334
 600ebc36,FUN_600ebc36,56
@@ -4473,10 +4476,13 @@ address,name,size_bytes
 600ebda8,FUN_600ebda8,84
 600ebdfc,FUN_600ebdfc,296
 600ebf24,FUN_600ebf24,8
-600ebf2c,FUN_600ebf2c,266
+600ebf2c,FUN_600ebf2c,8
 600ebf34,FUN_600ebf34,30
+600ebf52,FUN_600ebf52,6
 600ebf58,FUN_600ebf58,12
-600ebf76,bcm__600ebf76,156
+600ebf64,FUN_600ebf64,6
+600ebf6a,FUN_600ebf6a,12
+600ebf76,bcm__600ebf76,6
 600ebf7c,FUN_600ebf7c,154
 600ec016,FUN_600ec016,278
 600ec12c,FUN_600ec12c,180
