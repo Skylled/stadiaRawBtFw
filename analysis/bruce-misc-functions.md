@@ -2810,6 +2810,34 @@ Decompiled and documented 20 functions (6,354 bytes across `0x600e1cd4`–`0x600
 | `0x600e63a4` |  150 | Crypto / Ed25519 | **`crypto_ed25519_scalar_tobytes`** — Serializes 8 32-bit words (256-bit scalar) to 32 little-endian bytes. Resized from 44B + 106B spurious split to 150B (`0x600e63a4`..`0x600e6439`). | 6 callers / 0 callees |
 | `0x600e643a` |  208 | Crypto / Ed25519 | **`crypto_ed25519_scalar_frombytes`** — Deserializes 32 little-endian bytes into 8 32-bit scalar words (`r[0..7]`). | 6 callers / 0 callees |
 
+## Session 92 (Wave 62) — Bitsliced AES State Transformations, Ed25519 Scalar Array Ops & Memory Free Wrapper (20 functions, 1,434 bytes)
+
+Decompiled and documented 20 functions (1,434 bytes across `0x600e650a`–`0x600e6cf2`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600e650a` |   32 | Crypto / Ed25519 | **`crypto_ed25519_scalar_is_zero_256`** — Constant-time zero test for 256-bit scalar: computes bitwise OR reduction `param_1[0] \| ... \| param_1[7]`, returning 0 if scalar is all zeros, non-zero otherwise. Called by `FUN_600e66be`. | 1 caller / 0 callees |
+| `0x600e652a` |   20 | Crypto / Ed25519 | **`crypto_ed25519_scalar_copy_256`** — Copies 256-bit scalar (8 32-bit words, 32 bytes) from source to destination buffer. | 5 callers / 0 callees |
+| `0x600e653e` |  148 | Crypto / Ed25519 | **`crypto_ed25519_scalar_cmov_256`** — Constant-time conditional move for 256-bit scalar: invokes `crypto_constant_time_select_u32` (`0x600e2308`) word-by-word across all 8 32-bit words with selector `param_2 != 0`. | 3 callers / 1 callee |
+| `0x600e68ac` |  146 | Crypto / Ed25519 | **`crypto_ed25519_scalarmult_step_add`** — Scalar multiplication point addition wrapper: unpacks input scalars via `FUN_600e643a`, invokes point addition via `FUN_600e66be`, and packs output via `FUN_600e63a4`. | 0 callers / 3 callees |
+| `0x600e693e` |   88 | Crypto / Ed25519 | **`crypto_ed25519_scalar_pack_step`** — Scalar multiplication step wrapper: deserializes 32-byte buffers via `FUN_600e643a`, performs step calculation via `FUN_600e65d2`, and packs result via `FUN_600e63a4`. | 0 callers / 3 callees |
+| `0x600e6996` |   22 | Crypto / ASN.1 | **`crypto_asn1_error_dispatch_wrapper_1`** — ASN.1 error reporting trampoline forwarding error code and line info to `thunk_EXT_FUN_0000af88`. | 2 callers / 1 callee |
+| `0x600e69ac` |   22 | Crypto / ASN.1 | **`crypto_asn1_error_dispatch_wrapper_2`** — ASN.1 error reporting wrapper passing context parameters to `thunk_EXT_FUN_0000af88`. | 2 callers / 1 callee |
+| `0x600e69c2` |   88 | Crypto / Ed25519 | **`crypto_ed25519_scalar_table_lookup`** — Constant-time precomputed table lookup for windowed multiplication: zeroes 96-byte scratch buffer via `thunk_EXT_FUN_0000af90` and performs constant-time scalar selection across table entries via `FUN_600e653e`. | 2 callers / 2 callees |
+| `0x600e6a1a` |    8 | Crypto / Util | **`crypto_memmove_wrapper`** — Bounded memory move helper: checks `param_3 != 0` and calls `memmove` (`thunk_EXT_FUN_0000b588`). | 2 callers / 1 callee |
+| `0x600e6a22` |   40 | Crypto / Heap | **`crypto_heap_free_checked`** — Checked memory free helper: inspects pointer non-null and calls heap free (`thunk_EXT_FUN_0000ac5e` / `thunk_EXT_FUN_0000b208`). Called by 14+ crypto modules across ASN.1, BCM, and EC. | 14 callers / 1 callee |
+| `0x600e6a90` |   24 | Crypto / Util | **`crypto_get_bit_at_index`** — Reads single bit at index `param_2` from 256-bit byte buffer `param_1`: `param_1[param_2 >> 3] >> (param_2 & 7) & 1` if `param_2 < 256`, else 0. | 3 callers / 0 callees |
+| `0x600e6aa8` |   26 | Crypto / AES | **`crypto_aes_bitsliced_swap_step`** — Bitsliced permutation 2-word bit swap: `uVar1 = (*param_2 ^ (*param_1 >> 1)) & 0x55555555; *param_1 ^= uVar1 << 1; *param_2 ^= uVar1;`. | 1 caller / 0 callees |
+| `0x600e6ac2` |   48 | Crypto / AES | **`crypto_aes_bitsliced_transpose_pairs`** — Applies `crypto_aes_bitsliced_swap_step` across 8 32-bit words (4 pairs) for state transposition. | 4 callers / 1 callee |
+| `0x600e6af2` |   72 | Crypto / AES | **`crypto_aes_bitsliced_sbox_transpose`** — Transposes 8 words via `crypto_aes_bitsliced_transpose_pairs`, applies bitsliced S-box (`0x600e1e7a`), and transposes back. | 1 caller / 3 callees |
+| `0x600e6b3a` |  138 | Crypto / AES | **`crypto_aes_bitsliced_key_expand_step`** — Bitsliced AES round key schedule expansion step with pair transposition. | 4 callers / 1 callee |
+| `0x600e6bc4` |   38 | Crypto / AES | **`crypto_aes_bitsliced_bit_permute_1`** — 32-bit word bit permutation using masks `0xcc00cc` (shift 6) and `0xf0f0` (shift 12). | 1 caller / 0 callees |
+| `0x600e6bea` |  158 | Crypto / AES | **`crypto_aes_bitsliced_pack_state`** — Packs standard 128-bit AES state words into bitsliced matrix representation using `crypto_aes_bitsliced_bit_permute_1`. | 2 callers / 1 callee |
+| `0x600e6c88` |   68 | Crypto / AES | **`crypto_aes_bitsliced_init_state`** — Initializes bitsliced state matrix for `param_3` blocks, zeroing and packing with `crypto_aes_bitsliced_pack_state` and transposing with `crypto_aes_bitsliced_transpose_pairs`. | 5 callers / 3 callees |
+| `0x600e6ccc` |   38 | Crypto / AES | **`crypto_aes_bitsliced_bit_permute_2`** — Inverse 32-bit word bit permutation using masks `0xf0f0` (shift 12) and `0xcc00cc` (shift 6). | 1 caller / 0 callees |
+| `0x600e6cf2` |  210 | Crypto / AES | **`crypto_aes_bitsliced_unpack_state`** — Unpacks bitsliced state matrix back into standard 128-bit AES block byte representation using `crypto_aes_bitsliced_bit_permute_2`. | 5 callers / 2 callees |
+
+
 
 
 
