@@ -3026,6 +3026,34 @@ Decompiled and documented 20 functions (410 bytes across `0x600ea6fc`–`0x600ea
 | `0x600ea88e` |    4 | Crypto / EC | **`crypto_ec_point_get_y`** — Accessor returning word at `*(param_1 + 4)`. ⚠️ **confidence caveat, QA session 99** — one of its 2 callers is `0x600e084e` (`crypto_ed25519_key_compare`), already independently attributed in this file to Ed25519 key-material comparison, not EC point access — same identical-code-folding concern as `crypto_ec_point_get_x` above; treat the "Y coordinate" role as unconfirmed. | 2 callers / 0 callees |
 | `0x600ea892` |    4 | Crypto / EC | **`crypto_ec_point_get_field_10`** — Accessor returning word at `*(param_1 + 0x10)`. | 1 caller / 0 callees |
 
+## Session 100 (Wave 70) — OpenSSL Elliptic Curve (EC) Jacobian Point Arithmetic & Scalar Multiplication (20 functions, 2,224 bytes)
+
+Decompiled and documented 20 functions (2,224 bytes across `0x600ea896`–`0x600eafdc`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600ea896` |    6 | Crypto / EC | **`crypto_ec_point_method_dispatch_40`** — Indirect branch/dispatch through `EC_METHOD->+0x40`. | 1 caller / 0 callees |
+| `0x600ea89c` |   30 | Crypto / EC | **`crypto_ec_point_add_field_words`** — EC field limb addition with carry wrapping. | 3 callers / 1 callee |
+| `0x600ea8ba` |   30 | Crypto / EC | **`crypto_ec_point_sub_field_words`** — EC field limb subtraction with borrow wrapping. | 3 callers / 1 callee |
+| `0x600ea8d8` |  610 | Crypto / EC | **`crypto_ec_point_dbl_jacobian`** — EC point doubling in Jacobian / projective coordinates on short Weierstrass curve ($y^2 = x^3 + ax + b$). | 4 callers / 4 callees |
+| `0x600eab3a` |   30 | Crypto / EC | **`crypto_ec_point_is_at_infinity`** — Tests if EC point is the point at infinity $\mathcal{O}$ ($Z = 0$). | 3 callers / 1 callee |
+| `0x600eab58` |   52 | Crypto / EC | **`crypto_ec_point_set_to_infinity`** — Sets point coordinates to $(0,0,0)$ or identity representation. Created as new function (`0x600eab58`..`0x600eab8b`). | 0 callers / 2 callees |
+| `0x600eab8c` |   24 | Crypto / EC | **`crypto_ec_point_cmov_jacobian`** — Constant-time conditional move (`cmov`) of Jacobian point coordinates. | 2 callers / 1 callee |
+| `0x600eaba4` |  556 | Crypto / EC | **`crypto_ec_point_add_jacobian`** — EC point addition in Jacobian / projective coordinates ($P + Q$). | 3 callers / 7 callees |
+| `0x600eadd0` |   30 | Crypto / EC | **`crypto_ec_point_cmp_field_words`** — Compares field words of two point coordinates using `memcmp` (`thunk_EXT_FUN_0000b554`). | 3 callers / 1 callee |
+| `0x600eadee` |  232 | Crypto / EC | **`crypto_ec_point_cmp_jacobian`** — Tests equivalence of two Jacobian points $P = Q$ by comparing projective coordinates ($X_1 Z_2^2 \equiv X_2 Z_1^2 \pmod p$). Created as new function (`0x600eadee`..`0x600eaed5`). | 0 callers / 1 callee |
+| `0x600eaed6` |   30 | Crypto / EC | **`crypto_ec_point_cmp_affine_words`** — Compares affine coordinates using `memcmp`. | 1 caller / 1 callee |
+| `0x600eaef4` |   20 | Crypto / EC | **`crypto_ec_field_mul_montgomery`** — EC field Montgomery multiplication wrapper. | 1 caller / 1 callee |
+| `0x600eaf08` |   24 | Crypto / EC | **`crypto_ec_field_sqr_montgomery`** — EC field Montgomery squaring wrapper. | 1 caller / 1 callee |
+| `0x600eaf20` |    6 | Crypto / EC | **`crypto_ec_point_method_dispatch_34`** — Indirect branch through `EC_METHOD->+0x34`. | 1 caller / 0 callees |
+| `0x600eaf26` |   24 | Crypto / EC | **`crypto_ec_point_invert_wrapper`** — EC point inversion wrapper ($P \mapsto -P$). Created as new function (`0x600eaf26`..`0x600eaf3d`). | 0 callers / 2 callees |
+| `0x600eaf3e` |    6 | Crypto / EC | **`crypto_ec_point_method_dispatch_38`** — Indirect branch through `EC_METHOD->+0x38`. | 1 caller / 0 callees |
+| `0x600eaf44` |   74 | Crypto / EC | **`crypto_ec_key_set_public_key_affine`** — Sets public key affine coordinates on EC key structure. | 1 caller / 2 callees |
+| `0x600eaf8e` |   38 | Crypto / EC | **`crypto_ec_point_zero_jacobian`** — Zeroes 3 coordinate limbs ($X, Y, Z$) of Jacobian point (3 blocks of 68 bytes). | 3 callers / 1 callee |
+| `0x600eafb4` |   40 | Crypto / EC | **`crypto_ec_point_copy_jacobian`** — Copies 3 coordinate limbs ($X, Y, Z$) of Jacobian point (3 blocks of 68 bytes). | 6 callers / 1 callee |
+| `0x600eafdc` |  362 | Crypto / EC | **`crypto_ec_point_mul_comb`** — Comb / windowed scalar multiplication engine for elliptic curve points ($k \cdot P$). | 0 callers / 9 callees |
+
+
 
 
 
