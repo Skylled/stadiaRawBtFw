@@ -1,26 +1,25 @@
-// 6008c0d8  bcm__6008c0d8  size=628 bytes
+// 6008c0d8  bcm__6008c0d8  size=600 bytes
 // src: bcm.c
 // --- callers ---
 //   6008e264 bcm__6008e264
 // --- callees ---
-//   600e77c0 FUN_600e77c0
-//   600e9b62 FUN_600e9b62
-//   600e9dea FUN_600e9dea
-//   600e7598 FUN_600e7598
-//   6008ba20 bcm__6008ba20
-//   6008b43c bcm__6008b43c
-//   6008b570 bcm__6008b570
-//   600e932c FUN_600e932c
-//   600e965c FUN_600e965c
 //   600e7706 FUN_600e7706
-//   600e0552 FUN_600e0552
 //   600e92f0 FUN_600e92f0
-//   600e6a6c FUN_600e6a6c
-//   600e7382 FUN_600e7382
-//   600e7718 FUN_600e7718
-//   600e72fc FUN_600e72fc
-//   600e7548 FUN_600e7548
+//   600e9b62 FUN_600e9b62
+//   600e0552 FUN_600e0552
 //   600e7450 FUN_600e7450
+//   600e9dea FUN_600e9dea
+//   6008b570 bcm__6008b570
+//   600e7718 FUN_600e7718
+//   6008ba20 bcm__6008ba20
+//   600e77c0 FUN_600e77c0
+//   600e7598 FUN_600e7598
+//   600e72fc FUN_600e72fc
+//   600e965c FUN_600e965c
+//   600e6a6c FUN_600e6a6c
+//   600e7548 FUN_600e7548
+//   600e932c FUN_600e932c
+//   600e7382 FUN_600e7382
 
 
 /* src: bcm.c */

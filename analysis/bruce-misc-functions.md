@@ -2891,6 +2891,34 @@ Decompiled and documented 20 functions (1,380 bytes across `0x600e7450`–`0x600
 | `0x600e78a2` |  142 | Crypto / BN | **`crypto_bn_mul_words`** — OpenSSL `bn_mul_words`: multiplies word array by single limb `param_4` storing product in destination array with 64-bit accumulator. | 3 callers / 0 callees |
 | `0x600e7930` |  156 | Crypto / BN | ~~**`crypto_bn_mul_comba`** — OpenSSL `bn_mul_comba` / BigNum multi-precision multiplication: multiplies two multi-word BigNums using Comba multiplication with `bn_mul_words` and `bn_mul_add_words`.~~ ⚠️ **misidentified, corrected QA session 94** — real `bn_mul_comba4`/`bn_mul_comba8` are fixed-size (exactly 4 or 8 limbs), fully inline, with **no length parameters and no calls to `bn_mul_words`/`bn_mul_add_words`**. This function instead takes **two explicit length parameters** (`param_3`, `param_5`), dynamically compares and swaps the two operands so the shorter one drives the outer loop, and composes calls to the confirmed `crypto_bn_mul_words` (first word) and `crypto_bn_mul_add_words` (remaining words, 4-way unrolled) — the defining shape of the **generic, variable-length schoolbook multiplier** (real BoringSSL/OpenSSL name: `bn_mul_normal`), not the specialized fixed-size Comba routine. The underlying multiply-accumulate mechanics and callee identities are correct; only the specific-algorithm name is wrong. | 4 callers / 3 callees |
 
+## Session 95 (Wave 65) — OpenSSL Comba Squaring, Modular Shift / Reduction & Comba8 Multiplier (20 functions, 3,184 bytes)
+
+Decompiled and documented 20 functions (3,184 bytes across `0x600e79cc`–`0x600e80e2`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600e79cc` |  102 | Crypto / BN | **`crypto_bn_sqr_comba4`** — OpenSSL `bn_sqr_comba4`: 4-limb (128-bit) unrolled Comba squaring with cross-product doubling and 64-bit accumulators. | 1 caller / 0 callees |
+| `0x600e7a32` |  234 | Crypto / BN | **`crypto_bn_sqr_comba8`** — OpenSSL `bn_sqr_comba8`: 8-limb (256-bit) unrolled Comba squaring with cross-product doubling and 64-bit accumulators (10 callers across ECC curves). | 10 callers / 0 callees |
+| `0x600e7b1c` |  102 | Crypto / BN | **`crypto_bn_usub`** — OpenSSL `BN_usub`: unsigned BigNum subtraction `r = a - b` (`a >= b`) with borrow propagation. | 1 caller / 2 callees |
+| `0x600e7b82` |   20 | Crypto / BN | **`crypto_bn_sub`** — OpenSSL `BN_sub`: signed BigNum subtraction wrapper with top fixup via `0x600e7480`. | 2 callers / 2 callees |
+| `0x600e7b96` |  150 | Crypto / BN | **`crypto_bn_sqr_normal`** — OpenSSL `bn_sqr_normal`: generic variable-length squaring dispatcher routing fixed 4/8-limb sizes to Comba (`0x600e79cc`/`0x600e7a32`) or schoolbook loop. | 3 callers / 4 callees |
+| `0x600e7c2c` |  160 | Crypto / BN | **`crypto_bn_sub_words`** — OpenSSL `bn_sub_words`: word array subtraction `r[i] = a[i] - b[i]` returning final borrow (11 callers). | 11 callers / 0 callees |
+| `0x600e7ccc` |   20 | Crypto / BN | **`crypto_bn_add`** — OpenSSL `BN_add`: signed BigNum addition wrapper calling `bcm__6008b60c` (`BN_uadd`) and `0x600e7480`. | 3 callers / 2 callees |
+| `0x600e7ce0` |   86 | Crypto / BN | **`crypto_bn_sub_dispatcher`** — Signed BigNum subtraction dispatcher taking operand signs into account (`a - b`). | 1 caller / 3 callees |
+| `0x600e7d36` |   98 | Crypto / BN | **`crypto_bn_add_dispatcher`** — Signed BigNum addition dispatcher taking operand signs into account (`a + b`). | 2 callers / 3 callees |
+| `0x600e7d98` |   40 | Crypto / BN | **`crypto_bn_mod_sub_quick_core`** — Modular subtraction quick core: computes `a - b` via `bn_sub_words` (`0x600e7c2c`) with conditional addition of modulus `m` via `0x600e7412`. | 2 callers / 2 callees |
+| `0x600e7dc0` |   42 | Crypto / BN | **`crypto_bn_mod_add_quick_core`** — Modular addition quick core: computes `a + b` with conditional subtraction of modulus `m` via `0x600e7412`. | 3 callers / 2 callees |
+| `0x600e7dea` |   36 | Crypto / BN | **`crypto_bn_mod_lshift1_quick`** — OpenSSL `BN_mod_lshift1_quick`: computes `2*a mod m` via 1-bit shift and conditional subtraction (`0x600e7dc0`). | 2 callers / 2 callees |
+| `0x600e7e0e` |  124 | Crypto / BN | **`crypto_bn_mod_lshift_quick`** — OpenSSL `BN_mod_lshift_quick`: computes `(a << n) mod m` by iterative doubling and modular reduction with `BN_CTX` temporary allocation. | 2 callers / 6 callees |
+| `0x600e7e8a` |   18 | Crypto / BN | **`crypto_bn_mod_lshift1_wrapper`** — Wrapper calling `crypto_bn_mod_lshift_quick(r, a, 1, m, ctx)`. | 3 callers / 1 callee |
+| `0x600e7e9c` |   48 | Crypto / BN | **`crypto_bn_mod_lshift1`** — OpenSSL `BN_mod_lshift1`: validates arguments, clones BigNum if needed, and calls `crypto_bn_mod_lshift1_wrapper`. | 1 caller / 2 callees |
+| `0x600e7ecc` |   50 | Crypto / BN | **`crypto_bn_mod_lshift_quick_step`** — Multi-step modular left-shift step using `crypto_bn_sub_words` and constant-time selection. | 2 callers / 3 callees |
+| `0x600e7efe` |  124 | Crypto / BN | **`crypto_bn_mod_lshift_quick_loop`** — Iterative modular left-shift loop with `BN_CTX` temporary allocation. | 1 caller / 6 callees |
+| `0x600e7f7a` |  288 | Crypto / BN | **`crypto_bn_div_word_by_limb`** — Multi-precision division step by single limb with remainder accumulation and subtraction. | 1 caller / 1 callee |
+| `0x600e809a` |   72 | Crypto / BN | **`crypto_bn_mod_word_step`** — Modular reduction step using `crypto_bn_div_word_by_limb` and constant-time word selection (`0x600e7412`). | 2 callers / 2 callees |
+| `0x600e80e2` | 1370 | Crypto / BN | **`crypto_bn_mul_comba8`** — OpenSSL `bn_mul_comba8`: 8-limb by 8-limb (256-bit by 256-bit) fully unrolled Comba multiplication with 64-bit accumulators. | 4 callers / 0 callees |
+
+
 
 
 
