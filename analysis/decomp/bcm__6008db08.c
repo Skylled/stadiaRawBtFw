@@ -1,12 +1,12 @@
-// 6008db08  bcm__6008db08  size=300 bytes
+// 6008db08  bcm__6008db08  size=68 bytes
 // src: bcm.c
 // --- callers ---
 //   6008db50 bcm__6008db50
+//   600e084e FUN_600e084e
 // --- callees ---
-//   600eadd0 FUN_600eadd0
 //   600e0552 FUN_600e0552
-//   600eb428 FUN_600eb428
 //   600eb370 FUN_600eb370
+//   600eb428 FUN_600eb428
 
 
 /* src: bcm.c */

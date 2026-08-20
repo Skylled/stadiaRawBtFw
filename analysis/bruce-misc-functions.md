@@ -3053,6 +3053,34 @@ Decompiled and documented 20 functions (2,224 bytes across `0x600ea896`–`0x600
 | `0x600eafb4` |   40 | Crypto / EC | **`crypto_ec_point_copy_jacobian`** — Copies 3 coordinate limbs ($X, Y, Z$) of Jacobian point (3 blocks of 68 bytes). | 6 callers / 1 callee |
 | `0x600eafdc` |  362 | Crypto / EC | **`crypto_ec_point_mul_comb`** — Comb / windowed scalar multiplication engine for elliptic curve points ($k \cdot P$). | 0 callers / 9 callees |
 
+## Session 101 (Wave 71) — OpenSSL Elliptic Curve (EC) Group Verification, wNAF Scalar Multiplication & MD5 Digest Engine (20 functions, 2,064 bytes)
+
+Decompiled and documented 20 functions (2,064 bytes across `0x600eb146`–`0x600eb8bc`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600eb146` |   16 | Crypto / EC | **`crypto_ec_point_mul_comb_wrapper`** — Trampoline wrapper invoking `crypto_ec_point_mul_comb` (`0x600eafdc`). Created as new function (`0x600eb146`..`0x600eb155`). | 0 callers / 1 callee |
+| `0x600eb156` |   60 | Crypto / EC | **`crypto_ec_point_precompute_comb_table`** — Computes multiples / table of points for Comb scalar multiplication. | 1 caller / 3 callees |
+| `0x600eb192` |   10 | Crypto / EC | **`crypto_ec_point_neg_jacobian_wrapper`** — Negates $Y$ coordinate of Jacobian point via `0x600eab58`. Created as new function (`0x600eb192`..`0x600eb19b`). | 1 caller / 1 callee |
+| `0x600eb19c` |   56 | Crypto / EC | **`crypto_ec_point_table_lookup_sign`** — Table lookup for signed scalar multipliers, applying negation (`0x600eb192`) when digit is negative. Boundary adjusted from 118B to 56B (`0x600eb19c`..`0x600eb1d3`). | 1 caller / 2 callees |
+| `0x600eb1d4` |   16 | Crypto / EC | **`crypto_ec_point_is_at_infinity_wrapper`** — Tests whether EC point is at infinity ($Z = 0$) with boolean result (0=finite, 1=infinity). (9 callers). | 9 callers / 1 callee |
+| `0x600eb1e4` |  156 | Crypto / EC | **`crypto_ec_point_validate_order`** — Validates that point has expected subgroup order ($n \cdot P = \mathcal{O}$) or matches curve params. | 0 callers / 7 callees |
+| `0x600eb280` |  240 | Crypto / EC | **`crypto_ec_point_is_on_curve_jacobian`** — Evaluates curve equation $Y^2 \equiv X^3 + a X Z^4 + b Z^6 \pmod p$ in Jacobian coordinates to verify that $P$ lies on the curve. Created as new function (`0x600eb280`..`0x600eb36f`). | 0 callers / 4 callees |
+| `0x600eb370` |   52 | Crypto / EC | **`crypto_ec_point_cmp_jacobian_core`** — Core point equality comparison testing infinity flags and delegating to projective coordinate comparison `0x600eadee`. (Real comparison target tail-called by `bcm__6008db08`). | 2 callers / 2 callees |
+| `0x600eb3a4` |   92 | Crypto / EC | **`crypto_ec_group_cmp_parameters`** — Compares elliptic curve group parameters ($p, a, b, G$). Created as new function (`0x600eb3a4`..`0x600eb3ff`). | 2 callers / 3 callees |
+| `0x600eb400` |   40 | Crypto / EC | **`crypto_ec_group_cmp`** — OpenSSL `EC_GROUP_cmp`: checks pointer equality, curve IDs, and field parameters via `0x600eb3a4`. Boundary adjusted from 132B to 40B (`0x600eb400`..`0x600eb427`). | 1 caller / 1 callee |
+| `0x600eb428` |   40 | Crypto / EC | **`crypto_ec_point_method_check`** — Validates that two EC points share the same `EC_METHOD` and group context (10 callers across `bcm.c`). | 10 callers / 1 callee |
+| `0x600eb450` |   44 | Crypto / EC | **`crypto_ec_point_dup`** — OpenSSL `EC_POINT_dup`: allocates a new point and copies coordinates from source. | 1 caller / 3 callees |
+| `0x600eb47c` |   52 | Crypto / EC | **`crypto_ec_point_is_on_curve_affine`** — Checks if affine coordinates satisfy the curve equation. | 1 caller / 3 callees |
+| `0x600eb4b0` |  178 | Crypto / EC | **`crypto_ec_point_is_on_curve_montgomery`** — Checks if Montgomery-form coordinates satisfy curve equation. Created as new function (`0x600eb4b0`..`0x600eb561`). | 0 callers / 8 callees |
+| `0x600eb562` |   38 | Crypto / EC | **`crypto_ec_wnaf_digit_helper`** — Extracts sign and digit magnitude for wNAF recoding. | 1 caller / 0 callees |
+| `0x600eb588` |  466 | Crypto / EC | **`crypto_ec_compute_wnaf`** — Computes width-$w$ Non-Adjacent Form (wNAF) representation of a scalar BigNum. | 0 callers / 12 callees |
+| `0x600eb75a` |  116 | Crypto / EC | **`crypto_ec_wnaf_precompute_table`** — Precomputes table of odd multiples $\{P, 3P, 5P, \dots, (2^w - 1)P\}$ for wNAF scalar multiplication. | 2 callers / 1 callee |
+| `0x600eb7ce` |  232 | Crypto / EC | **`crypto_ec_point_mul_wnaf`** — Variable-time wNAF scalar multiplication engine ($k \cdot P$). | 0 callers / 8 callees |
+| `0x600eb8b6` |    6 | Crypto / Digest | **`crypto_md5_init_wrapper`** — OpenSSL `EVP_DigestInit` wrapper for MD5: loads context (`+4`) and tail-calls `MD5_Init` (`0x6008de78`). Created as new function (`0x600eb8b6`..`0x600eb8bb`). | 0 callers / 0 callees |
+| `0x600eb8bc` |  154 | Crypto / Digest | **`crypto_md5_update_core`** — OpenSSL `MD5_Update` streaming digest update engine (processes 64-byte blocks via compression function `0x600898ec`). Created as new function (`0x600eb8bc`..`0x600eb955`). | 0 callers / 3 callees |
+
+
 
 
 
