@@ -2999,6 +2999,34 @@ Decompiled and documented 20 functions (2,464 bytes across `0x600e9d5c`–`0x600
 | `0x600ea6e4` |   20 | Crypto / Heap | **`crypto_heap_alloc_16b_struct`** — Allocates and initializes a 16-byte memory structure. | 1 caller / 2 callees |
 | `0x600ea6f8` |    4 | Crypto / Heap | **`thunk_crypto_heap_alloc_16b_struct`** — Trampoline to `0x600ea6e4`. | 1 caller / 1 callee |
 
+## Session 99 (Wave 69) — OpenSSL Elliptic Curve (EC) Group, Point & ECDSA Framework (20 functions, 410 bytes)
+
+Decompiled and documented 20 functions (410 bytes across `0x600ea6fc`–`0x600ea892`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600ea6fc` |   22 | Crypto / EC | **`crypto_ec_key_destructor_trampoline`** — Cleans up EC key sub-structures and frees key object via `thunk_EXT_FUN_0000ac5e`. | 1 caller / 2 callees |
+| `0x600ea712` |   24 | Crypto / EC | **`crypto_ec_key_init_wrapper`** — Initializes EC key object calling `bcm__6008cb7c`. | 1 caller / 2 callees |
+| `0x600ea72a` |   32 | Crypto / EC | **`crypto_ec_method_get_curve_name`** — Invokes `ec_method->get_curve_name` function pointer (`+0x14`). | 2 callers / 1 callee |
+| `0x600ea74a` |   18 | Crypto / EC | **`crypto_ec_group_get_curve_name`** — Wrapper extracting curve name from EC group structure. | 1 caller / 2 callees |
+| `0x600ea75c` |   30 | Crypto / EC | **`crypto_ecdsa_sig_free`** — OpenSSL `ECDSA_SIG_free`: frees `r` and `s` BigNums (`0x600e6a22`) and signature structure. | 2 callers / 2 callees |
+| `0x600ea77a` |   42 | Crypto / EC | **`crypto_ecdsa_sig_new`** — OpenSSL `ECDSA_SIG_new`: allocates `ECDSA_SIG` struct (8 bytes) and initializes `r` and `s` BigNums (`bcm__6008b384`). | 1 caller / 3 callees |
+| `0x600ea7a4` |   64 | Crypto / EC | **`crypto_ec_group_clear_free_internal`** — Frees EC group internal fields: Montgomery context (`0x600e92f0`), BigNum parameters (`0x600e6a22`), and method structures. | 5 callers / 4 callees |
+| `0x600ea7e4` |   22 | Crypto / EC | **`crypto_ec_group_ensure_generator_order`** — Checks and computes generator order if uninitialized (`FUN_600867a4`). | 2 callers / 1 callee |
+| `0x600ea7fa` |    4 | Crypto / EC | **`crypto_ec_group_get_generator_offset`** — Returns pointer to generator point `param_1 + 8` (3 callers). | 3 callers / 0 callees |
+| `0x600ea7fe` |    4 | Crypto / EC | **`crypto_ec_group_get_cofactor`** — Returns cofactor BigNum `*(param_1 + 0x1c)`. | 1 caller / 0 callees |
+| `0x600ea802` |   24 | Crypto / EC | **`crypto_ec_group_free`** — OpenSSL `EC_GROUP_free`: clears group internal fields via `0x600ea7a4` and frees memory. | 6 callers / 2 callees |
+| `0x600ea81a` |    6 | Crypto / EC | **`crypto_ec_point_method_dispatch_3c`** — Indirect branch/dispatch through `EC_METHOD->+0x3c`. | 1 caller / 0 callees |
+| `0x600ea820` |   72 | Crypto / EC | **`crypto_ec_point_mul_generator`** — Computes scalar multiplication of generator point on elliptic curve using `EC_METHOD->+0xc`. | 1 caller / 2 callees |
+| `0x600ea868` |    6 | Crypto / EC | **`crypto_ec_error_trampoline`** — Sets return code 0 and calls error handler `0x6008cd78`. Created as new function (`0x600ea868`..`0x600ea86d`). | 2 callers / 0 callees |
+| `0x600ea86e` |   12 | Crypto / EC | **`crypto_ec_group_init_generator`** — Initializes generator point on group via `0x600867a4(param_1 + 0x18)`. | 1 caller / 1 callee |
+| `0x600ea87a` |   12 | Crypto / EC | **`crypto_ec_group_is_custom_curve`** — Returns flag bit `*(param_1->extra + 0x1c) & 1`. Created as new function (`0x600ea87a`..`0x600ea885`). | 0 callers / 0 callees |
+| `0x600ea886` |    4 | Crypto / EC | **`crypto_ec_point_get_x`** — Accessor returning pointer/word at `*param_1` (6 callers). | 6 callers / 0 callees |
+| `0x600ea88a` |    4 | Crypto / EC | **`crypto_ec_point_get_z`** — Accessor returning word at `*(param_1 + 8)`. | 1 caller / 0 callees |
+| `0x600ea88e` |    4 | Crypto / EC | **`crypto_ec_point_get_y`** — Accessor returning word at `*(param_1 + 4)`. | 2 callers / 0 callees |
+| `0x600ea892` |    4 | Crypto / EC | **`crypto_ec_point_get_field_10`** — Accessor returning word at `*(param_1 + 0x10)`. | 1 caller / 0 callees |
+
+
 
 
 
