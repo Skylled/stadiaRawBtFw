@@ -2918,6 +2918,34 @@ Decompiled and documented 20 functions (3,184 bytes across `0x600e79cc`–`0x600
 | `0x600e809a` |   72 | Crypto / BN | **`crypto_bn_mod_word_step`** — Modular reduction step using `crypto_bn_div_word_by_limb` and constant-time word selection (`0x600e7412`). | 2 callers / 2 callees |
 | `0x600e80e2` | 1370 | Crypto / BN | **`crypto_bn_mul_comba8`** — OpenSSL `bn_mul_comba8`: 8-limb by 8-limb (256-bit by 256-bit) fully unrolled Comba multiplication with 64-bit accumulators. | 4 callers / 0 callees |
 
+## Session 96 (Wave 66) — OpenSSL Karatsuba / Comba Squaring & Montgomery Reduction Engine (20 functions, 4,234 bytes)
+
+Decompiled and documented 20 functions (4,234 bytes across `0x600e863c`–`0x600e9680`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600e863c` |  446 | Crypto / BN | **`crypto_bn_mul_part_recursive_step1`** — OpenSSL `bn_mul_part_recursive` (step 1): Karatsuba recursive multi-precision multiplication splitting operands and invoking recursive sub-multiplications. | 3 callers / 8 callees |
+| `0x600e87fa` |  510 | Crypto / BN | **`crypto_bn_mul_part_recursive_step2`** — OpenSSL `bn_mul_part_recursive` (step 2): recombination and carry-propagation phase of Karatsuba recursive multiplication. | 2 callers / 9 callees |
+| `0x600e89f8` |  386 | Crypto / BN | **`crypto_bn_mul_recursive`** — OpenSSL `bn_mul_recursive`: recursive Karatsuba multiplication driver routing 8-limb base cases to `bn_mul_comba8` (`0x600e80e2`). | 2 callers / 10 callees |
+| `0x600e8b7a` | 1328 | Crypto / BN | **`crypto_bn_sqr_comba8`** — OpenSSL `bn_sqr_comba8`: true 8-limb (256-bit) fully unrolled Comba squaring routine with cross-product doubling and 64-bit accumulators. | 3 callers / 0 callees |
+| `0x600e90aa` |  316 | Crypto / BN | **`crypto_bn_sqr_comba4`** — OpenSSL `bn_sqr_comba4`: true 4-limb (128-bit) fully unrolled Comba squaring routine with cross-product doubling and 64-bit accumulators. | 2 callers / 0 callees |
+| `0x600e91e6` |  228 | Crypto / BN | **`crypto_bn_sqr_recursive`** — OpenSSL `bn_sqr_recursive`: recursive Karatsuba squaring driver routing 4/8-limb base cases to `bn_sqr_comba4`/`bn_sqr_comba8`. | 2 callers / 6 callees |
+| `0x600e92ca` |   38 | Crypto / BN | **`crypto_bn_mont_ctx_new`** — OpenSSL `BN_MONT_CTX_new`: allocates and initializes a 48-byte (`0x30`) Montgomery reduction context structure (`BN_MONT_CTX`). | 2 callers / 3 callees |
+| `0x600e92f0` |   30 | Crypto / BN | **`crypto_bn_mont_ctx_free`** — OpenSSL `BN_MONT_CTX_free`: frees Montgomery reduction context structure and its internal BIGNUM limbs (9 callers). | 9 callers / 2 callees |
+| `0x600e930e` |   30 | Crypto / BN | **`crypto_bn_mont_ctx_clear_field`** — Montgomery context field destructor: frees nested Montgomery context at `param_1 + 0x110` and clears memory. | 0 callers / 2 callees |
+| `0x600e932c` |   66 | Crypto / BN | **`crypto_bn_mod_exp_mont_init`** — OpenSSL `BN_MONT_CTX_set` / Montgomery setup: calculates $R^2 \pmod N$ and Montgomery constant $N_0'$ using `BN_CTX`. | 3 callers / 5 callees |
+| `0x600e936e` |   92 | Crypto / BN | **`crypto_bn_mont_ctx_set`** — OpenSSL `BN_MONT_CTX_set` wrapper: configures Montgomery modulus, expands limbs, and initializes Montgomery parameters. | 1 caller / 2 callees |
+| `0x600e93ca` |   74 | Crypto / BN | **`crypto_bn_mod_exp_mont_mul_core`** — Constant-time Montgomery reduction / multiplication core with scratch buffer zeroing via `OPENSSL_cleanse`. | 3 callers / 5 callees |
+| `0x600e9414` |  162 | Crypto / BN | **`crypto_bn_mont_inv_n0`** — Computes Montgomery inverse constant $N_0' = -N^{-1} \pmod{2^{32}}$ using Newton-Raphson iteration / modular inverse over 64 bits. | 1 caller / 0 callees |
+| `0x600e94b6` |   20 | Crypto / BN | **`crypto_bn_mul_wrapper`** — OpenSSL `BN_mul` wrapper calling `crypto_bn_mul_recursive` (`0x600e89f8`) with top fixup (`0x600e7480`). | 1 caller / 2 callees |
+| `0x600e94ca` |  120 | Crypto / BN | **`crypto_bn_gcd`** — OpenSSL `BN_gcd`: computes greatest common divisor $\gcd(a, b)$ using binary Euclidean algorithm with `BN_CTX`. | 1 caller / 7 callees |
+| `0x600e9542` |   58 | Crypto / BN | **`crypto_bn_mul_dispatcher`** — OpenSSL `BN_mul` dispatcher: validates operand lengths, routing 8-limb multiplies to `bn_mul_comba8` (`0x600e80e2`) or generic `bn_mul_normal` (`0x600e7930`). | 1 caller / 3 callees |
+| `0x600e957c` |  224 | Crypto / BN | **`crypto_bn_sqr`** — OpenSSL `BN_sqr`: top-level BigNum squaring function routing 4/8-limb to Comba (`0x600e90aa`/`0x600e8b7a`), Karatsuba (`0x600e91e6`), or normal (`0x600e7b96`). | 2 callers / 9 callees |
+| `0x600e965c` |   16 | Crypto / BN | **`crypto_bn_sqr_trampoline`** — Trampoline calling `bcm__6008ba20` (`BN_sqr`). | 2 callers / 1 callee |
+| `0x600e966c` |   20 | Crypto / BN | **`crypto_bn_sqr_wrapper`** — BigNum squaring wrapper calling `crypto_bn_sqr` (`0x600e957c`) with top fixup (`0x600e7480`). | 2 callers / 2 callees |
+| `0x600e9680` |   70 | Crypto / BN | **`crypto_bn_sqr_stack_dispatcher`** — Stack-allocated BigNum squaring dispatcher: routes 4/8-limb to Comba (`0x600e90aa`/`0x600e8b7a`) or normal (`0x600e7b96`) with stack clearing. | 1 caller / 5 callees |
+
+
 
 
 
