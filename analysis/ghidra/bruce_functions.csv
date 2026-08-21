@@ -4530,8 +4530,7 @@ address,name,size_bytes
 600ecbec,FUN_600ecbec,34
 600ecc0e,FUN_600ecc0e,50
 600ecc40,FUN_600ecc40,88
-600ecc98,FUN_600ecc98,40
-600eccbe,FUN_600eccbe,20
+600ecc98,FUN_600ecc98,60
 600eccd4,FUN_600eccd4,14
 600ecce2,FUN_600ecce2,114
 600ecd54,FUN_600ecd54,190

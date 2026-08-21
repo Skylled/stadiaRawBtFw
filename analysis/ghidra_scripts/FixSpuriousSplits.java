@@ -722,6 +722,17 @@ public class FixSpuriousSplits extends GhidraScript {
             fdecb6e.setBody(new AddressSet(adecb6e, toAddr(0x600ecb71)));
         }
         
+        // 65. Fix 0x600ecc98 boundary (60 bytes: 0x600ecc98..0x600eccd3)
+        Function fdeccbe = fm.getFunctionAt(toAddr(0x600eccbe));
+        if (fdeccbe != null) {
+            fm.removeFunction(toAddr(0x600eccbe));
+        }
+        Address adecc98 = toAddr(0x600ecc98);
+        Function fdecc98 = fm.getFunctionAt(adecc98);
+        if (fdecc98 != null) {
+            fdecc98.setBody(new AddressSet(adecc98, toAddr(0x600eccd3)));
+        }
+        
         println("FixSpuriousSplits completed successfully.");
     }
 }

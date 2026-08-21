@@ -3161,6 +3161,34 @@ Decompiled and documented 20 functions (1,128 bytes across `0x600ec756`–`0x600
 | `0x600ecb94` |   34 | Crypto / ASN1 | **`crypto_asn1_get_enc_ptr`** — Returns pointer to cached ASN.1 encoding structure if present. | 4 callers / 0 callees |
 | `0x600ecbb6` |    8 | Crypto / ASN1 | **`crypto_asn1_get_field_val`** — Reads word at struct offset specified by template item. | 3 callers / 0 callees |
 
+## Session 105 (Wave 75) — OpenSSL ASN.1 Cached Encoding, Base64 Decoding & Dynamic Memory Buffers (20 functions, 906 bytes)
+
+Decompiled and documented 20 functions (906 bytes across `0x600ecbbe`–`0x600ecf0a`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600ecbbe` |   12 | Crypto / ASN1 | **`crypto_asn1_set_field_ptr`** — Stores computed field pointer into struct offset defined by template item. | 1 caller / 0 callees |
+| `0x600ecbca` |   14 | Crypto / ASN1 | **`crypto_asn1_set_field_modified`** — Sets modified/dirty flag bit (`*ptr = 1`) on struct field resolved via `0x600ecb72`. | 0 callers / 1 callee |
+| `0x600ecbd8` |   20 | Crypto / ASN1 | **`crypto_asn1_template_callback_dispatch`** — Invokes custom ASN.1 callback handler (`0x600867c8`) if field present. | 1 caller / 2 callees |
+| `0x600ecbec` |   34 | Crypto / ASN1 | **`crypto_asn1_clear_enc_modified`** — Clears modified flag bit in cached ASN.1 encoding structure (`ASN1_ENCODING`). | 0 callers / 1 callee |
+| `0x600ecc0e` |   50 | Crypto / ASN1 | **`crypto_asn1_enc_free`** — Frees cached DER encoding buffer (`enc->enc`) and resets length/flags. | 1 caller / 2 callees |
+| `0x600ecc40` |   88 | Crypto / ASN1 | **`crypto_asn1_enc_save`** — Saves DER stream bytes into cached ASN.1 encoding structure (`ASN1_ENCODING`). | 1 caller / 4 callees |
+| `0x600ecc98` |   60 | Crypto / ASN1 | **`crypto_asn1_enc_restore`** — Copies cached DER encoding bytes to output buffer if valid (`ASN1_ENCODING` restore). Boundary adjusted from 40B to 60B (`0x600ecc98`..`0x600eccd3`). | 1 caller / 2 callees |
+| `0x600eccd4` |   14 | Crypto / ASN1 | **`crypto_asn1_get_seq_ptr`** — Computes pointer to sequence element field within ASN.1 struct. | 3 callers / 0 callees |
+| `0x600ecce2` |  114 | Crypto / Base64 | **`crypto_b64_decode_char`** — OpenSSL `EVP_DecodeBase64Char`: constant-time Base64 character-to-6-bit-value decode helper. | 1 caller / 0 callees |
+| `0x600ecd54` |  190 | Crypto / Base64 | **`crypto_b64_decode_block`** — OpenSSL `EVP_DecodeBlock`: decodes 4-character Base64 quad into up to 3 raw bytes with padding handling (`=`). | 1 caller / 1 callee |
+| `0x600ece12` |    8 | Crypto / ASN1 | **`crypto_asn1_ctx_init`** — Initializes ASN.1 parser context (clears 56 bytes via `memset`). | 1 caller / 1 callee |
+| `0x600ece1a` |    4 | Crypto / ASN1 | **`thunk_crypto_asn1_ctx_init`** — Trampoline thunk to `crypto_asn1_ctx_init` (`0x600ece12`). | 1 caller / 1 callee |
+| `0x600ece1e` |   30 | Crypto / ASN1 | **`crypto_asn1_ctx_validate`** — Validates ASN.1 context state flags and header tag. | 1 caller / 0 callees |
+| `0x600ece3c` |   36 | Crypto / ASN1 | **`crypto_asn1_item_d2i_fp_wrapper`** — DER-to-internal wrapper loading item from stream via `0x600ed10a` and `0x600e7504`. | 2 callers / 2 callees |
+| `0x600ece60` |   24 | Crypto / ASN1 | **`crypto_asn1_key_container_free`** — Frees allocated ASN.1 key buffer and outer container (`vPortFree`). | 2 callers / 1 callee |
+| `0x600ece78` |   42 | Crypto / Buffer | **`crypto_buf_mem_grow_clean`** — OpenSSL `BUF_MEM_grow_clean`: expands dynamic memory buffer and cleanses new space. | 3 callers / 2 callees |
+| `0x600ecea2` |    4 | Crypto / Buffer | **`thunk_crypto_buf_mem_grow_clean`** — Trampoline thunk to `BUF_MEM_grow_clean` (`0x600ece78`). | 3 callers / 1 callee |
+| `0x600ecea6` |   78 | Crypto / Buffer | **`crypto_buf_mem_grow`** — OpenSSL `BUF_MEM_grow`: expands dynamic memory buffer capacity with power-of-two growth. | 1 caller / 1 callee |
+| `0x600ecef4` |   22 | Crypto / Buffer | **`crypto_buf_mem_write_advance`** — Advances `BUF_MEM` write position and length counter. | 4 callers / 1 callee |
+| `0x600ecf0a` |   62 | Crypto / ASN1 | **`crypto_asn1_put_integer_core`** — Serializes 32-bit integer into ASN.1 DER integer stream. | 3 callers / 1 callee |
+
+
 
 
 
