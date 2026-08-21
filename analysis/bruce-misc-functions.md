@@ -3188,6 +3188,34 @@ Decompiled and documented 20 functions (906 bytes across `0x600ecbbe`–`0x600ec
 | `0x600ecef4` |   22 | Crypto / Buffer | **`crypto_buf_mem_write_advance`** — Advances `BUF_MEM` write position and length counter. | 4 callers / 1 callee |
 | `0x600ecf0a` |   62 | Crypto / ASN1 | **`crypto_asn1_put_integer_core`** — Serializes 32-bit integer into ASN.1 DER integer stream. | 3 callers / 1 callee |
 
+## Session 106 (Wave 76) — OpenSSL / BoringSSL CBB (ByteBuilder) & CBS (ByteString) ASN.1 DER Engines (20 functions, 1,138 bytes)
+
+Decompiled and documented 20 functions (1,138 bytes across `0x600ecf48`–`0x600ed3a0`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600ecf48` |    8 | Crypto / CBB | **`crypto_cbb_cleanup`** — OpenSSL/BoringSSL `CBB_cleanup`: zero-initializes CBB structure (36 bytes via `memset`). | 1 caller / 1 callee |
+| `0x600ecf50` |   60 | Crypto / CBB | **`crypto_cbb_add_asn1_bitstring`** — Serializes bitstring into `CBB` with unused-bits prefix byte. | 2 callers / 3 callees |
+| `0x600ecf8c` |   34 | Crypto / CBB | **`crypto_cbb_add_asn1_bool`** — Serializes boolean value into `CBB` (`0xff` / `0x00`). | 3 callers / 1 callee |
+| `0x600ecfae` |  236 | Crypto / CBB | **`crypto_cbb_add_asn1_tag`** — OpenSSL/BoringSSL `CBB_add_asn1`: writes ASN.1 tag and reserves length field in CBB stream (25 callers across key/algorithm serializers). | 25 callers / 3 callees |
+| `0x600ed09a` |   68 | Crypto / CBB | **`crypto_cbb_add_asn1_oid`** — Serializes `ASN1_OBJECT` / OID into `CBB`. | 2 callers / 2 callees |
+| `0x600ed0de` |   44 | Crypto / CBB | **`crypto_cbb_add_asn1_null`** — OpenSSL/BoringSSL `CBB_add_asn1_null` / empty element serializer (13 callers). | 13 callers / 3 callees |
+| `0x600ed10a` |   32 | Crypto / CBB | **`crypto_cbb_add_bytes`** — OpenSSL/BoringSSL `CBB_add_bytes`: appends byte array into `CBB`. | 2 callers / 2 callees |
+| `0x600ed12a` |   30 | Crypto / CBB | **`crypto_cbb_add_u8`** — OpenSSL/BoringSSL `CBB_add_u8`: appends 8-bit unsigned byte to `CBB` (14 callers). | 14 callers / 2 callees |
+| `0x600ed148` |  108 | Crypto / CBB | **`crypto_cbb_add_asn1_time`** — Serializes date/time struct into 2-digit/4-digit ASCII date format. | 1 caller / 1 callee |
+| `0x600ed1b4` |  118 | Crypto / CBB | **`crypto_cbb_finish`** — OpenSSL/BoringSSL `CBB_finish`: closes nested child CBB, computes DER length, and commits buffer (17 callers). | 17 callers / 4 callees |
+| `0x600ed22a` |   30 | Crypto / CBB | **`crypto_cbb_add_u16`** — OpenSSL/BoringSSL `CBB_add_u16`: appends 16-bit big-endian integer to `CBB`. | 0 callers / 2 callees |
+| `0x600ed248` |   30 | Crypto / CBB | **`crypto_cbb_add_u24`** — OpenSSL/BoringSSL `CBB_add_u24`: appends 24-bit big-endian integer to `CBB`. | 0 callers / 2 callees |
+| `0x600ed266` |  128 | Crypto / CBB | **`crypto_cbb_add_asn1_uint64`** — OpenSSL/BoringSSL `CBB_add_asn1_uint64`: serializes unsigned 64-bit integer in big-endian DER format with minimal length encoding (7 callers). | 7 callers / 3 callees |
+| `0x600ed2e6` |   76 | Crypto / CBS | **`crypto_cbs_get_u16`** — OpenSSL/BoringSSL `CBS_get_u16`: parses 16-bit big-endian integer from `CBS`. | 2 callers / 0 callees |
+| `0x600ed332` |   72 | Crypto / CBB | **`crypto_cbb_add_asn1_bignum`** — Serializes `BIGNUM` into ASN.1 INTEGER DER format. | 1 caller / 2 callees |
+| `0x600ed37a` |    6 | Crypto / CBS | **`crypto_cbs_init`** — OpenSSL/BoringSSL `CBS_init`: initializes `CBS` with data pointer and byte length. | 2 callers / 0 callees |
+| `0x600ed380` |   24 | Crypto / CBS | **`crypto_cbs_skip`** — OpenSSL/BoringSSL `CBS_skip` / `CBS_get_bytes`: advances `CBS` read pointer by $N$ bytes with bounds check. Boundary adjusted from 14B to 24B. | 2 callers / 0 callees |
+| `0x600ed398` |    4 | Crypto / CBS | **`crypto_cbs_data`** — OpenSSL/BoringSSL `CBS_data`: returns data pointer from `CBS` (`return *cbs`, 9 callers). | 9 callers / 0 callees |
+| `0x600ed39c` |    4 | Crypto / CBS | **`crypto_cbs_len`** — OpenSSL/BoringSSL `CBS_len`: returns remaining length from `CBS` (`return *(cbs + 4)`, 14 callers). | 14 callers / 0 callees |
+| `0x600ed3a0` |   26 | Crypto / CBS | **`crypto_cbs_mem_equal`** — OpenSSL/BoringSSL `CBS_mem_equal`: constant-time comparison of `CBS` against raw buffer. | 1 caller / 1 callee |
+
+
 
 
 
