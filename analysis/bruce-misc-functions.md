@@ -3518,6 +3518,28 @@ Decompiled and documented 12 functions (960 bytes across `0x600f13d8`–`0x600f1
 
 **⚠️ QA session 119 note:** zero corrections — a third consecutive clean wave. Every checkable named citation matches the established appendix exactly: `0x600a01f0` = `btm_read_buf_size_trigger`, `0x600a0d68` = `btm_feature_query_init`, `0x600a0cac` = `btm_feature_query_fsm` (all exact, unhedged matches). `bta_dm_remove_device`'s citation of `0x600a1560` as `BTM_DeleteStoredLinkKey` is a particularly satisfying confirmation — this address's own entry (session 33 QA, 84+ sessions ago) explicitly struck through an original "`BTM_ReadTxPower`" claim after disassembly showed it actually sends the HCI Delete Stored Link Key opcode, and concluded "real identity is very likely a link-key-deletion API (e.g. `BTM_DeleteStoredLinkKey`)" — exactly the name this wave independently arrived at. `bta_dm_ble_adv_pkt_handler`'s citation of `0x6009e4d0` ("BTM inquiry/advertisement result processor") is consistent with, though slightly broader than, the established "BTM inquiry-control helper... consistent with an inquiry-results/timeout handler" — not contradicted. `BTM_CheckEirData`'s TLV-walking logic (length-byte + type-byte + payload, matching against a target AD type) is self-evidently correct against the real Bluetooth EIR/AD data format regardless of appendix cross-referencing — no external check needed to confirm this shape. `bta_dm_find_or_alloc_device_record`'s claimed composition (try the confirmed generic `0x6009ff18` lookup, fall back to `0x6009fcf4` allocation) is independently corroborated by session 116's own write-up, which already showed `0x600f033a` falling back to this exact function when a different, simpler lookup failed — a coherent "plain find, then find-or-alloc" escalation pattern across two sessions' worth of functions. Independently re-derived `bruce-decompile-status.md`'s totals via a fresh header-parsed join across all 3,213 committed decomp files (482,434 bytes, 0 duplicates, 0 mismatches vs. census) — matches the wave's claimed 67.51% exactly. **Reliability read**: third clean wave in a row — the appendix-cross-check discipline that recovered after session 116 continues to hold, and this session added a nice example of a claim being confirmed not by a fresh citation but by a correction made all the way back in session 33.
 
+## Session 120 (Wave 90) — Broadcom BTA DM Security State Queries, HCI Parameters & Connection Dispatchers (14 functions, 974 bytes)
+
+Decompiled and documented 14 functions (974 bytes across `0x600f17a4`–`0x600f1b72`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f17a4` |   54 | BTA / DM | **`bta_dm_dispatch_cback`** — Formats 8-byte callback event structure `{param_2, param_3, param_1}` and dispatches to callback function pointer `param_4`. | 2 callers / 0 callees |
+| `0x600f17da` |   38 | BTM / Radio | **`BTM_SetPageTimeout`** — Sends HCI Write Page Timeout (`0x0c18`) via `0x600b3548` (`btsnd_hcic_write_page_tout`). | 1 caller / 1 callee |
+| `0x600f1800` |   84 | BTA / DM | **`bta_dm_sec_conn_req_handler`** — Routes incoming connection request (BR/EDR vs BLE) with inquiry database lookup (`0x600a26ec`), calling `0x6009de30` (BLE) or `0x600a3014` (BR/EDR). | 8 callers / 3 callees |
+| `0x600f1854` |   68 | BTM / Inquiry | **`BTM_SetInquiryTxPower`** — Validates inquiry TX power range (-70 to +20 dBm) and sends HCI Write Inquiry Transmit Power Level (`0x0c59`) via `0x600b4798` (`btsnd_hcic_write_inq_tx_power`). | 1 caller / 1 callee |
+| `0x600f1898` |   38 | BTA / DM Sec | **`bta_dm_is_device_authenticated`** — Tests authentication state bit (`+0x2a & 2`) in device record. | 2 callers / 0 callees |
+| `0x600f18be` |   38 | BTA / DM Sec | **`bta_dm_is_device_encrypted`** — Tests encryption state bit (`+0x2a & 4`) in device record. | 2 callers / 0 callees |
+| `0x600f18e4` |   38 | BTA / DM Sec | **`bta_dm_is_device_bonded`** — Tests bonding / link key present bit (`+0x2a & 1`) in device record. | 2 callers / 0 callees |
+| `0x600f190a` |   66 | BTA / DM Sec | **`bta_dm_test_service_sec_bit`** — Tests service security requirement bit in 32-bit word bitmap at `param_1 + 4`. | 2 callers / 0 callees |
+| `0x600f194c` |   74 | BTA / DM Sec | **`bta_dm_get_sec_level`** — Retrieves security authentication level byte for target transport from device record auth word `+0x2a` via `0x6009ff18`. | 4 callers / 1 callee |
+| `0x600f1996` |   60 | BTA / DM Sec | **`bta_dm_sec_register_service`** — Registers service security requirements into BTM security database via `0x600a40c4`. | 2 callers / 1 callee |
+| `0x600f19d2` |   60 | BTA / DM Sec | **`bta_dm_sec_cancel_pending_op`** — Clears pending security operation flag `+0xef = 0` on link disconnect via `0x6009ff18`. | 1 caller / 1 callee |
+| `0x600f1a0e` |  198 | BTA / DM Sec | **`bta_dm_sec_auth_cmpl_handler`** — Handles SMP/GAP pairing & authentication completion: sets bonded bit `+0x2a |= 1`, stores key/service mask, and completes security procedure (`0x600a7b44` / `0x600f1f82`). | 1 caller / 3 callees |
+| `0x600f1ad4` |   96 | BTA / DM Sec | **`bta_dm_sec_set_security`** — Validates requested transport capability against device address type (`0x600f0836`) and sets link security requirements via `0x600a44bc`. | 1 caller / 2 callees |
+| `0x600f1b34` |   62 | BTA / DM Sec | **`bta_dm_sec_set_security_auto_transport`** — Automatically determines active transport (`0x600f0910` / `bta_dm_is_ble_device`) and sets link security requirements via `0x600a44bc`. | 1 caller / 2 callees |
+
+
 
 
 
