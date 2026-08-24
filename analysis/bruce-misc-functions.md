@@ -3565,6 +3565,29 @@ Decompiled and documented 15 functions (1,416 bytes across `0x600f1b72`–`0x600
 
 **⚠️ QA session 121 note:** zero corrections — a fifth consecutive clean wave. Four citations match the established appendix exactly and unhedged: `0x600b218c`=`btsnd_hcic_disconnect` (opcode-verified `0x0406`), `0x600a21e4`=`BTM_InqDbRead`, `0x600a8228`=`btm_sec_queue_encrypt_request` (named), `0x600a5760`=`btm_sec_check_pending_reqs` (named). `bta_dm_sec_connect_dev`'s citation of `0x600a3014` as "`btm_sec_rcv_conn_req`/connect initiator" matches its established, consistently-hedged "very likely `btm_accept_connection`/`btm_sec_rcv_conn_req`-shaped" description. Two more claims aren't yet in the appendix but check out against the real Bluetooth spec directly: `bta_dm_sec_start_auth`'s cited opcode `0x0411` is the textbook-correct HCI Authentication Requested opcode (OGF `0x01` &lt;&lt; 10 | OCF `0x11`), and `bta_dm_sec_start_encrypt`'s cited `0x0413` is likewise correct for HCI Set Connection Encryption (OCF `0x13`) — both plausible, uncontradicted identifications for their respective callees (`0x600b264c`/`0x600b26d0`). Independently re-derived `bruce-decompile-status.md`'s totals via a fresh header-parsed join across all 3,242 committed decomp files (484,820 bytes, 0 duplicates, 0 mismatches vs. census) — matches the doc's claimed 67.84% exactly. **One minor, informational note**: the wave's own commit-message headline total (15 functions, 1,416 bytes) is a 4-byte hand-count slip — the actual sum of this wave's 15 census sizes is 1,412 bytes; every individual address/size in the table above is correct, and the cumulative repository-wide totals (which are computed from file headers, not the commit's hand count) are unaffected, so no doc content needed correcting — flagged only for awareness, matching the same minor-arithmetic-slip pattern seen in a few earlier sessions (e.g. 31, 50). **Reliability read**: fifth clean wave in a row since the session-116 recovery — the appendix-cross-check discipline continues to hold solidly across this whole BTA DM security stretch.
 
+## Session 122 (Wave 92) — Broadcom BTA DM HCI Event Handlers & Event Table Dispatchers (15 functions, 1,084 bytes)
+
+Decompiled and documented 15 functions (1,084 bytes across `0x600f20f6`–`0x600f2532`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f20f6` |   42 | BTA / DM Inq | **`bta_dm_inq_cmpl_evt`** — Handles HCI Inquiry Complete event (`0x01`): forwards status byte to `0x600a2f3c` (`btm_process_inq_complete`). | 1 caller / 1 callee |
+| `0x600f2120` |   28 | BTA / DM Inq | **`bta_dm_inq_result_evt`** — Handles HCI Inquiry Result event (`0x02`): forwards result buffer to `0x600a2ab0` (standard inquiry result parser, mode 0). | 1 caller / 1 callee |
+| `0x600f213c` |   28 | BTA / DM Inq | **`bta_dm_inq_result_rssi_evt`** — Handles HCI Inquiry Result with RSSI event (`0x22`): forwards result buffer to `0x600a2ab0` (inquiry result with RSSI parser, mode 1). | 1 caller / 1 callee |
+| `0x600f2158` |   98 | BTA / DM Conn | **`bta_dm_disconn_cmpl_evt`** — Handles HCI Disconnection Complete event (`0x05`): parses 12-bit handle and 8-bit reason, notifying L2CAP (`0x600b8ba4` / `l2c_link_hci_disc_comp`) and BTM (`0x600a730c`). | 1 caller / 2 callees |
+| `0x600f21ba` |   72 | BTA / DM Sec | **`bta_dm_auth_cmpl_evt`** — Handles HCI Authentication Complete event (`0x06`): extracts status and handle, forwarding to `0x600a67ec` (`btm_sec_auth_complete`). | 1 caller / 1 callee |
+| `0x600f2202` |   96 | BTA / DM RNR | **`bta_dm_rmt_name_cmpl_evt`** — Handles HCI Remote Name Request Complete event (`0x07`): extracts status, reverses 6-byte BD_ADDR, and delivers remote name string payload (`0x600a30f0` / `0x600a59d0`). | 1 caller / 2 callees |
+| `0x600f2262` |   96 | BTA / DM Sec | **`bta_dm_enc_change_evt`** — Handles HCI Encryption Change event (`0x08`): extracts status, handle, and encryption mode (0=OFF, 1=ON BR/EDR, 2=ON AES-CCM LE), updating security state (`0x60099584` / `0x600a6b20`). | 1 caller / 2 callees |
+| `0x600f22c2` |   72 | BTA / DM Sec | **`bta_dm_link_key_change_cmpl_evt`** — Handles HCI Change Connection Link Key Complete event (`0x09`): extracts status and handle, updating state via `0x600994b8`. | 1 caller / 1 callee |
+| `0x600f230a` |   84 | BTA / DM Sec | **`bta_dm_master_link_key_cmpl_evt`** — Handles HCI Master Link Key Complete event (`0x0a`): extracts status, handle, and key flag, notifying waiters via `0x600a6aa4` (`btm_sec_link_key_notification`). | 1 caller / 1 callee |
+| `0x600f235e` |   26 | BTA / DM ACL | **`bta_dm_read_rmt_features_cmpl_evt`** — Handles HCI Read Remote Supported Features Complete event (`0x0b`): forwards feature mask buffer to `0x60099a1c` (`btm_acl_read_remote_features_complete`). | 1 caller / 1 callee |
+| `0x600f2378` |   90 | BTA / DM ACL | **`bta_dm_read_rmt_ext_features_cmpl_evt`** — Handles HCI Read Remote Extended Features Complete event (`0x23`): routes success to `0x60099adc` or failure to `0x60099bb8`. | 1 caller / 2 callees |
+| `0x600f23d2` |   26 | BTA / DM ACL | **`bta_dm_read_rmt_version_cmpl_evt`** — Handles HCI Read Remote Version Information Complete event (`0x0c`): delivers LMP version/manufacturer buffer to `0x600998ec`. | 1 caller / 1 callee |
+| `0x600f23ec` |  278 | BTA / DM QoS | **`bta_dm_qos_setup_cmpl_evt`** — Handles HCI QoS Setup Complete event (`0x0d`): parses 18-byte flow specification struct (flags, service type, token rate, peak bandwidth, latency, delay variation) and dispatches via `0x6009a154`. | 1 caller / 1 callee |
+| `0x600f2502` |   24 | BTA / DM | **`bta_dm_hci_event_null_handler`** — No-op stub handler in HCI event dispatch table at `0x600a89f0`. | 1 caller / 0 callees |
+| `0x600f251a` |   24 | BTA / DM | **`bta_dm_hci_event_stub_handler`** — No-op stub handler in HCI event dispatch table at `0x600a89f0`. | 1 caller / 0 callees |
+
+
 
 
 
