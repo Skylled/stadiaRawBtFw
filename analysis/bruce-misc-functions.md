@@ -3306,6 +3306,27 @@ Decompiled and documented 18 functions (1,442 bytes across `0x600edcd6`–`0x600
 | `0x600ee1be` |   64 | Device / Dispatch | **`device_type_dispatcher`** — Checks device/packet type: if `type == 1` calls `0x60098668(arg)`, if `type == 2` calls `0x600eff9c(arg)`, returns 1 on success, 0 on unknown type. | 1 caller / 2 callees |
 | `0x600ee1fe` |  122 | Device / Dispatch | **`device_packet_handler`** — Inspects packet identifier `param_1`: if `param_1 == 6` calls `0x600eff14(param_2, ...)`, otherwise dispatches to `0x600985f8(param_2, ...)`. | 1 caller / 2 callees |
 
+## Session 110 (Wave 80) — Broadcom BTM Lock Wrappers & BTA GATT Client/Server Service Builders (13 functions, 1,572 bytes)
+
+Decompiled and documented 13 functions (1,572 bytes across `0x600ee278`–`0x600ee89c`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600ee278` |   32 | BTM / Status | **`btm_is_device_up_locked`** — Broadcom BTM `BTM_IsDeviceUp` wrapper: acquires BTM mutex via `0x600d9378`, queries device status via `0x600a01a0` (`BTM_IsDeviceUp`), and releases mutex via `0x600d937c`. | 2 callers / 3 callees |
+| `0x600ee298` |   80 | BTA / DM | **`bta_dm_remove_device_if_idle_locked`** — Broadcom BTA Device Manager helper: acquires mutex via `0x600d9378`, checks if device profile connections 1 and 2 are inactive via `0x600f045e`; if idle, purges device record via `0x600f16ae`, releases mutex, and returns true. | 1 caller / 4 callees |
+| `0x600ee2e8` |   14 | BTA / GATTC | **`bta_gattc_app_register_app1`** — Broadcom BTA GATT Client: calls `0x60096290(1)` (`BTA_GATTC_AppRegister` for client application ID 1). | 0 callers / 1 callee |
+| `0x600ee2f6` |   14 | BTA / GATTC | **`bta_gattc_app_register_app2`** — Broadcom BTA GATT Client: calls `0x60096290(2)` (`BTA_GATTC_AppRegister` for client application ID 2). | 0 callers / 1 callee |
+| `0x600ee304` |   58 | BTA / GATTC | **`bta_gattc_map_status_to_event`** — Converts transport status flags (`0x4` -> 2, `0x10` -> 1, `& 0x20` -> 0, default -> 3) to internal GATTC event codes. | 2 callers / 0 callees |
+| `0x600ee33e` |  250 | BTA / GATTC | **`bta_gattc_conn_state_machine_update`** — Updates GATT client connection control block (`0x600944c0` / `bta_gattc_find_clcb`), setting encryption/auth bits at `+0xb`, `+0x18`, `+0x19`, and dispatching callbacks `0x6009362c`, `0x600936d4`, `0x60093d20`. | 0 callers / 4 callees |
+| `0x600ee438` |   34 | BTA / GATTC | **`bta_gattc_dispatch_error_event`** — Dispatches error status callback via `0x60093d20(param_1 + 8, status, 3)`. | 0 callers / 1 callee |
+| `0x600ee45a` |  110 | BTA / GATTC | **`bta_gattc_count_matching_services`** — Iterates service array `*(param_1 + 0x28)` of count `*(param_1 + 0x2f)`, matches 16/128-bit UUIDs via `0x600ef2da`, and returns matching service count. | 1 caller / 1 callee |
+| `0x600ee4c8` |   90 | BTA / GATTC | **`bta_gattc_count_primary_services`** — Walks primary services linked list at `*(param_1 + 0x1c)`, extracts UUIDs via `0x600ef4ae`, compares via `0x600ef2da`, and returns count. | 1 caller / 2 callees |
+| `0x600ee522` |   88 | BTA / GATTC | **`bta_gattc_count_secondary_services`** — Walks secondary services linked list at `*(param_1 + 4)`, extracts UUIDs via `0x600ef4ae`, compares via `0x600ef2da`, and returns count. | 1 caller / 2 callees |
+| `0x600ee57a` |  254 | BTA / GATTC | **`bta_gattc_add_char_descriptor`** — Constructs 48-byte (`0x30`) characteristic descriptor structure: validates/expands buffer via `0x60094754`, writes start/end handles, properties, 20-byte UUID via `0x6013d3a0` (`memcpy`), 4-byte aligns write pointer, and links into descriptor chain. | 2 callers / 2 callees |
+| `0x600ee678` |  434 | BTA / GATTC | **`bta_gattc_add_service_element`** — Constructs GATT service attribute record (`uuid_len + 0x10` bytes): validates buffer capacity via `0x60094754`, stores handle and type flags, formats 16-bit (little-endian) or 128-bit (`memcpy`) UUID, links into primary/secondary list via `0x600ee4c8`/`0x600ee522`, and chains into GATT service database. | 4 callers / 4 callees |
+| `0x600ee82a` |  114 | BTA / GATTC | **`bta_gattc_get_service_handle_range`** — Extracts 16-bit start and end attribute handles from indexed GATT service descriptor at `*(param_1 + 0x28) + index * 28`. | 1 caller / 0 callees |
+
+
 
 
 

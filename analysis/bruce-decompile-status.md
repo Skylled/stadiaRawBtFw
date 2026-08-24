@@ -2,7 +2,7 @@
 
 Data-driven status doc for the "decompile all of `bruce` to source-reconstruction quality" effort. Regenerate the numbers here whenever `bruce_functions.csv`, `bruce_srcmap.csv`, or `analysis/decomp/` change materially — don't hand-edit stale tables into new prose, just re-run the join described in [Methodology](#methodology) below.
 
-**Snapshot: 2026-08-18 (full regeneration, session 109 / Wave 79).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 109 (3091 decomp files, 3091 in-census). Decompiled in-census functions grew to **3091** (468,886 bytes, 65.62% of code), with **139 of 139** attributed source files fully decompiled.
+**Snapshot: 2026-08-18 (full regeneration, session 110 / Wave 80).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 110 (3104 decomp files, 3104 in-census). Decompiled in-census functions grew to **3104** (470,458 bytes, 65.84% of code), with **139 of 139** attributed source files fully decompiled.
 
 ## 1. Top-line stats
 
@@ -10,9 +10,9 @@ Data-driven status doc for the "decompile all of `bruce` to source-reconstructio
 |---|---:|---:|---:|---:|
 | **Total functions (census)** | 5,566 | 100% | 714,601 | 100% |
 | **Attributed** (leaked `__FILE__` → 139 src files) | 448 | 8.05% | 96,312 | 13.48% |
-| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 3,091 | 55.53% | 468,886 | 65.62% |
-| **Attributed ∪ Decompiled** (understood in *some* way) | 3,091 | 55.53% | 468,886 | **65.62%** |
-| **Totally unknown** (no attribution, no decompile) | 2,475 | 44.47% | 245,715 | **34.38%** |
+| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 3,104 | 55.77% | 470,458 | 65.84% |
+| **Attributed ∪ Decompiled** (understood in *some* way) | 3,104 | 55.77% | 470,458 | **65.84%** |
+| **Totally unknown** (no attribution, no decompile) | 2,462 | 44.23% | 244,143 | **34.16%** |
 
 ### 1a. Module-identified-but-not-formally-attributed (informational — not folded into "Attributed" above)
 
@@ -28,9 +28,9 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 
 | | Functions | % of 5,566 | Bytes | % of 714,601 |
 |---|---:|---:|---:|---:|
-| Totally unknown (§1, includes BTA-identified-but-undecompiled) | 2,475 | 44.47% | 245,715 | 34.38% |
+| Totally unknown (§1, includes BTA-identified-but-undecompiled) | 2,462 | 44.23% | 244,143 | 34.16% |
 | — of which: BTA-identified, module known, just not decompiled | 0 | 0.00% | 0 | 0.00% |
-| **— truly unidentified (no attribution, no decompile, no module ID)** | **2,475** | **44.47%** | **245,715** | **34.38%** |
+| **— truly unidentified (no attribution, no decompile, no module ID)** | **2,462** | **44.23%** | **244,143** | **34.16%** |
 
 ## 2. Per-source-file table (all 139 attributed files, sorted by total byte size descending)
 
@@ -190,7 +190,7 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 | # | Start | End | Span (B) | Code bytes | Funcs | Already decompiled | Density | Largest function in range |
 |---:|---|---|---:|---:|---:|---:|---:|---|
 | 1★ | `0x600921b8` | `0x600c9cc4` | 228108 | 213911 | 1116 | 1116 | 93.8% | `FUN_600ba1c4` (3898B @ `600ba1c4`) |
-| 2 | `0x600ecb50` | `0x6013d4e4` | 330132 | 97789 | 1046 | 125 | 29.6% | `FUN_601054dc` (2546B @ `601054dc`) |
+| 2 | `0x600ecb50` | `0x6013d4e4` | 330132 | 97789 | 1046 | 138 | 29.6% | `FUN_601054dc` (2546B @ `601054dc`) |
 | 3† | `0x600df286` | `0x600ea868` | 46562 | 44670 | 333 | 333 | 95.9% | `FUN_600e398a` (6270B @ `600e398a`) |
 | 4† | `0x600cc6e4` | `0x600d4596` | 32434 | 27319 | 342 | 341 | 84.2% | `FUN_600ccfb4` (1568B @ `600ccfb4`) |
 | 5 | `0x60040500` | `0x6004712c` | 27692 | 25488 | 172 | 61 | 92.0% | `FUN_60043ecc` (1364B @ `60043ecc`) |
@@ -212,11 +212,11 @@ Of **5,566 total functions** (the current census):
 | | Functions | Bytes |
 |---|---:|---:|
 | Attributed to a source file | 448 | 96,312 |
-| Decompiled (in census) | 3,091 | 468,886 |
+| Decompiled (in census) | 3,104 | 470,458 |
 | — of which both attributed AND decompiled | 448 | 96,312 |
 | — of which in the identified-but-not-formally-attributed BTA/BTE stack (§1a) | 1,116 | 213,911 |
-| **Understood in some way (union)** | **3,091 (55.5%)** | **468,886 (65.6%)** |
-| **Completely unknown — no attribution, no decompile, no module ID** | 2,475 (44.5%), or **2,475 (44.5%) excluding BTA-identified** | 245,715 (34.4%), or **245,715 (34.4%) excluding BTA-identified** |
+| **Understood in some way (union)** | **3,104 (55.8%)** | **470,458 (65.8%)** |
+| **Completely unknown — no attribution, no decompile, no module ID** | 2,462 (44.2%), or **2,462 (44.2%) excluding BTA-identified** | 244,143 (34.2%), or **244,143 (34.2%) excluding BTA-identified** |
 
 ## Methodology (for regenerating this doc)
 
