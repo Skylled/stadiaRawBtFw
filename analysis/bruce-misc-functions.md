@@ -3541,6 +3541,29 @@ Decompiled and documented 14 functions (974 bytes across `0x600f17a4`–`0x600f1
 
 **⚠️ QA session 120 note:** zero corrections — a fourth consecutive clean wave, with two exact real-spec-constant matches beyond the usual appendix cross-checks. `BTM_SetInquiryTxPower`'s callee `0x600b4798` matches the established, string-xref-named `btsnd_hcic_write_inq_tx_power` exactly, and both of this row's own numeric claims independently check out against the real Bluetooth spec: the cited opcode `0x0c59` is the textbook-correct HCI opcode for Write Inquiry Transmit Power Level (OGF `0x03` &lt;&lt; 10 | OCF `0x59`), and the validated range `-70` to `+20` dBm (`param_1 < -0x46 || 0x14 < param_1`, i.e. reject outside `[-70, 20]`) is the exact valid range the spec defines for this parameter. `BTM_SetPageTimeout`'s cited opcode `0x0c18` is likewise the textbook-correct value for Write Page Timeout, though its callee `0x600b3548` isn't yet in the appendix to cross-reference directly. `bta_dm_sec_conn_req_handler`'s two branches correctly route to `0x6009de30` (BLE) and `0x600a3014` (already established "very likely `btm_accept_connection`/`btm_sec_rcv_conn_req`-shaped"), and its `0x600a26ec` citation matches the established `btm_inq_find_raw_entry` behaviorally without over-asserting the formal name. Two pre-existing forward-references paid off: `0x600a40c4`'s appendix entry already cited "caller `FUN_600f1996`" and `0x600a44bc`'s already cited "called from... `0x600f1ad4`/`0x600f1b34`" — both relationships confirmed exactly by this wave's own decompiled bodies, evidence the doc's existing citations were sound even before these callers existed as committed functions. Independently re-derived `bruce-decompile-status.md`'s totals via a fresh header-parsed join across all 3,227 committed decomp files (483,408 bytes, 0 duplicates, 0 mismatches vs. census) — matches the wave's claimed 67.65% exactly. **Reliability read**: fourth clean wave in a row since the session-116 recovery, and the two independently-checkable spec constants (opcode + dBm range) in the same row is about as strong a confirmation as a single function claim gets in this pipeline.
 
+## Session 121 (Wave 91) — Broadcom BTA DM Security Procedures, Encryption Initiation & Key Management (15 functions, 1,416 bytes)
+
+Decompiled and documented 15 functions (1,416 bytes across `0x600f1b72`–`0x600f20f6`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f1b72` |  370 | BTM / Security | **`BTM_SetEncryption`** — Initiates link encryption for target transport (BR/EDR vs BLE): returns success immediately if already encrypted, calls `0x600f0bb8` (BLE) or `0x600a7b44` (BR/EDR), or enqueues if busy via `0x600a8228` (`btm_sec_queue_encrypt_request`). | 3 callers / 5 callees |
+| `0x600f1ce4` |  194 | BTM / Security | **`bta_dm_sec_disconnect`** — Security-layer link disconnect: updates security state `+0x50` and issues HCI Disconnect via `0x600b218c` (`btsnd_hcic_disconnect`). | 6 callers / 1 callee |
+| `0x600f1da6` |  126 | BTA / DM | **`bta_dm_store_link_key_type`** — Parses HCI link key notification and updates key type metadata at `+0x59` in device record (`0x600f1746`). | 1 caller / 1 callee |
+| `0x600f1e24` |   96 | BTA / DM | **`bta_dm_update_clock_offset`** — Updates 16-bit clock offset field `+0xe` in device record (`0x6009feb8`) and inquiry database (`0x600a21e4` / `BTM_InqDbRead`). | 1 caller / 2 callees |
+| `0x600f1e84` |   72 | BTM / Security | **`bta_dm_sec_connect_dev`** — Initiates BR/EDR security connection via `0x600a3014` (`btm_sec_rcv_conn_req`/connect initiator) with state tracking at `+0x50`. | 2 callers / 1 callee |
+| `0x600f1ecc` |   36 | BTM / Security | **`bta_dm_sec_start_auth`** — Sets security state `+0x50 = 1` and issues HCI Authentication Requested via `0x600b264c` (`btsnd_hcic_auth_request`, HCI `0x0411`). | 2 callers / 1 callee |
+| `0x600f1ef0` |   48 | BTM / Security | **`bta_dm_sec_start_encrypt`** — Issues HCI Set Connection Encryption (`0x0413`) via `0x600b26d0` (`btsnd_hcic_set_conn_encrypt`) and sets state `+0x50 = 2`. | 1 caller / 1 callee |
+| `0x600f1f20` |   60 | BTA / DM Sec | **`bta_dm_is_service_mask_empty`** — Checks whether two 32-bit service mask words at `param_1` are both `-1` (all ones / empty). | 1 caller / 0 callees |
+| `0x600f1f5c` |   38 | BTA / DM Sec | **`bta_dm_get_service_mask_ptr`** — Returns pointer to service security mask at `+4` in device record (`0x6009ff18`). | 2 callers / 1 callee |
+| `0x600f1f82` |  102 | BTM / Security | **`bta_dm_sec_notify_cback`** — Fires security completion callback at `+0xf4` with status and context, then drains pending security request queue (`0x600a5760` / `btm_sec_check_pending_reqs`). | 8 callers / 1 callee |
+| `0x600f1fe8` |   60 | BTA / DM | **`bta_dm_parse_handle_stub`** — Parses 12-bit connection handle from byte stream. | 1 caller / 0 callees |
+| `0x600f2024` |   38 | BTA / DM Sec | **`bta_dm_is_open_service`** — Checks if service PSM/channel is open/unauthenticated (`0x0001` SDP or `0x0021` GAP/GATT). | 2 callers / 0 callees |
+| `0x600f204a` |   54 | BTA / DM Sec | **`bta_dm_get_default_sec_mask`** — Returns default security mask combined with `param_1` (`0x1046` for BR/EDR, `0x2070` for BLE). | 2 callers / 0 callees |
+| `0x600f2080` |   44 | BTA / DM BLE | **`bta_dm_ble_clear_keys`** — Clears byte `+0x7b = 0`, zeroes 104 bytes of BLE security keys at `+0x7c`, and resets resolving list state (`0x6009f8c8`). | 3 callers / 2 callees |
+| `0x600f20ac` |   74 | BTA / DM Sec | **`bta_dm_is_device_mitm_protected`** — Checks if link has MITM protection (bit `0x1000` for BLE, bit `0x10` for BR/EDR on auth word `+0x2a` via `0x6009ff18`). | 5 callers / 1 callee |
+
+
 
 
 
