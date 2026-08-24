@@ -4614,7 +4614,7 @@ address,name,size_bytes
 600edfcc,FUN_600edfcc,14
 600edfda,thunk_FUN_600921b8,4
 600edfde,FUN_600edfde,32
-600edffe,FUN_600edffe,34
+600edffe,FUN_600edffe,30
 600ee01c,FUN_600ee01c,60
 600ee058,FUN_600ee058,10
 600ee062,FUN_600ee062,86
