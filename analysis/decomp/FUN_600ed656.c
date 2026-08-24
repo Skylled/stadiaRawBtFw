@@ -1,9 +1,11 @@
-// 600ed656  FUN_600ed656  size=28 bytes
+// 600ed656  FUN_600ed656  size=24 bytes
 // --- callers ---
+//   600ed866 FUN_600ed866
 //   600ed682 FUN_600ed682
+//   600ed840 FUN_600ed840
 //   600ed73c FUN_600ed73c
-//   600ed75e FUN_600ed75e
 //   600ed794 FUN_600ed794
+//   600ed75e FUN_600ed75e
 // --- callees ---
 
 
