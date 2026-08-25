@@ -4263,6 +4263,29 @@ Decompiled and documented 13 functions (~~1,174~~ ⚠️ the header's own byte t
 
 **Reliability read**: a moderate wave — one cosmetic arithmetic slip and one real citation mismatch (caught by reading the callee rather than trusting the surrounding SMP-themed context), set against continued strong real-spec and cross-session corroboration for the rest of the wave.
 
+## Session 147 (Wave 117) — Broadcom SMP SC Commitment, Passkey Round, RFC 4493 AES-CMAC & Key Derivation Handlers (15 functions, 1,148 bytes)
+
+Decompiled and documented 15 functions (1,148 bytes across `0x600fba06`–`0x600fbe82`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fba06` |  150 | BTM / SMP | **`btm_sec_verify_sc_commitment`** — Broadcom SMP Secure Connections verify pairing commitment value: compares local calculated commitment against received commitment `*(param_1 + 0xfd)` (16 bytes via `memcmp`), adjusts max key size, handles master (`0x600c1a34(param_1, 0xd, 0)`) vs slave (`0x600c1a34(param_1, 0x18, 0)`), or triggers failure `0x17` with status `0x0b` (`SMP_PAIR_FAIL_CONFIRM_VALUE`). | 0 callers / 2 callees |
+| `0x600fba9c` |   28 | BTM / Security | **`btm_sec_disp_evt_32`** — Broadcom BTM dispatch security state machine event `0x20` (32) via `0x600c1a34`. | 0 callers / 1 callee |
+| `0x600fbab8` |   40 | BTM / Security | **`btm_sec_disp_evt_36_if_commitment`** — Broadcom BTM dispatch security event `0x24` when commitment flag `0x20` is set via `0x600c1a34`. | 0 callers / 1 callee |
+| `0x600fbae0` |   52 | BTM / Security | **`btm_sec_disp_dhkey_calc_if_pubkeys`** — Broadcom BTM dispatch DHKey calculation event `0x1d` when both peer (`0x40`) and local (`0x100`) public key flags are set via `0x600c1a34`. | 1 caller / 1 callee |
+| `0x600fbb14` |  172 | BTM / SMP | **`smp_sc_init_passkey_round`** — Broadcom SMP Secure Connections initialize 20-round passkey / numeric comparison authentication state: splits 32-bit passkey into 4-byte buffers, resets round index `*(param_1 + 0x199) = 0`, and starts passkey round crypto (`0x600c1548`). | 0 callers / 1 callee |
+| `0x600fbbc0` |   22 | BTM / Security | **`btm_sec_stub_1`** — Broadcom BTM 22-byte 2-argument empty stub function. | 1 caller / 0 callees |
+| `0x600fbbd6` |   22 | BTM / Security | **`btm_sec_stub_2`** — Broadcom BTM 22-byte 2-argument empty stub function (restored unlisted function, Fix #79). | 0 callers / 0 callees |
+| `0x600fbbec` |   22 | BTM / Security | **`btm_sec_stub_3`** — Broadcom BTM 22-byte 2-argument empty stub function (restored unlisted function, Fix #80). | 0 callers / 0 callees |
+| `0x600fbc02` |   56 | BTM / SMP | **`smp_crypto_encrypt_wrapper`** — Broadcom SMP cryptographic wrapper: forwards 5 arguments to core AES-128 / CMAC engine `0x600c0ac4`. | 13 callers / 1 callee |
+| `0x600fbc3a` |   22 | BTM / Security | **`btm_sec_stub_4`** — Broadcom BTM 22-byte 2-argument empty stub function. | 2 callers / 0 callees |
+| `0x600fbc50` |   74 | Crypto / CMAC | **`aes_cmac_pad`** — Broadcom AES-CMAC RFC 4493 standard padding function: writes `0x80` followed by trailing zeroes in big-endian order to fill 16-byte block. | 1 caller / 0 callees |
+| `0x600fbc9a` |   94 | Crypto / CMAC | **`aes_cmac_shift_left_128`** — Broadcom AES-CMAC RFC 4493 128-bit big-endian bitwise left shift by 1 bit across 16 bytes for subkey generation (`K1 = L << 1`). | 1 caller / 0 callees |
+| `0x600fbcf8` |   84 | Crypto / CMAC | **`aes_cmac_generate_subkeys`** — Broadcom AES-CMAC RFC 4493 subkey generator: encrypts 16 zero bytes via `0x600fbc02` (`L = AES_128(K, 0^128)`) and derives subkeys K1 and K2 (`0x600c0930`). | 1 caller / 2 callees |
+| `0x600fbd4c` |  132 | BTM / SMP | **`smp_generate_stk_ltk`** — Broadcom SMP derive STK (legacy pairing via `0x600fc438`) or mask negotiated LTK (Secure Connections via `0x600fc9c4`) and advance state machine (`0x600fc2c6`). | 0 callers / 5 callees |
+| `0x600fbdd0` |  178 | BTM / SMP | **`smp_generate_csrk`** — Broadcom SMP derive Connection Signature Resolving Key (CSRK) using AES crypto (`0x6009ab94` / `0x600fbc02`), stores 16-byte key at `+0x1d8`, and saves CSRK record (`0x600fad26`). | 2 callers / 5 callees |
+
+
 
 
 
