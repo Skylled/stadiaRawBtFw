@@ -4200,6 +4200,26 @@ Decompiled and documented 13 functions (818 bytes across `0x600fab92`–`0x600fa
 
 **Reliability read**: a light wave overall (many tiny, structurally-verifiable dispatcher stubs), with one genuine numeric-literal correction and a useful cross-session status update on an already-tracked boundary issue.
 
+## Session 145 (Wave 115) — Broadcom SMP Pairing Request Parser & Key Exchange Handlers (Confirm, Random, Public Key, DHKey, LTK, IRK, CSRK) (12 functions, 1,658 bytes)
+
+Decompiled and documented 12 functions (1,658 bytes across `0x600faec4`–`0x600fb53e`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600faec4` |  488 | BTM / SMP | **`btm_sec_process_pairing_req`** — Broadcom BTM / SMP parse Pairing Request PDU: unpacks IO Cap (`+0x18d`), OOB (`+0x18f`), AuthReq (`+0x191`), MaxKeySize (`+0x1b0`), InitKeyDist (`+0x1b2`), RespKeyDist (`+0x1b3`), validates parameters (`0x600c2304`), checks BLE encryption policy, negotiates key masks, and determines pairing method (`0x600fcbfa`). | 0 callers / 7 callees |
+| `0x600fb0ac` |  100 | BTM / SMP | **`btm_sec_process_smp_confirm`** — Broadcom BTM / SMP store peer 16-byte Confirm value at `*(param_1 + 0x3d)` and set flag `*(param_1 + 0x28) |= 8`. | 0 callers / 2 callees |
+| `0x600fb110` |   80 | BTM / SMP | **`btm_sec_process_smp_random`** — Broadcom BTM / SMP store peer 16-byte Random value at `*(param_1 + 0x4d)`. | 0 callers / 2 callees |
+| `0x600fb160` |  134 | BTM / SMP | **`btm_sec_process_peer_public_key`** — Broadcom BTM / SMP Secure Connections store peer 64-byte ECC P-256 Public Key coordinates (X at `+0x14d`, Y at `+0x16d`), set flag `*(param_1 + 0x28) |= 0x40`, and continue SC pairing (`0x600fbae0`). | 0 callers / 3 callees |
+| `0x600fb1e6` |  100 | BTM / SMP | **`btm_sec_process_dhkey_check`** — Broadcom BTM / SMP Secure Connections store peer 16-byte DHKey Check value at `*(param_1 + 0xbd)` and set flag `*(param_1 + 0x28) |= 0x80`. | 0 callers / 2 callees |
+| `0x600fb24a` |  100 | BTM / SMP | **`btm_sec_process_commitment`** — Broadcom BTM / SMP Secure Connections store peer 16-byte Commitment value at `*(param_1 + 0xfd)` and set flag `*(param_1 + 0x28) |= 0x20`. | 0 callers / 2 callees |
+| `0x600fb2ae` |   92 | BTM / SMP | **`btm_sec_process_enc_key_size`** — Broadcom BTM / SMP store negotiated encryption key size at `*(param_1 + 0x198)` and set state `+0x2a = 8`. | 0 callers / 2 callees |
+| `0x600fb30a` |   60 | BTM / SMP | **`btm_sec_process_peer_ltk`** — Broadcom BTM / SMP store peer 16-byte Long Term Key (LTK) at `*(param_1 + 0x1c6)` and advance state machine (`0x600fb848`). | 0 callers / 1 callee |
+| `0x600fb346` |  184 | BTM / SMP | **`btm_sec_process_master_id`** — Broadcom BTM / SMP store Master Identification (2-byte EDIV, 8-byte Rand), persist link key record via `0x6009ad00`, and advance state machine (`0x600fb848`). | 0 callers / 4 callees |
+| `0x600fb3fe` |   60 | BTM / SMP | **`btm_sec_process_peer_irk`** — Broadcom BTM / SMP store peer 16-byte Identity Resolving Key (IRK) at `*(param_1 + 0x1b6)` and advance state machine (`0x600fb848`). | 0 callers / 1 callee |
+| `0x600fb43a` |  150 | BTM / SMP | **`btm_sec_process_id_addr`** — Broadcom BTM / SMP store peer Identity Address & 6-byte BD_ADDR, persist identity record via `0x6009ad00`, and advance state machine (`0x600fb848`). | 0 callers / 4 callees |
+| `0x600fb4d0` |  110 | BTM / SMP | **`btm_sec_process_peer_csrk`** — Broadcom BTM / SMP store peer 16-byte Connection Signature Resolving Key (CSRK), persist signing record via `0x6009ad00`, and advance state machine (`0x600fb848`). | 0 callers / 4 callees |
+
+
 
 
 
