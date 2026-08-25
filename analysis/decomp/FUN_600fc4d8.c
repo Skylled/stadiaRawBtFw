@@ -2,8 +2,8 @@
 // --- callers ---
 //   600fb9d2 FUN_600fb9d2
 // --- callees ---
-//   6013d3a0 thunk_EXT_FUN_0000b572
 //   600c8798 FUN_600c8798
+//   6013d3a0 thunk_EXT_FUN_0000b572
 
 
 void FUN_600fc4d8(int param_1)

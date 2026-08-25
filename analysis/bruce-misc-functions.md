@@ -4326,6 +4326,29 @@ Decompiled and documented 14 functions (1,462 bytes across `0x600fbe82`–`0x600
 
 Reliability read: a clean-content wave overall, with one confirmed, well-evidenced correction that's directly diagnostic — the exact same shape of error as last session, now confirmed twice in a row, suggesting this specific function shape is a recognizable trap worth calling out explicitly rather than re-discovering each time.
 
+## Session 149 (Wave 119) — Broadcom SMP s1, DHKey, f4, f5, f6 Crypto & Session Handlers (15 functions, 1,928 bytes)
+
+Decompiled and documented 15 functions (1,928 bytes across `0x600fc438`–`0x600fcc88`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fc438` |  138 | BTM / SMP | **`smp_crypto_s1_generate_stk`** — Broadcom SMP key generation function `s1`: derives Short Term Key (STK) via `e(TK, r')` from master/slave random halves (`0x600fbc02`). | 1 caller / 3 callees |
+| `0x600fc4c2` |   22 | BTM / Security | **`btm_sec_stub_5`** — Broadcom BTM 22-byte 2-argument empty stub function (restored unlisted function, Fix #81). | 0 callers / 0 callees |
+| `0x600fc4d8` |  106 | BTM / SMP | **`smp_sc_calculate_dhkey`** — Broadcom SMP Secure Connections compute 32-byte P-256 Diffie-Hellman shared secret (DHKey) via scalar multiplication point `P = d_local * Q_peer` (`0x600c8798`). | 1 caller / 2 callees |
+| `0x600fc542` |  192 | Crypto / SMP | **`smp_crypto_f4_confirm`** — Broadcom SMP Secure Connections cryptographic confirm function `f4`: computes 16-byte confirm value via `AES-CMAC_X(U \|\| V \|\| Z)` over 65-byte payload (`0x600c09f0`). | 3 callers / 1 callee |
+| `0x600fc602` |  342 | Crypto / SMP | **`smp_crypto_f5_kdf`** — Broadcom SMP Secure Connections key generation function `f5`: computes MacKey and LTK via `AES-CMAC_T(Counter \|\| keyID \|\| N1 \|\| N2 \|\| A1 \|\| A2 \|\| Length)` over 53-byte payload (`0x600c09f0`). | 1 caller / 1 callee |
+| `0x600fc758` |  114 | BTM / SMP | **`smp_sc_calculate_peer_dhkey_check`** — Broadcom SMP Secure Connections compute peer DHKey Check value `E_b`/`E_a` via `f6` algorithm (`0x600fc870`). | 0 callers / 5 callees |
+| `0x600fc7ca` |  166 | BTM / SMP | **`smp_sc_calculate_local_dhkey_check`** — Broadcom SMP Secure Connections compute local DHKey Check value `E_a`/`E_b` via `f6` algorithm (`0x600fc870`) and dispatch event 0x25. | 0 callers / 5 callees |
+| `0x600fc870` |  314 | Crypto / SMP | **`smp_crypto_f6_dhkey_check`** — Broadcom SMP Secure Connections DHKey check function `f6`: computes 16-byte check value via `AES-CMAC_W(N1 \|\| N2 \|\| R \|\| IOcap \|\| A1 \|\| A2)` over 65-byte payload (`0x600c09f0`). | 2 callers / 1 callee |
+| `0x600fc9aa` |   26 | BTM / Security | **`btm_sec_disp_evt_31`** — Broadcom BTM dispatch security state machine event `0x1f` (31) via `0x600c1a34`. | 1 caller / 1 callee |
+| `0x600fc9c4` |   56 | BTM / SMP | **`smp_mask_enc_key_size`** — Broadcom SMP zero-pad encryption key upper bytes to negotiated key size (< 16 bytes). | 3 callers / 0 callees |
+| `0x600fc9fc` |   76 | BTM / SMP | **`smp_xor_128`** — Broadcom SMP 128-bit (16-byte) bitwise XOR helper function. | 5 callers / 0 callees |
+| `0x600fca48` |   52 | BTM / SMP | **`smp_reset_sec_record`** — Broadcom SMP clear 516-byte security record structure preserving header and flags. | 1 caller / 1 callee |
+| `0x600fca7c` |   58 | BTM / SMP | **`smp_cancel_pairing_session`** — Broadcom SMP abort pairing session, stop timer (`0x600aa3cc`), release buffers (`0x600fcf26`), and reset security context (`0x600fca48`). | 2 callers / 4 callees |
+| `0x600fcab6` |  124 | BTM / SMP | **`smp_notify_pairing_complete_cb`** — Broadcom SMP invoke upper-layer pairing complete callback (event 7) with completion status structure and clean up pairing context (`0x600fca7c`). | 3 callers / 2 callees |
+| `0x600fcbfa` |  142 | BTM / SMP | **`smp_select_pairing_method`** — Broadcom SMP determine pairing authentication method (Legacy vs Secure Connections via SC bit `0x08`, Keypress via `0x10`, delegating to `0x600c23f4` / `0x600c24d0`). | 2 callers / 2 callees |
+
+
 
 
 
