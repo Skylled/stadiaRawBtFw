@@ -3886,6 +3886,27 @@ Decompiled and documented 12 functions (1,592 bytes across `0x600f5ede`–`0x600
 
 **Reliability read**: another strong wave for this cluster — the one finding was caught by the same "check every named callee against the existing appendix" technique that's been the single highest-value check throughout this pipeline, this time against a spec-verified entry with an exact byte-payload match, leaving little room for doubt. The nuanced Find-By-Type-Value UUID-length special case is a good example of a claim that could easily have been glossed over but held up under direct scrutiny.
 
+## Session 133 (Wave 103) — Broadcom GATT Server Incoming Request Dispatcher, Priority/Command Queues, UUID Utils & Timers (13 functions, 1,588 bytes)
+
+Decompiled and documented 13 functions (1,588 bytes across `0x600f6516`–`0x600f6b4a`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f6516` |  278 | GATT / Server | **`gatts_dispatch_sr_cmd`** — GATT server incoming ATT request dispatcher: validates server state (`0x600f6206`) and MTU length, rejecting errors via `0x600f6be6`, dispatches to handlers for all 10 ATT request opcodes (`0x02`, `0x04`, `0x06`, `0x08`, `0x0a`, `0x0c`, `0x0e`, `0x10`, `0x12`, `0x16`, `0x18`, `0x1e`, `0x52`, `0xd2`). | 2 callers / 10 callees |
+| `0x600f662c` |   60 | GATT / Core | **`gatt_update_prio_queue_tail`** — GATT priority queue tail updater: scans list starting at `param_1 + 4` and updates tail pointer `*param_1`. | 2 callers / 0 callees |
+| `0x600f6668` |  194 | GATT / Core | **`gatt_prio_queue_enqueue`** — GATT priority queue sorted enqueue: inserts node into doubly-linked priority list sorted by priority/handle, updates tail via `0x600f662c`. | 1 caller / 1 callee |
+| `0x600f672a` |  136 | GATT / Core | **`gatt_prio_queue_dequeue_node`** — GATT priority queue remove node: unlinks node from doubly-linked priority list, updates tail via `0x600f662c`. | 1 caller / 1 callee |
+| `0x600f67b2` |  184 | GATT / Server | **`gatts_enqueue_sr_cmd`** — GATT server command queue sorted enqueue: inserts entry sorted descending by timeout/sequence into server queue `param_1`. | 2 callers / 0 callees |
+| `0x600f686a` |  134 | GATT / Server | **`gatts_dequeue_sr_cmd_entry`** — GATT server command queue remove entry: unlinks entry from server queue `param_1` and decrements count. | 2 callers / 0 callees |
+| `0x600f68f0` |  256 | GATT / Core | **`gatt_uuid_compare`** — Universal GATT UUID matcher: compares 16-bit, 32-bit, and 128-bit UUIDs, expanding to 128-bit Bluetooth Base UUIDs via `0x600af95c`/`0x600af9a0` and comparing 16 bytes (`0x6013d168`). | 7 callers / 3 callees |
+| `0x600f69f0` |  154 | GATT / Core | **`gatt_serialize_uuid`** — GATT serialize UUID: formats 16-bit (2B LE), 32-bit (16B Base UUID via `0x600af9a0`), or 128-bit (16B raw) into output buffer. | 4 callers / 1 callee |
+| `0x600f6a8a` |   38 | GATT / Client | **`gatt_start_rsp_timer`** — GATT start client response timer: arms 30-second timer (`0x1e`) for timer event `0x31` (`BTU_TTYPE_ATT_WAIT_FOR_RSP`) at `param_1 + 200` via `0x600aa340`. | 2 callers / 1 callee |
+| `0x600f6ab0` |   38 | GATT / Client | **`gatt_start_ind_ack_timer`** — GATT start indication confirmation timer: arms 30-second timer (`0x1e`) for timer event `0x31` at `param_1 + 0x74` via `0x600aa340`. | 1 caller / 1 callee |
+| `0x600f6ad6` |   38 | GATT / Server | **`gatts_start_sr_rsp_timer`** — GATT server start application response timer: arms 30-second timer (`0x1e`) for timer event `0x35` (`BTU_TTYPE_ATT_SR_RSP`) at `param_1 + 0xe0` via `0x600aa340`. | 1 caller / 1 callee |
+| `0x600f6afc` |   26 | GATT / Core | **`gatt_rsp_timeout_disconnect`** — GATT response timeout handler: tears down transport connection via `0x600f592e`. | 0 callers / 1 callee |
+| `0x600f6b16` |   52 | GATT / Core | **`gatt_ind_ack_timeout_handler`** — GATT indication confirmation timeout processor: clears pending flag `+0x96` and processes timeout event via `0x600ffada`. | 0 callers / 1 callee |
+
+
 
 
 
