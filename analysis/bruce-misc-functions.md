@@ -4231,7 +4231,7 @@ Decompiled and documented 12 functions (1,658 bytes across `0x600faec4`–`0x600
 
 ## Session 146 (Wave 116) — Broadcom SMP Pairing Verification, Passkey Entry, Key Distribution Iterator & PDU Queuers (13 functions, 1,174 bytes)
 
-Decompiled and documented 13 functions (1,174 bytes across `0x600fb53e`–`0x600fba06`):
+Decompiled and documented 13 functions (~~1,174~~ ⚠️ the header's own byte total doesn't match the table below (or the census): summing the table's own "Bytes" column, and independently confirmed against the census, gives **1,224 bytes** — a 50-byte hand-count slip in the header, the same low-severity class as sessions 31/50/121/133. All individual per-function byte counts in the table are correct. *(corrected, QA session 146)* bytes across `0x600fb53e`–`0x600fba06`):
 
 | Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
 |---|---:|---|---|---|
@@ -4243,11 +4243,25 @@ Decompiled and documented 13 functions (1,174 bytes across `0x600fb53e`–`0x600
 | `0x600fb6de` |  362 | BTM / Security | **`btm_sec_encrypt_change_handler`** — Broadcom BTM handle HCI Encryption Change event: masks security bits, checks encryption state, triggers key distribution event `0x19` or completes via event `0x17`. | 0 callers / 1 callee |
 | `0x600fb848` |  124 | BTM / SMP | **`smp_advance_key_distribution`** — Broadcom SMP iterate and finalize key distribution phase: sends next pending key PDU via `0x600bff84`, completes pairing via `0x600c1a34(param_1, 0x17, 0)` when all keys distributed. | 9 callers / 3 callees |
 | `0x600fb8c4` |  118 | BTM / SMP | **`smp_initiate_pairing`** — Broadcom SMP initiate pairing exchange: determines pairing method (`0x600fcbfa`), checks encryption policy, begins pairing via `0x600fab3e` or retrieves bonded link key via `0x600c1b74(0xb, param_1)`. | 0 callers / 5 callees |
-| `0x600fb93a` |   46 | BTM / SMP | **`smp_send_enc_info_master_id`** — Broadcom SMP send Encryption Information & Master Identification PDUs via `0x600f7bd8` and `0x600fcab6`. | 0 callers / 2 callees |
+| `0x600fb93a` |   46 | BTM / SMP | **`smp_send_enc_info_master_id`** — Broadcom SMP send Encryption Information & Master Identification PDUs via ~~`0x600f7bd8`~~ ⚠️ `0x600f7bd8` is already independently established (session 138) as `L2CA_EnableBleUpdateParams` — read its body directly this session and confirmed it exactly matches that identity: a 2-parameter L2CAP function that looks up an LCB, checks channel mode, and sets/clears a BLE-connection-parameter-update hold flag at `+0x38`. Nothing about sending an SMP PDU. This function's call passes 5 arguments to that 2-parameter function — the extra 3 are simply unused by the callee, not a real 5-argument signature. The actual "send" almost certainly happens via the confirmed `0x600fcab6` call that follows. *(corrected, QA session 146)* and `0x600fcab6`. | 0 callers / 2 callees |
 | `0x600fb968` |   32 | BTM / SMP | **`smp_send_id_info_addr`** — Broadcom SMP queue Identity Information & Address PDUs (`*(param_1 + 0x25) = 0x19`, `0x600fcab6`). | 0 callers / 1 callee |
 | `0x600fb988` |   44 | BTM / SMP | **`smp_send_enc_info_if_bonded`** — Broadcom SMP queue Encryption Information PDU for bonded link (`*(param_1 + 0x25) = 0x18`, `0x600fcab6`). | 0 callers / 1 callee |
-| `0x600fb9b4` |   30 | BTM / SMP | **`smp_clear_link_security`** — Broadcom SMP reset link security state via `0x600f7bd8(bd_addr, 0)`. | 0 callers / 1 callee |
+| `0x600fb9b4` |   30 | BTM / SMP | ~~**`smp_clear_link_security`** — Broadcom SMP reset link security state via `0x600f7bd8(bd_addr, 0)`.~~ ⚠️ Same finding as `0x600fb93a` above — `0x600f7bd8` is confirmed to be the established `L2CA_EnableBleUpdateParams` (an L2CAP BLE-connection-parameter-update hold-flag toggle), not a security-state reset. With `param_2='\0'` passed here, its real effect (per the confirmed body) is *setting* the hold flag bit `+0x38 |= 1`, not clearing security state. *(corrected, QA session 146)* | 0 callers / 1 callee |
 | `0x600fb9d2` |   52 | BTM / SMP | **`btm_sec_process_key_missing`** — Broadcom SMP handle link key missing condition: resets crypto state (`0x600fc4d8`), triggers passkey retry event 12 (`0x600fabc6`), and dispatches event `0x1e`. | 0 callers / 3 callees |
+
+**⚠️ QA session 146 note:** Backbone: all 13 addresses/sizes match the census exactly and are fully contiguous (`0x600fb53e`–`0x600fba06`). Independently re-derived `bruce-decompile-status.md`'s totals via a fresh header-parsed join (3,549 functions / 524,000 bytes, 0 mismatches, 0 duplicates, 0 non-census addresses) — matches the *corrected* 1,224-byte increment exactly (see below), confirming the wave's own header total was the error, not the underlying data.
+
+**Two findings, both confirmed by reading a callee's own body rather than trusting the calling context's plausible theme.**
+
+1. **Header byte-total slip**: the wave's own summary line claims "1,174 bytes," but the table's own "Bytes" column sums to 1,224 — independently confirmed against the census. All 13 individual byte counts are correct; only the header arithmetic was wrong. Corrected in place, the same low-severity class as sessions 31/50/121/133.
+
+2. **`0x600fb93a`/`0x600fb9b4` mischaracterize `0x600f7bd8`**: both cite it as sending an SMP PDU or resetting link security state, but that address is already independently established (session 138) as `L2CA_EnableBleUpdateParams` — read its body directly this session and confirmed it precisely: a 2-parameter L2CAP function that looks up an LCB and toggles a BLE-connection-parameter-update hold flag at `+0x38`. Both of this wave's call sites pass 5 arguments to that 2-parameter function (the extra 3 are simply unused, not evidence of a different signature). Corrected both rows in place; the "send"/"reset" framing more plausibly belongs to the `0x600fcab6` call each function also makes, which is left as the likely real mechanism without asserting more than the evidence supports.
+
+**Strong corroboration elsewhere.** `0x600fb53e`'s 16-byte confirm-value `memcmp` against `+0x3d` matches session 145's own confirmed Confirm-value storage offset exactly, and its failure status (`4`) matches the real SMP spec's `SMP_CONFIRM_VALUE_FAILED` reason code exactly. `0x600fb848`'s dual-mask-zero-plus-completion-check logic is consistent with its role as the shared "advance/finalize key distribution" function called by every key-processing handler across sessions 143–145. `0x600fb8c4`'s bonded-link-key retrieval event (`0xb`=11) and `0x600fb626`'s failure status (`0x14`=20) both match their own claimed literals exactly.
+
+**One softer, unflagged observation**: `0x600fb9d2` carries an `extraout_r3` artifact when its conditional branch is taken (from a 4-parameter callee, `0x600fabc6`, called here with only 2 explicit arguments) — the same accepted-Ghidra-limitation class documented since sessions 53–55's `i2c_transfer_submit` saga; not flagged as a hard error since the row's overall claim doesn't hinge on that specific fabricated value.
+
+**Reliability read**: a moderate wave — one cosmetic arithmetic slip and one real citation mismatch (caught by reading the callee rather than trusting the surrounding SMP-themed context), set against continued strong real-spec and cross-session corroboration for the rest of the wave.
 
 
 
