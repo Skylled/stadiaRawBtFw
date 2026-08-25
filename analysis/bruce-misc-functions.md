@@ -4477,6 +4477,24 @@ Decompiled and documented 12 functions (1,592 bytes across `0x600fd60e`–`0x600
 
 Reliability read: the second consecutive session to surface a real issue with `0x60094d24`'s call-site conventions (last session flagged an unresolved, not-yet-decompiled dispatcher in the same neighborhood; this session resolved a different, already-existing address in that same area outright) — a good sign this stretch of the BTA GATTC/DM address range rewards reading callee bodies directly rather than trusting even previously-verified labels at face value.
 
+## Session 154 (Wave 124) — Broadcom BTA GATTC Connection Open, Service Discovery & Read Handlers (10 functions, 1,686 bytes)
+
+Decompiled and documented 10 functions (1,686 bytes across `0x600fdc46`–`0x600fe2fe`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fdc46` |   72 | BTA / GATTC | **`bta_gattc_send_cancel_open_cback_ok_and_free`** — Broadcom BTA GATTC invoke cancel open callback with BTA_GATT_OK (0) and free client control block (`0x600ef3cc`). | 0 callers / 1 callee |
+| `0x600fdc8e` |  110 | BTA / GATTC | **`bta_gattc_cancel_direct_open`** — Broadcom BTA GATTC cancel direct connection via `GATT_CancelConnect` (`0x600f3caa`) and dispatch cancel event 0x1D03 or error callback. | 0 callers / 2 callees |
+| `0x600fdcfc` |  272 | BTA / GATTC | **`bta_gattc_conn_open_complete`** — Broadcom BTA GATTC handle connection open complete, initialize default MTU 23, check service discovery/change flags, and invoke open callback. | 0 callers / 4 callees |
+| `0x600fde0c` |  136 | BTA / GATTC | **`bta_gattc_send_search_cmpl_error`** — Broadcom BTA GATTC invoke search complete callback (event 5) with BTA_GATT_ERROR (`0x85`). | 0 callers / 2 callees |
+| `0x600fde94` |  256 | BTA / GATTC | **`bta_gattc_conn_close_handler`** — Broadcom BTA GATTC handle connection close/disconnect event, free CLCB (`0x600ef3cc`), invoke close callback, and clean up client. | 1 caller / 5 callees |
+| `0x600fdf94` |   58 | BTA / GATTC | **`bta_gattc_process_api_close`** — Broadcom BTA GATTC handle API close connection request, abort pending command (`0x600c6318`), and dispatch 0x1D08 close event. | 0 callers / 2 callees |
+| `0x600fdff0` |  106 | BTA / GATTC | **`bta_gattc_start_service_discovery`** — Broadcom BTA GATTC initiate GATT service discovery / configure MTU (`0x600f394c`) and dispatch discovery complete on failure (Fix #83: merged with `0x600fe00e`). | 0 callers / 4 callees |
+| `0x600fe05a` |  236 | BTA / GATTC | **`bta_gattc_start_service_search`** — Broadcom BTA GATTC initialize service cache (`0x600947c0`) and start primary service discovery via `0x600ee89c`. | 2 callers / 5 callees |
+| `0x600fe146` |  164 | BTA / GATTC | **`bta_gattc_read_char_by_uuid`** — Broadcom BTA GATTC resolve characteristic handle by UUID (`0x600eedee`) and initiate GATT read via `GATTC_Read` (`0x600ab620`). | 0 callers / 5 callees |
+| `0x600fe1ea` |  276 | BTA / GATTC | **`bta_gattc_read_multiple`** — Broadcom BTA GATTC resolve multiple characteristic handles (`0x600eedee`) and initiate GATT Read Multiple via `GATTC_Read` (`0x600ab620`, type 3). | 0 callers / 5 callees |
+
+
 
 
 

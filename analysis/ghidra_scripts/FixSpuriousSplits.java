@@ -914,6 +914,18 @@ public class FixSpuriousSplits extends GhidraScript {
             ffd14a.setBody(new AddressSet(afd14a, toAddr(0x600fd161)));
         }
 
+        // 83. Merge spurious split at 0x600fe00e into 0x600fdff0 (106 bytes: 0x600fdff0..0x600fe059)
+        Address afe00e = toAddr(0x600fe00e);
+        Function ffe00e = fm.getFunctionAt(afe00e);
+        if (ffe00e != null) {
+            fm.removeFunction(afe00e);
+        }
+        Address afdff0 = toAddr(0x600fdff0);
+        Function ffdff0 = fm.getFunctionAt(afdff0);
+        if (ffdff0 != null) {
+            ffdff0.setBody(new AddressSet(afdff0, toAddr(0x600fe059)));
+        }
+
         println("FixSpuriousSplits completed successfully.");
     }
 }
