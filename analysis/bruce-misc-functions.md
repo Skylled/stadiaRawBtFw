@@ -3859,6 +3859,26 @@ Decompiled and documented 11 functions (1,558 bytes across `0x600f58c8`–`0x600
 
 **Reliability read**: another strong wave for this GATT/L2CAP cluster, continuing the streak of exact spec-constant matches and productive cross-session corroboration (this is now the *second* independent confirmation of session 126's `0x600f3bde` correction, after session 127's own `0x600abdac` enrichment used similar techniques). The one open item is a genuine ambiguity rather than a clear miss — surfaced by reading a callee's body rather than trusting its name, the same discipline that's paid off repeatedly in this pipeline.
 
+## Session 132 (Wave 102) — Broadcom GATT Dynamic Channel L2CAP Callbacks & Server Transaction/Response Handlers (12 functions, 1,592 bytes)
+
+Decompiled and documented 12 functions (1,592 bytes across `0x600f5ede`–`0x600f6516`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f5ede` |  214 | GATT / Core | **`gatt_l2c_config_ind_cb`** — GATT dynamic L2CAP channel config indication callback: negotiates MTU (clamp 48..672), sends config response via `0x600f79a8`, transitions to connected state 4 when bidirectional config is complete. | 0 callers / 8 callees |
+| `0x600f5fb4` |  142 | GATT / Core | **`gatt_l2c_disconnect_ind_cb`** — GATT dynamic L2CAP channel disconnect indication callback: sends disconnect response via `0x600f7a68` if requested, queries disconnect reason (`0x600f7c6e`), cleans up connection (`0x600b02e0`). | 0 callers / 7 callees |
+| `0x600f6042` |  128 | GATT / Core | **`gatt_l2c_disconnect_cfm_cb`** — GATT dynamic L2CAP channel disconnect confirmation callback: queries disconnect reason (`0x600f7c6e`, default `0x16`), cleans up connection via `0x600b02e0`. | 0 callers / 6 callees |
+| `0x600f60c2` |   44 | GATT / Core | **`gatt_l2c_congestion_cb`** — GATT dynamic L2CAP channel congestion callback: routes congestion notification to `0x600ad7fc`. | 0 callers / 2 callees |
+| `0x600f60ee` |   32 | GATT / Core | **`gatt_trigger_pending_discovery`** — GATT trigger pending service discovery on connection complete (`0x600adad8`). | 3 callers / 1 callee |
+| `0x600f610e` |   36 | GATT / Core | **`gatt_set_conn_state`** — GATT connection state setter (`*(param_1 + 0x1c) = param_2`). | 10 callers / 0 callees |
+| `0x600f6132` |   38 | GATT / Core | **`gatt_get_conn_state`** — GATT connection state getter (returns `*(param_1 + 0x1c)`). | 11 callers / 0 callees |
+| `0x600f6158` |  174 | GATT / Server | **`gatts_alloc_trans_id`** — GATT server transaction ID allocator: increments transaction counter modulo `0x0fffffff`, records pending opcode/handle in server block. | 5 callers / 0 callees |
+| `0x600f6206` |   36 | GATT / Server | **`gatts_is_trans_idle`** — GATT server check if transaction state is idle (`*(param_1 + 0x56) == 0`). | 1 caller / 0 callees |
+| `0x600f622a` |  276 | GATT / Server | **`gatts_send_rsp`** — GATT server send response worker (`GATTS_SendRsp`): formats response PDUs (Read Multiple `0x0e`, Prepare Write `0x16`, Execute Write `0x18`), transmits PDU (`0x600ff9fe`) or error response (`0x600f6be6`). | 2 callers / 9 callees |
+| `0x600f633e` |  210 | GATT / Server | **`gatts_process_exec_write_req`** — GATT server Execute Write Request processor: extracts execute/cancel flag (`*param_4 & 1`), dispatches execute/cancel event to all registered server apps (`0x600f6b96`). | 1 caller / 5 callees |
+| `0x600f6410` |  262 | GATT / Server | **`gatts_parse_disc_req_handle_range`** — GATT server ATT discovery request handle range and UUID parser: validates start/end handles for opcodes `0x10`, `0x06`, `0x08` and parses UUID via `0x600af9fc`. | 3 callers / 1 callee |
+
+
 
 
 
