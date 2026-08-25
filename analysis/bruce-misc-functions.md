@@ -3810,6 +3810,24 @@ Decompiled and documented 10 functions (1,780 bytes across `0x600f4a3c`–`0x600
 
 **Reliability read**: on par with session 128 for spec-corroboration density, with the added value of an explicit cross-session confirmation (this wave's own fresh use of `0x600f46b4` independently validates last session's correction of it) — a good sign the crypto/BTA-cluster pattern of correct callee citations compounding across waves is now also holding in this GATT cluster. The one structural finding (the spurious split) was already self-identified by the wave with the right merged size; QA's contribution was the byte-level disassembly proof plus surfacing the still-unresolved `0x601323f6` call-target puzzle.
 
+## Session 130 (Wave 100) — Broadcom GATT Server Database Attribute Management & Read By Type Aggregator (10 functions, 1,944 bytes)
+
+Decompiled and documented 10 functions (1,944 bytes across `0x600f5130`–`0x600f58c8`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f5130` |  446 | GATT / Server | **`gatts_read_by_type_value_aggregator`** — GATT server Read By Type response aggregator: iterates matching attributes in handle range, serializes handle + value via `0x600f4f02`, verifies fixed-length entry packing constraint, delegates unhandled attributes to app callback (`0x600ad4f4`). | 1 caller / 4 callees |
+| `0x600f52ee` |  174 | GATT / Server | **`gatts_db_add_include_decl`** — GATT server database add include definition attribute: creates include attribute (`0x2802`), allocates 28-byte storage (`0x600f578e`), writes start handle, end handle, and service UUID, returning assigned handle. | 1 caller / 4 callees |
+| `0x600f539c` |  170 | GATT / Server | **`gatts_db_add_characteristic_decl`** — GATT server database add characteristic declaration & value attribute pair: creates Characteristic Declaration (`0x2803`), allocates 4B storage for properties and value handle, creates Characteristic Value attribute, returning value handle. | 1 caller / 3 callees |
+| `0x600f5446` |   50 | GATT / Server | **`gatts_db_add_descriptor`** — GATT server database add characteristic descriptor attribute: creates descriptor attribute via `0x600f55a4`, returning assigned handle. | 1 caller / 1 callee |
+| `0x600f5478` |  182 | GATT / Server | **`gatts_read_attr_by_handle_processor`** — GATT server attribute read request processor: looks up attribute node by handle, serializes value via `0x600f4f02` (handling Read / Read Blob), delegating to app callback `0x600ad4f4` if unhandled. | 2 callers / 2 callees |
+| `0x600f552e` |  118 | GATT / Server | **`gatts_check_attr_read_perm_by_handle`** — GATT server attribute read permission validator: locates attribute node by handle and checks read permission flags via `0x600ad130`. | 1 caller / 1 callee |
+| `0x600f55a4` |  346 | GATT / Server | **`gatts_db_alloc_attr_node`** — GATT server attribute database node allocator: computes node size by UUID length (16B/20B/32B), allocates from DB buffer, assigns handle (`*(param_1 + 0x1a)++`), links node into database linked list. | 4 callers / 3 callees |
+| `0x600f56fe` |  144 | GATT / Server | **`gatts_db_unlink_attr_node`** — GATT server attribute database node unlinker: unlinks specified attribute node from linked list and decrements assigned handle counter on rollback. | 2 callers / 0 callees |
+| `0x600f578e` |  104 | GATT / Server | **`gatts_db_alloc_attr_value_buf`** — GATT server attribute database value buffer allocator: allocates contiguous storage from database value pool, triggering pool expansion via `0x600ad494` if necessary. | 3 callers / 2 callees |
+| `0x600f57f6` |  210 | GATT / Server | **`gatts_db_add_service_decl`** — GATT server database add service declaration: creates Primary (`0x2800`) or Secondary (`0x2801`) Service Declaration attribute, allocates 20B value storage, and populates service UUID. | 1 caller / 4 callees |
+
+
 
 
 
