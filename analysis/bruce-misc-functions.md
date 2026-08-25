@@ -3787,6 +3787,24 @@ No `GHIDRA-TODO` needed for either finding (identification-only, no boundary iss
 
 **Reliability read**: a wave with an unusually high density of independently-checkable exact opcode/UUID matches — on par with sessions 84/85's protobuf finds — making the one miss stand out clearly: it was caught purely by internal consistency (two rows in the *same* table citing the same address for two different, incompatible purposes), the same class of self-contradiction check that's paid off before in this pipeline, this time also reaching back to correct a session-126 row via the same evidence.
 
+## Session 129 (Wave 99) — Broadcom GATT ATT Response Handlers & Server Attribute Database Serialization (10 functions, 1,780 bytes)
+
+Decompiled and documented 10 functions (1,780 bytes across `0x600f4a3c`–`0x600f5130`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f4a3c` |  338 | GATT / Client | **`gattc_process_error_rsp`** — GATT client ATT Error Response (`0x01`) processor: unpacks request opcode, handle in error, and error code; handles discovery errors (`0x600ac6ac`), prepare write failures (`0x600f46b4` cancel / `0x600b00b4`), and read blob EOF conditions (`0x0b` Attribute Not Long). | 1 caller / 3 callees |
+| `0x600f4b8e` |  296 | GATT / Client | **`gattc_process_prepare_write_rsp`** — GATT client Prepare Write Response (`0x17`) processor: unpacks handle, offset, and payload; validates chunk response via `0x600f46ee` and continues chunk transmission via `0x600f47a0`. | 1 caller / 5 callees |
+| `0x600f4cb6` |   62 | GATT / Client | **`gattc_process_write_rsp`** — GATT client Write Response (`0x13`) processor: verifies response opcode `0x13` and completes write operation via `0x600b00b4`. | 1 caller / 1 callee |
+| `0x600f4cf4` |  108 | GATT / Client | **`gattc_process_mtu_rsp`** — GATT client Exchange MTU Response (`0x03`) processor: negotiates connection MTU `min(local, peer)` (>= 23), updates L2CAP fixed channel 4 via `0x600f80c4`, and completes operation via `0x600b00b4`. | 1 caller / 2 callees |
+| `0x600f4d60` |   46 | GATT / Core | **`gatt_get_rsp_opcode`** — ATT request-to-response opcode mapper: computes `req_opcode + 1` for response-bearing ATT requests (`param_1 > 1 && param_1 != 0x52`). | 1 caller / 0 callees |
+| `0x600f4d8e` |  250 | GATT / Core | **`gatt_dequeue_sr_cmd`** — GATT command transmission queue dequeue processor: pulls pending ATT requests from ring buffer (`+0xf8`/`+0xf9`), transmits via `0x600ff986`, and manages completion timer via `0x600f6a8a` / `0x600b00b4`. | 2 callers / 5 callees |
+| `0x600f4e88` |   78 | GATT / Server | **`gatts_add_included_service`** — GATT server add included service API (`GATTS_AddIncludedService`): validates server handle via `0x600ad494`, records handle range (`param_4`..`param_5 + param_4`), and registers include attribute via `0x600f57f6`. | 1 caller / 2 callees |
+| `0x600f4ed6` |   44 | GATT / Server | **`gatts_get_attr_uuid`** — GATT server get attribute UUID helper: returns attribute UUID pointer at `*(param_1[0] + 4)`. | 3 callers / 0 callees |
+| `0x600f4f02` |  408 | GATT / Server | **`gatts_read_attr_value_by_handle`** — GATT server attribute value reader & serializer (spurious split at `+408` with `0x600f4ff4`, 558B total): checks read permissions (`0x600ad130`), serializes Service (`0x2800`/`0x2801`), Characteristic (`0x2803`), and Include (`0x2802`) declarations. | 2 callers / 2 callees |
+| `0x600f4ff4` |  150 | GATT / Server | **`gatts_read_attr_value_by_handle_body`** — GATT server attribute value reader & serializer continuation fragment: completes serialization of characteristic 128-bit UUID and include definition fields. | 1 caller / 1 callee |
+
+
 
 
 
