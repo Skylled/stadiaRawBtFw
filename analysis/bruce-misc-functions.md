@@ -4450,6 +4450,26 @@ Decompiled and documented 15 functions (742 bytes across `0x600fd328`–`0x600fd
 
 Reliability read: a clean wave — every specifically-checkable citation (two HCI opcodes, three established callee identities) held up exactly against independently-confirmed ground truth, with the one open thread being a genuine gap in an already-flagged, not-yet-fully-resolved older entry rather than a fresh error.
 
+## Session 153 (Wave 123) — Broadcom BTA GATTC Connection Open/Cancel & Deregistration (12 functions, 1,592 bytes)
+
+Decompiled and documented 12 functions (1,592 bytes across `0x600fd60e`–`0x600fdc46`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fd60e` |   34 | BTA / DM BLE | **`bta_dm_ble_dispatch_event_13`** — Broadcom BTA DM BLE dispatch event 13 (0x0D, 1-byte status payload) to application layer via `0x60095d9c`. | 0 callers / 1 callee |
+| `0x600fd630` |  122 | BTA / GATTC | **`bta_gattc_close_deregister_all`** — Broadcom BTA GATTC iterate 4 client control blocks, close active connections (`0x600fd6d6`), or clear table on complete disable. | 2 callers / 2 callees |
+| `0x600fd6aa` |   44 | BTA / GATTC | **`bta_gattc_deregister_if_active`** — Broadcom BTA GATTC find client control block (`0x60094f58`) and deregister client interface from GATT (`0x600abb14`). | 1 caller / 2 callees |
+| `0x600fd6d6` |  356 | BTA / GATTC | **`bta_gattc_close_active_connections`** — Broadcom BTA GATTC clear background connection masks (`0x600952fc`/`0x600f3caa`), post close event `0x1d08` to active CLCBs, and advance state machine via `0x600fde94`. | 2 callers / 4 callees |
+| `0x600fd83a` |  138 | BTA / GATTC | **`bta_gattc_process_api_open`** — Broadcom BTA GATTC handle API connection open request: routes background connection (`0x600fdab8`) or direct connection (`0x600ef390` / `0x60094d24`). | 1 caller / 5 callees |
+| `0x600fd8c4` |  172 | BTA / GATTC | **`bta_gattc_process_api_cancel_open`** — Broadcom BTA GATTC handle API cancel open request: routes background cancel (`0x600fdbb8`) or direct cancel via `0x60094ffc` / `0x60094d24`. | 1 caller / 4 callees |
+| `0x600fd970` |   82 | BTA / GATTC | **`bta_gattc_send_cancel_open_cback_error`** — Broadcom BTA GATTC invoke cancel open callback (event 0x0E) with error status BTA_GATT_ERROR (`0x85`). | 0 callers / 0 callees |
+| `0x600fd9c2` |   50 | BTA / GATTC | **`bta_gattc_send_open_cback_ok`** — Broadcom BTA GATTC invoke connection open callback with success status BTA_GATT_OK (0) via `0x600ef7f8`. | 0 callers / 1 callee |
+| `0x600fd9f4` |   56 | BTA / GATTC | **`bta_gattc_send_open_cback_fail_and_free`** — Broadcom BTA GATTC invoke open callback with BTA_GATT_ERROR (`0x85`) via `0x600ef7f8` and free client control block via `0x600ef3cc`. | 0 callers / 2 callees |
+| `0x600fda2c` |  140 | BTA / GATTC | **`bta_gattc_open_connection`** — Broadcom BTA GATTC initiate direct connection via `gatt_connect_dev` (`0x600f3c42`) and dispatch open fail (0x1D01) or connect (0x1D0D) event via `0x60094d24`. | 0 callers / 3 callees |
+| `0x600fdab8` |  256 | BTA / GATTC | **`bta_gattc_process_api_open_bg`** — Broadcom BTA GATTC initiate background connection via `gatt_connect_dev` (`0x600f3c42`, is_direct=0) and register background mask via `0x600952fc`. | 1 caller / 6 callees |
+| `0x600fdbb8` |  142 | BTA / GATTC | **`bta_gattc_process_api_cancel_open_bg`** — Broadcom BTA GATTC cancel background connection via `gatt_cancel_connect` (`0x600f3caa`), clear mask via `0x600952fc`, and invoke cancel open callback (event 0x0E). | 1 caller / 3 callees |
+
+
 
 
 
