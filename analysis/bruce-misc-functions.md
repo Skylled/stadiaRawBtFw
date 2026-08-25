@@ -4000,6 +4000,29 @@ Decompiled and documented 15 functions (1,468 bytes across `0x600f77cc`–`0x600
 
 **Reliability read**: another strong wave for the L2CAP API-surface cluster — every one of the wave's own 15 rows checked out, and the one real finding (a wrong, unhedged appendix entry from an earlier session) was caught the same way sessions 114/123/127 caught similar cases: reading a callee's own body when the calling context didn't fit the established label, rather than trusting either source at face value.
 
+## Session 137 (Wave 107) — Broadcom L2CAP BLE Signaling Parser, Parameter Updaters & ERTM Flow Control (15 functions, 1,736 bytes)
+
+Decompiled and documented 15 functions (1,736 bytes across `0x600f7d88`–`0x600f8450`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f7d88` |  424 | L2CAP / BLE | **`l2c_ble_process_sig_cmd`** — Broadcom L2CAP BLE signaling packet processor: parses opcode `0x12` (`L2CAP_CMD_BLE_UPDATE_REQ`), validates 4 connection interval/latency/timeout ranges against spec, sends response (`0x600f8208`), and handles opcode `0x13` (`L2CAP_CMD_BLE_UPDATE_RSP`). | 1 caller / 4 callees |
+| `0x600f7f30` |   68 | L2CAP / BLE | **`l2c_ble_start_create_conn`** — Broadcom L2CAP BLE connection initiation scheduler: checks scanner/adv state (`0x6009c778`), initiates connection (`0x600b59ec`) or queues request (`0x6009c7c8`). | 1 caller / 4 callees |
+| `0x600f7f74` |  150 | L2CAP / BLE | **`l2c_ble_send_conn_param_req`** — Broadcom L2CAP execute or defer BLE connection parameter update: issues HCI command (`0x600b16c4`) or notifies BTM (`0x600b1804`). | 1 caller / 3 callees |
+| `0x600f800a` |  130 | L2CAP / BLE | **`l2c_ble_update_data_len`** — Broadcom L2CAP BLE data length recomputer: scans fixed channels, clamps max length to 251 (`0xfb`), and updates controller via `0x6009ac8c`. | 1 caller / 1 callee |
+| `0x600f808c` |   56 | L2CAP / BLE | **`l2c_ble_set_conn_interval`** — Broadcom L2CAP record BLE connection interval: stores interval `param_2` into LCB field `+0x36`. | 1 caller / 1 callee |
+| `0x600f80c4` |   94 | L2CAP / BLE | **`L2CA_SetFixedChannelTxDataLength`** — Broadcom L2CAP set fixed channel transmit data length: updates CCB field `+0x122` (clamped to 251) and recomputes link data length (`0x600f800a`). | 2 callers / 2 callees |
+| `0x600f8122` |  230 | L2CAP / BLE | **`l2c_ble_send_peer_conn_param_upd_req`** — Broadcom L2CAP format and send BLE connection parameter update request packet: builds 8-byte signaling PDU (`0x12`), arms 30s timer, and sends via `0x600b9408`. | 1 caller / 4 callees |
+| `0x600f8208` |   92 | L2CAP / BLE | **`l2c_ble_send_peer_conn_param_upd_rsp`** — Broadcom L2CAP format and send BLE connection parameter update response packet: builds 2-byte signaling PDU (`0x13`) and sends via `0x600b9408`. | 1 caller / 2 callees |
+| `0x600f8264` |   44 | L2CAP / ERTM | **`l2c_fcs_compute_frame`** — Broadcom L2CAP ERTM frame check sequence computation helper: calculates FCS CRC16 over packet payload via `0x600b72cc`. | 2 callers / 1 callee |
+| `0x600f8290` |   52 | L2CAP / ERTM | **`l2c_fcs_compute_frame_with_hdr`** — Broadcom L2CAP ERTM frame check sequence computation with header: calculates CRC16 over header + payload via `0x600b72cc`. | 2 callers / 1 callee |
+| `0x600f82c4` |   38 | L2CAP / ERTM | **`l2c_ertm_stop_ack_timer`** — Broadcom L2CAP ERTM stop acknowledgement timer: stops active timer at `+0x100` via `0x600aa4c4`. | 6 callers / 1 callee |
+| `0x600f82ea` |   64 | L2CAP / ERTM | **`l2c_ertm_is_chan_congested`** — Broadcom L2CAP ERTM congestion check: tests if unacked I-frame count `+0xcc` reaches window size `+0x7f` or window closed `+0xb6 == 1`. | 4 callers / 0 callees |
+| `0x600f832a` |  118 | L2CAP / ERTM | **`l2c_ertm_process_retrans_timeout`** — Broadcom L2CAP ERTM handle retransmission timeout: increments retry counter `+0xb4`, triggers disconnect if exceeded (`0x600f9db4`) or sends poll S-frame (`0x600b7674`). | 1 caller / 2 callees |
+| `0x600f83a0` |   82 | L2CAP / ERTM | **`l2c_ertm_process_ack_timeout`** — Broadcom L2CAP ERTM handle delayed ack timeout: sends acknowledgement S-frame via `0x600b7674` if unacknowledged frames pending. | 1 caller / 1 callee |
+| `0x600f83f2` |   94 | L2CAP / ERTM | **`l2cu_filter_channel_modes`** — Broadcom L2CAP filter allowed channel modes against peer feature mask: masks out FCS/ERTM bits if peer features lack support. | 4 callers / 0 callees |
+
+
 
 
 
