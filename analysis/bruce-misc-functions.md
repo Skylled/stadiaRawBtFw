@@ -4229,6 +4229,27 @@ Decompiled and documented 12 functions (1,658 bytes across `0x600faec4`–`0x600
 
 **Reliability read**: an outstanding wave for real-spec corroboration — essentially every field size and offset in this wave's twelve SMP handlers checks out against the actual Bluetooth specification, and the two cross-reference field-offset confirmations (LTK, IRK) add further confidence beyond the spec matches alone.
 
+## Session 146 (Wave 116) — Broadcom SMP Pairing Verification, Passkey Entry, Key Distribution Iterator & PDU Queuers (13 functions, 1,174 bytes)
+
+Decompiled and documented 13 functions (1,174 bytes across `0x600fb53e`–`0x600fba06`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fb53e` |  158 | BTM / SMP | **`btm_sec_verify_confirm`** — Broadcom SMP verify pairing confirm value: compares local calculated confirm against received confirm `*(param_1 + 0x3d)` (16 bytes via `memcmp`), adjusts max key size, handles master (`0x600c1a34(param_1, 4, 0)`) vs slave (`0x600c1a34(param_1, 0x18, 0)`), or triggers failure `0x17` with status 4 (`SMP_CONFIRM_VALUE_FAILED`). | 0 callers / 2 callees |
+| `0x600fb5dc` |   74 | BTM / SMP | **`btm_sec_process_passkey_entry`** — Broadcom SMP handle passkey entry input: triggers confirm calculation (`0x600c0db4`) or arms timer (`0x600c19f4(4)`) and synchronizes confirm event 3. | 0 callers / 3 callees |
+| `0x600fb626` |   96 | BTM / Security | **`btm_sec_set_encryption_key`** — Broadcom BTM configure link encryption key parameters via `0x6009afd4`, dispatching failure event `0x17` with status `0x14` on error. | 0 callers / 2 callees |
+| `0x600fb686` |   36 | BTM / SMP | **`btm_sec_check_bond_on_keypress`** — Broadcom SMP check bonding state for keypress/security event (`0x600fca7c`). | 0 callers / 1 callee |
+| `0x600fb6aa` |   52 | BTM / Security | **`btm_sec_auth_complete_evt`** — Broadcom BTM translate auth status to BTM event 0x17. | 0 callers / 1 callee |
+| `0x600fb6de` |  362 | BTM / Security | **`btm_sec_encrypt_change_handler`** — Broadcom BTM handle HCI Encryption Change event: masks security bits, checks encryption state, triggers key distribution event `0x19` or completes via event `0x17`. | 0 callers / 1 callee |
+| `0x600fb848` |  124 | BTM / SMP | **`smp_advance_key_distribution`** — Broadcom SMP iterate and finalize key distribution phase: sends next pending key PDU via `0x600bff84`, completes pairing via `0x600c1a34(param_1, 0x17, 0)` when all keys distributed. | 9 callers / 3 callees |
+| `0x600fb8c4` |  118 | BTM / SMP | **`smp_initiate_pairing`** — Broadcom SMP initiate pairing exchange: determines pairing method (`0x600fcbfa`), checks encryption policy, begins pairing via `0x600fab3e` or retrieves bonded link key via `0x600c1b74(0xb, param_1)`. | 0 callers / 5 callees |
+| `0x600fb93a` |   46 | BTM / SMP | **`smp_send_enc_info_master_id`** — Broadcom SMP send Encryption Information & Master Identification PDUs via `0x600f7bd8` and `0x600fcab6`. | 0 callers / 2 callees |
+| `0x600fb968` |   32 | BTM / SMP | **`smp_send_id_info_addr`** — Broadcom SMP queue Identity Information & Address PDUs (`*(param_1 + 0x25) = 0x19`, `0x600fcab6`). | 0 callers / 1 callee |
+| `0x600fb988` |   44 | BTM / SMP | **`smp_send_enc_info_if_bonded`** — Broadcom SMP queue Encryption Information PDU for bonded link (`*(param_1 + 0x25) = 0x18`, `0x600fcab6`). | 0 callers / 1 callee |
+| `0x600fb9b4` |   30 | BTM / SMP | **`smp_clear_link_security`** — Broadcom SMP reset link security state via `0x600f7bd8(bd_addr, 0)`. | 0 callers / 1 callee |
+| `0x600fb9d2` |   52 | BTM / SMP | **`btm_sec_process_key_missing`** — Broadcom SMP handle link key missing condition: resets crypto state (`0x600fc4d8`), triggers passkey retry event 12 (`0x600fabc6`), and dispatches event `0x1e`. | 0 callers / 3 callees |
+
+
 
 
 
