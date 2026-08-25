@@ -3970,6 +3970,29 @@ Decompiled and documented 11 functions (1,684 bytes across `0x600f7138`–`0x600
 
 **Reliability read**: a wave with a real, well-caught finding — an internal self-contradiction between two of the wave's own rows, reinforced by an independent cross-session caller check — sitting alongside multiple precise, independently-checkable Bluetooth spec matches (VSC opcode convention, L2CAP PSM validity rule, dynamic-PSM range) that held up without correction.
 
+## Session 136 (Wave 106) — Broadcom L2CAP Connect/Config/Disconnect APIs, Priority & BLE Parameter Updaters (15 functions, 1,468 bytes)
+
+Decompiled and documented 15 functions (1,468 bytes across `0x600f77cc`–`0x600f7d88`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f77cc` |   58 | L2CAP / Core | **`L2CA_ConnectRsp`** — Broadcom L2CAP connection response API wrapper: delegates to `0x600f7806(param_1..5, 0)`. | 2 callers / 1 callee |
+| `0x600f7806` |  268 | L2CAP / Core | **`L2CA_ErtmConnectRsp`** — Broadcom L2CAP connection response implementation: validates CCB, initializes ERTM parameters, and sends positive (`0x16`) or negative (`0x17`) connect response event. | 1 caller / 4 callees |
+| `0x600f7912` |  150 | L2CAP / Core | **`L2CA_ConfigReq`** — Broadcom L2CAP configuration request API: validates configuration (`0x600f8450`), clamps MTU to 584, copies config block, and dispatches event `0x18`. | 4 callers / 4 callees |
+| `0x600f79a8` |  140 | L2CAP / Core | **`L2CA_ConfigRsp`** — Broadcom L2CAP configuration response API: handles positive (`0x19`) or negative (`0x1a`) configuration responses, clearing rejected options. | 2 callers / 2 callees |
+| `0x600f7a34` |   52 | L2CAP / Core | **`L2CA_DisconnectReq`** — Broadcom L2CAP disconnect request API: looks up CCB and sends disconnect request event `0x1b`. | 4 callers / 2 callees |
+| `0x600f7a68` |   52 | L2CAP / Core | **`L2CA_DisconnectRsp`** — Broadcom L2CAP disconnect response API: looks up CCB and sends disconnect response event `0x1c`. | 2 callers / 2 callees |
+| `0x600f7a9c` |  138 | L2CAP / Core | **`L2CA_SetTxPriority`** — Broadcom L2CAP channel transmit priority configurator: updates priority field `+0x120` and kicks transmit queue (`0x600fa0d6`). | 1 caller / 2 callees |
+| `0x600f7b26` |   34 | L2CAP / Core | **`L2CA_DataWrite`** — Broadcom L2CAP dynamic channel data transmit API: writes data packet to channel via `0x600bb3b4(cid, p_buf, 0)`. | 5 callers / 1 callee |
+| `0x600f7b48` |  144 | L2CAP / Core | **`L2CA_UpdateBleConnParams`** — Broadcom L2CAP BLE connection parameter update request API: stores interval/latency/timeout parameters into LCB, sets flag `+0x38 |= 2`, and sends update via `0x600b5844`. | 2 callers / 3 callees |
+| `0x600f7bd8` |  106 | L2CAP / Core | **`L2CA_EnableBleUpdateParams`** — Broadcom L2CAP enable or disable BLE connection parameter updates: sets (`+0x38 |= 1`) or clears (`+0x38 &= ~1`) hold flag. | 4 callers / 2 callees |
+| `0x600f7c42` |   44 | L2CAP / Core | **`L2CA_GetBleConnRole`** — Broadcom L2CAP get BLE connection link role: returns role byte `*(p_lcb + 10)` or `0xff` if not found. | 4 callers / 1 callee |
+| `0x600f7c6e` |   50 | L2CAP / Core | **`L2CA_GetDisconnectReason`** — Broadcom L2CAP get link disconnect reason code: returns status word `*(p_lcb + 0x30)`. | 2 callers / 1 callee |
+| `0x600f7ca0` |   74 | L2CAP / Core | **`L2CA_ConnectBleLink`** — Broadcom L2CAP handle BLE link connection completion: sets connected state `4`, starts supervision timer (`0x60099c0c`), and notifies L2CAP link up (`0x600bc994`). | 2 callers / 4 callees |
+| `0x600f7cea` |   92 | L2CAP / Core | **`L2CA_BleConnParamsRsp`** — Broadcom L2CAP process BLE connection parameter update response: notifies BTM (`0x6009ec54`) and sends positive (`0x600b5540`) or negative (`0x600b5720`) update response. | 2 callers / 3 callees |
+| `0x600f7d46` |   66 | L2CAP / Core | **`L2CA_ClearBleUpdateParamsPending`** — Broadcom L2CAP clear BLE connection parameter update in-progress state: clears flag `+0x38 &= ~4` via `0x600bcbe0` and `0x600b5844`. | 1 caller / 2 callees |
+
+
 
 
 
