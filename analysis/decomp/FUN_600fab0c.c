@@ -1,6 +1,8 @@
-// 600fab0c  FUN_600fab0c  size=28 bytes
+// 600fab0c  FUN_600fab0c  size=50 bytes
 // --- callers ---
 // --- callees ---
+//   600f2080 FUN_600f2080
+//   600c1b74 FUN_600c1b74
 //   6009ff18 FUN_6009ff18
 
 

@@ -5046,8 +5046,7 @@ address,name,size_bytes
 600fa7de,FUN_600fa7de,248
 600fa8d6,FUN_600fa8d6,492
 600faac2,FUN_600faac2,74
-600fab0c,FUN_600fab0c,28
-600fab28,FUN_600fab28,22
+600fab0c,FUN_600fab0c,50
 600fab3e,FUN_600fab3e,84
 600fab92,FUN_600fab92,26
 600fabac,FUN_600fabac,26
@@ -5056,12 +5055,12 @@ address,name,size_bytes
 600fabfa,FUN_600fabfa,26
 600fac14,FUN_600fac14,36
 600fac38,FUN_600fac38,140
-600facc4,FUN_600facc4,96
-600fad24,FUN_600fad24,2
+600facc4,FUN_600facc4,98
 600fad26,FUN_600fad26,108
 600fad92,FUN_600fad92,36
 600fadb6,FUN_600fadb6,188
 600fae72,FUN_600fae72,50
+600faea4,FUN_600faea4,32
 600faec4,FUN_600faec4,488
 600fb0ac,FUN_600fb0ac,100
 600fb110,FUN_600fb110,80

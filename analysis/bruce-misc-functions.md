@@ -4170,6 +4170,27 @@ Decompiled and documented 11 functions (1,516 bytes across `0x600fa5a6`–`0x600
 
 **Reliability read**: a moderate wave — one genuine structural finding (caught via the now-familiar `extraout_rN`/mid-stream-continuation signature) and one trivial off-by-one, set against several solid real-SDP-spec matches and cross-session function reuse.
 
+## Session 144 (Wave 114) — Broadcom BTM Security Event Dispatchers, Key Notification (LTK/IRK/CSRK) & Auth Result Handlers (13 functions, 818 bytes)
+
+Decompiled and documented 13 functions (818 bytes across `0x600fab92`–`0x600faec4`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fab92` |   26 | BTM / Security | **`btm_sec_disp_evt_3`** — Broadcom BTM security event 3 dispatcher: passes security event 3 to `0x600c1b74`. | 0 callers / 1 callee |
+| `0x600fabac` |   26 | BTM / Security | **`btm_sec_disp_evt_4`** — Broadcom BTM security event 4 dispatcher: passes security event 4 (auth/link key request) to `0x600c1b74`. | 2 callers / 1 callee |
+| `0x600fabc6` |   26 | BTM / Security | **`btm_sec_disp_evt_12`** — Broadcom BTM security event 12 dispatcher: passes security event 12 (key missing / passkey) to `0x600c1b74`. | 1 caller / 1 callee |
+| `0x600fabe0` |   26 | BTM / Security | **`btm_sec_disp_evt_15`** — Broadcom BTM security event 15 dispatcher: passes security event 15 (numeric comparison) to `0x600c1b74`. | 1 caller / 1 callee |
+| `0x600fabfa` |   26 | BTM / Security | **`btm_sec_disp_evt_13`** — Broadcom BTM security event 13 dispatcher: passes security event 13 (user confirmation) to `0x600c1b74`. | 0 callers / 1 callee |
+| `0x600fac14` |   36 | BTM / Security | **`btm_sec_disp_evt_14`** — Broadcom BTM security event 14 dispatcher: stores remote I/O capabilities (`+0x197`) and passes event 14 to `0x600c1b74`. | 0 callers / 1 callee |
+| `0x600fac38` |  140 | BTM / Security | **`btm_sec_link_key_notification`** — Broadcom BTM link key notification & persistent key storage handler: clears auth mask (`0x600fa7de`), fires events 6/7, copies 16-byte link key, saves key via `0x6009ad00`, and advances security state (`0x600fb848`). | 0 callers / 5 callees |
+| `0x600facc4` |   98 | BTM / Security | **`btm_sec_process_irk`** — Broadcom BTM process BLE Identity Resolving Key (IRK): clears privacy mask (`0x600fa7de`), fires events 8/9, saves 32-byte identity structure via `0x6009ad00`, and advances security state (`0x600fb848`). | 0 callers / 4 callees |
+| `0x600fad26` |  108 | BTM / Security | **`btm_sec_process_csrk`** — Broadcom BTM process BLE Connection Signature Resolving Key (CSRK): clears signature mask (`0x600fa7de`), fires event 10, saves 16-byte CSRK structure via `0x6009ad00`, and advances security state (`0x600fb848`). | 1 caller / 5 callees |
+| `0x600fad92` |   36 | BTM / Security | **`btm_sec_update_link_info`** — Broadcom BTM update device link parameters in security database (`0x6009b0a8`). | 0 callers / 1 callee |
+| `0x600fadb6` |  188 | BTM / Security | **`btm_sec_check_sec_req`** — Broadcom BTM evaluate security requirements & encryption policy: queries requirements via `0x600f0b06`, checks BLE encryption, sets auth mask 0x0f (`+0x1b4`/`+0x1b5`), sets state `+0x2a = 2`, or triggers events `0x17`/`0x18`. | 0 callers / 3 callees |
+| `0x600fae72` |   50 | BTM / Security | **`btm_sec_auth_result_handler`** — Broadcom BTM process authentication response: on success sets state `+0x2a = 1`, on failure triggers event `0x17` via `0x600c1a34`. | 0 callers / 1 callee |
+| `0x600faea4` |   32 | BTM / Security | **`btm_sec_set_pin_len`** — Broadcom BTM store PIN code length for device security record: writes `*(param_1 + 0x25) = *param_2`. | 0 callers / 0 callees |
+
+
 
 
 

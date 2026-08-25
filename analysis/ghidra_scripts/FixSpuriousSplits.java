@@ -831,6 +831,45 @@ public class FixSpuriousSplits extends GhidraScript {
             fdedffe.setBody(new AddressSet(adedffe, toAddr(0x600ee01b)));
         }
 
+        // 76. Fix 0x600fab0c / 0x600fab28 boundary split (50 bytes: 0x600fab0c..0x600fab3d)
+        Address afab0c = toAddr(0x600fab0c);
+        Address afab28 = toAddr(0x600fab28);
+        Function ffab28 = fm.getFunctionAt(afab28);
+        if (ffab28 != null) {
+            println("Removing spurious split function at " + afab28);
+            fm.removeFunction(afab28);
+        }
+        Function ffab0c = fm.getFunctionAt(afab0c);
+        if (ffab0c != null) {
+            Address endfab0c = toAddr(0x600fab0c + 50 - 1);
+            ffab0c.setBody(new AddressSet(afab0c, endfab0c));
+        }
+
+        // 77. Fix 0x600facc4 / 0x600fad24 boundary split (98 bytes: 0x600facc4..0x600fad25)
+        Address afacc4 = toAddr(0x600facc4);
+        Address afad24 = toAddr(0x600fad24);
+        Function ffad24 = fm.getFunctionAt(afad24);
+        if (ffad24 != null) {
+            println("Removing spurious split function at " + afad24);
+            fm.removeFunction(afad24);
+        }
+        Function ffacc4 = fm.getFunctionAt(afacc4);
+        if (ffacc4 != null) {
+            Address endfacc4 = toAddr(0x600facc4 + 98 - 1);
+            ffacc4.setBody(new AddressSet(afacc4, endfacc4));
+        }
+
+        // 78. Create missing function 0x600faea4 (32 bytes: 0x600faea4..0x600faec3)
+        Address afaea4 = toAddr(0x600faea4);
+        Function ffaea4 = fm.getFunctionAt(afaea4);
+        if (ffaea4 == null) {
+            createFunction(afaea4, "FUN_600faea4");
+            ffaea4 = fm.getFunctionAt(afaea4);
+        }
+        if (ffaea4 != null) {
+            ffaea4.setBody(new AddressSet(afaea4, toAddr(0x600faec3)));
+        }
+
         println("FixSpuriousSplits completed successfully.");
     }
 }
