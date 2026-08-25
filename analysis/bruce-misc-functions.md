@@ -3657,6 +3657,30 @@ Spot-checked the remaining named citations: `0x6009e3f0` (cited by `bta_dm_inq_r
 
 **Reliability read**: the headline finding this session is structural rather than per-function — a labeling assumption ("caller lives in the LE-Meta sub-dispatch") that was baked into 5 different `bruce-bta-stack.md` rows across several earlier sessions, only exposed once this wave's own fresh classic-event decompiles gave concrete ground truth for what those callers actually are. The two per-function findings continue a now well-established pattern in this specific event-handler cluster: an event slot's own identification (well-supported by sequential positioning) doesn't transfer to its callee's identification without independently reading the callee's body — both `0x600a6598` and `0x600a65f4` turned out to be shared generic notifiers, not the event-specific names their calling context suggested.
 
+## Session 125 (Wave 95) — Broadcom BTA DM / GATTC Subsystems & SMP Key / Signature Verification (16 functions, 1,508 bytes)
+
+Decompiled and documented 16 functions (1,508 bytes across `0x600f303c`–`0x600f3620`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f303c` |   94 | BTA / DM BLE | **`bta_dm_ble_read_remote_features_cmpl_evt`** — Handles HCI LE Read Remote Features Complete event (`0x3e`/subevent `0x04`): unpacks handle and 8-byte feature buffer, updating BTM BLE state via `0x6009af60`. | 1 caller / 1 callee |
+| `0x600f309a` |  178 | BTA / DM BLE | **`bta_dm_ble_rc_param_req_evt`** — Handles HCI LE Remote Connection Parameter Request event (`0x3e`/subevent `0x05`): unpacks handle, conn_interval_min/max, latency, and timeout, notifying `0x600f7f74`. | 1 caller / 1 callee |
+| `0x600f314c` |  122 | BTA / DM BLE | **`bta_dm_ble_data_length_change_evt`** — Handles HCI LE Data Length Change event (`0x3e`/subevent `0x07`): unpacks handle, max_tx_octets, and max_rx_octets, notifying `0x600f808c`. | 1 caller / 1 callee |
+| `0x600f31c6` |   32 | BTA / DM | **`bta_dm_init_services`** — Stack subsystem init coordinator: calls `btm_sec_init` (`0x600a333c`), `btm_sec_dev_rec_init` (`0x600bb1f8`), `sdp_init` (`0x600bdd9c`), `gatt_init_subsystem` (`0x600ad610`), `btm_ble_sec_init` (`0x600c04f4`), and discovery init (`0x6009eda4`). | 1 caller / 6 callees |
+| `0x600f31e6` |   72 | BTA / GATTC | **`bta_gattc_cfg_param_setter`** — GATT client configuration parameter updater: sets configuration values and notifies GATT core via `0x600aa8f0`. | 0 callers / 1 callee |
+| `0x600f322e` |  124 | BTA / GATTC | **`bta_gattc_read_char_descr`** — GATT client read descriptor/value initiator: calls `0x600aa8a4` to resolve attribute handle, formats `tGATT_READ_PARAM`, and initiates read via `GATTC_Read` (`0x600ab620`). | 3 callers / 3 callees |
+| `0x600f32aa` |  110 | BTA / GATTC | **`bta_gattc_read_cb_dispatcher`** — GATT client read callback dispatcher: invokes registered completion callback (`blx r4`), continuing multi-read chain via `0x600f322e` or cleaning up via `0x600f3da6` / `0x600aa800`. | 2 callers / 3 callees |
+| `0x600f3318` |   96 | BTA / GATTC | **`bta_gattc_register_service_read`** — GATT client service read manager: finds client control block via `0x600aa6f0`, setting handle and triggering read via `0x600f322e` or closing via `0x600f32aa`. | 0 callers / 4 callees |
+| `0x600f3378` |  308 | BTA / GATTC | **`bta_gattc_read_cmpl_handler`** — GATT client read complete dispatcher: routes characteristic values for UUID `0x2a04` (Peripheral Preferred Conn Params -> `0x600f0726` / `bta_dm_ble_update_conn_params`), `0x2aa6` (Central Address Resolution), and `0x2a00` (Device Name -> `0x6004cb28` `strlen`), delivering results via `0x600f32aa`. | 0 callers / 4 callees |
+| `0x600f34ac` |   30 | BTA / GATTC | **`bta_gattc_read_conn_params`** — GATT client query helper: requests characteristic UUID `0x2a04` via `0x600aae30`. | 1 caller / 1 callee |
+| `0x600f34ca` |   32 | BTA / GATTC | **`bta_gattc_read_device_name`** — GATT client query helper: requests characteristic UUID `0x2a00` via `0x600aae30`. | 1 caller / 1 callee |
+| `0x600f34ea` |   24 | BTA / GATTC | **`bta_gattc_start_service_disc_pri`** — GATT client primary service discovery trigger: calls `0x600aaf38(0, param_1)`. | 0 callers / 1 callee |
+| `0x600f3502` |   24 | BTA / GATTC | **`bta_gattc_start_service_disc_sec`** — GATT client secondary service discovery trigger: calls `0x600aaf38(1, param_1)`. | 0 callers / 1 callee |
+| `0x600f351a` |   38 | BTA / GATTC | **`bta_gattc_cleanup_conn_rec`** — GATT client connection record cleanup helper: clears pending state flags at `+0x4`, `+0xf`. | 1 caller / 0 callees |
+| `0x600f3540` |  110 | GATT / SMP | **`gatt_sec_derive_keys`** — GATT / SMP crypto key derivation helper: resolves attribute handles via `gatt_find_hdl_buffer_by_app_id` (`0x600af3f4`) and invokes `0x600f52ee`. | 1 caller / 2 callees |
+| `0x600f35ae` |  114 | GATT / SMP | **`gatt_sec_verify_signature`** — GATT / SMP signature verification helper: validates auth flags (`0x40` signed write / `0x180` MITM/encryption) and invokes `0x600f539c`. | 3 callers / 2 callees |
+
+
 
 
 
