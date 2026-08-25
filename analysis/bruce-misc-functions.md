@@ -3833,6 +3833,25 @@ Decompiled and documented 10 functions (1,944 bytes across `0x600f5130`–`0x600
 
 **Reliability read**: the cleanest, most densely-corroborated wave in the GATT cluster to date — every literal byte-count and UUID constant checked, none contradicted, several forming multi-function structural consistency chains (the four-UUID declaration-type set, the fixed-length Read-By-Type constraint, the shared `-0x78` sentinel). No findings to report this session.
 
+## Session 131 (Wave 101) — Broadcom GATT L2CAP Transport Connections & Channel Callback State Machine (11 functions, 1,558 bytes)
+
+Decompiled and documented 11 functions (1,558 bytes across `0x600f58c8`–`0x600f5ede`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f58c8` |  102 | GATT / Core | **`gatt_connect_transport_channel`** — GATT L2CAP transport connection initiator: connects fixed channel 4 (`0x600b50d0`) for BLE or requests dynamic L2CAP channel (`0x600f768a`) for BR/EDR PSM `0x1f`. | 1 caller / 4 callees |
+| `0x600f592e` |  148 | GATT / Core | **`gatt_disconnect_transport_channel`** — GATT L2CAP transport disconnection handler: tears down BLE fixed channel 4 (`0x600b542c` / `0x600b54d4`) or dynamic L2CAP channel (`0x600f7a34`). | 4 callers / 5 callees |
+| `0x600f59c2` |   62 | GATT / Core | **`gatt_is_app_in_conn_record`** — GATT check if application ID registered in connection record: searches 10-entry array `param_2 + 0x1e`. | 1 caller / 0 callees |
+| `0x600f5a00` |  152 | GATT / Core | **`gatt_update_app_in_conn_record`** — GATT add or remove application ID from connection record: inserts or removes app_id in 10-slot array `param_2 + 0x1e`. | 1 caller / 0 callees |
+| `0x600f5a98` |  154 | GATT / Core | **`gatt_update_app_hold_link`** — GATT register or deregister application connection hold: updates app record via `0x600f5a00` and configures link parameters via `0x600f3bde`. | 7 callers / 4 callees |
+| `0x600f5b32` |  202 | GATT / Core | **`gatt_act_connect`** — GATT connection open action routine: allocates/finds connection record (`0x600af814`/`0x600af8ac`), initiates transport connection (`0x600f58c8`), holds link (`0x600f5a98`). | 1 caller / 6 callees |
+| `0x600f5bfc` |  230 | GATT / Core | **`gatt_fixed_chnl_conn_cb`** — GATT fixed channel 4 (BLE ATT) connection complete callback: transitions state to 4 (connected) via `0x600f610e`, sets MTU to 23 (`0x17`), triggers setup via `0x600ad8fc` and discovery via `0x600f60ee`. | 0 callers / 9 callees |
+| `0x600f5ce2` |   40 | GATT / Core | **`gatt_fixed_chnl_cong_cb`** — GATT fixed channel congestion indication callback: routes congestion state to `0x600ad7fc`. | 0 callers / 2 callees |
+| `0x600f5d0a` |  170 | GATT / Core | **`gatt_l2c_connect_ind_cb`** — GATT dynamic L2CAP channel connect indication callback: accepts BR/EDR connection via `0x600f77cc`, transitions state to 3, and sends L2CAP config request (MTU 517 `0x205`) via `0x600f7912`. | 0 callers / 5 callees |
+| `0x600f5db4` |  136 | GATT / Core | **`gatt_l2c_connect_cfm_cb`** — GATT dynamic L2CAP channel connect confirmation callback: on connection success sets state to 3 and sends L2CAP config request via `0x600f7912`. | 0 callers / 6 callees |
+| `0x600f5e3c` |  162 | GATT / Core | **`gatt_l2c_config_cfm_cb`** — GATT dynamic L2CAP channel config confirmation callback: records configuration bit `0x02`, transitions to state 4 (connected) when both directions configured, triggers discovery via `0x600f60ee` and setup via `0x600ad8fc`. | 0 callers / 8 callees |
+
+
 
 
 
