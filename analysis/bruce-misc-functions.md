@@ -3729,6 +3729,29 @@ No `GHIDRA-TODO` needed for the `gatt_disc_cmpl_handler` mislabel (identificatio
 
 **Reliability read**: a substantial-finding wave, but a good example of the write-up's own honesty helping rather than hindering — this wave's "spurious split"/"continuation fragment"/"_body" language for the boundary cluster already signaled awareness of a problem, and QA's contribution was supplying byte-level proof, discovering the fragment actually extends further (the "gap" resolution), and surfacing the deeper `0x60134420` puzzle that the write-up's framing didn't capture. The `gatt_disc_cmpl_handler` finding continues this pipeline's now-familiar pattern: correct callee citations, wrong verb/purpose for the enclosing function, caught by reading the cited callees' own established descriptions rather than trusting the name's plausibility.
 
+## Session 127 (Wave 97) — Broadcom GATT Connection Management & Server Request / Client Discovery Handlers (15 functions, 1,404 bytes)
+
+Decompiled and documented 15 functions (1,404 bytes across `0x600f3da6`–`0x600f4322`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f3da6` |   90 | GATT / Core | **`gatt_deregister_conn`** — GATT client connection deregisterer: detaches app channel via `0x600f5a98`, checks if connection active via `0x600f6dc6`, and tears down link via `0x600f592e` if empty. | 4 callers / 4 callees |
+| `0x600f3e00` |  106 | GATT / Core | **`gatt_get_conn_info`** — GATT connection information getter (`GATT_GetConnectionInfor`): looks up `0x600afd28` (registration) and `0x600af7c8` (discovery), copies 6-byte BD_ADDR (`+0xd`), returns app_id and transport (`+0x13`). | 7 callers / 3 callees |
+| `0x600f3e6a` |  108 | GATT / Core | **`gatt_get_conn_id_by_bd_addr`** — GATT connection ID lookup by BD_ADDR: looks up registration (`0x600afd28`) and connection (`0x600af814`), checks link state (`0x600f6132 == 4`), packs conn_id (`CONCAT11(tcb_idx, app_id)`). | 6 callers / 3 callees |
+| `0x600f3ed6` |   96 | GATT / Core | **`gatt_listen_cmd`** — GATT listen initiator (`GATT_Listen`): updates listen mode flag `*(iVar1 + 0x2e)` or starts background connection via `0x600f74a8`, updating link controller via `0x600b076c`. | 3 callers / 3 callees |
+| `0x600f3f36` |   26 | GATT / Discovery | **`gattc_zero_disc_record`** — GATT discovery record zeroer: zeroes 18-byte record `memset(param_1, 0, 0x12)`. | 2 callers / 1 callee |
+| `0x600f3f50` |   32 | GATT / Discovery | **`gattc_free_disc_record`** — GATT discovery record cleaner: deregisters connection via `0x600f3da6` and zeroes record via `0x600f3f36`. | 2 callers / 2 callees |
+| `0x600f3f70` |  232 | GATT / Server | **`gatts_process_req_dispatcher`** — GATT server request processing dispatcher: switches on GATT request opcode (Read `0x600abcb4`, Write `0x600abd38`), formatting and sending response via `0x600f38d0`. | 0 callers / 4 callees |
+| `0x600f4058` |  104 | GATT / Discovery | **`gattc_disc_cmpl_step`** — GATT client discovery step callback: finds record via `0x600abc48`, clearing on failure (`0x600f3f36`) or advancing discovery step via `0x600abdac`. | 0 callers / 3 callees |
+| `0x600f40c0` |  138 | GATT / Discovery | **`gattc_parse_char_descr_disc`** — GATT client characteristic / descriptor discovery parser: unpacks declaration handles, specifically checking UUID `0x2902` (CCCD). | 0 callers / 1 callee |
+| `0x600f414a` |   82 | GATT / Discovery | **`gattc_advance_disc_state`** — GATT client discovery state sequencer: advances stage `*(iVar1 + 0x10)++` and triggers next discovery query via `0x600abdac`. | 0 callers / 2 callees |
+| `0x600f419c` |   52 | GATT / Discovery | **`gattc_disc_cleanup_cb`** — GATT client discovery cleanup callback: looks up discovery record via `0x600abbf4` and frees it via `0x600f3f50`. | 0 callers / 2 callees |
+| `0x600f41d0` |  150 | GATT / Server | **`gatts_process_signed_write`** — GATT server signed write verification handler: verifies signature/MAC on incoming write PDU using `0x600f0e98` and forwards verified payload to `0x600f6516`. | 1 caller / 2 callees |
+| `0x600f4266` |  114 | GATT / Client | **`gattc_process_disc_rsp`** — GATT client discovery response router: switches on discovery state (`+0x31 == 3` -> `0x600f45a6`, `+0x31 == 2` -> `0x600f43c0`), ending operation via `0x600b00b4` on error. | 2 callers / 5 callees |
+| `0x600f42d8` |   36 | GATT / Client | **`gattc_set_op_flag`** — GATT client operation flag setter: stores byte at `*(param_1 + 0xc)`. | 4 callers / 0 callees |
+| `0x600f42fc` |   38 | GATT / Client | **`gattc_get_op_flag`** — GATT client operation flag getter: retrieves byte at `*(param_1 + 0xc)`. | 3 callers / 0 callees |
+
+
 
 
 
