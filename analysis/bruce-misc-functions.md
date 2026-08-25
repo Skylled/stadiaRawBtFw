@@ -3944,6 +3944,25 @@ Decompiled and documented 15 functions (1,518 bytes across `0x600f6b4a`–`0x600
 
 **Reliability read**: another strong wave — the one finding was caught by the standing appendix cross-check against a well-evidenced, specific existing entry, and the wave's dense reuse of established offset/argument conventions across its own 15 functions (not just against prior sessions) is itself a form of self-consistency that held up throughout.
 
+## Session 135 (Wave 105) — Broadcom GATT Background Auto-Connect/Listen, BTU VSC Builder & L2CAP Connection Request (11 functions, 1,684 bytes)
+
+Decompiled and documented 11 functions (1,684 bytes across `0x600f7138`–`0x600f77cc`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f7138` |   68 | GATT / Core | **`gatt_is_app_in_listen_list`** — GATT check if application ID registered in background listen list (`param_1[0..9]`), gated by active listen flag `+0x1a`. | 1 caller / 0 callees |
+| `0x600f717c` |  252 | GATT / Core | **`gatt_add_bg_conn_dev`** — GATT add device to background auto-connection or white-list: adds app to background record and starts auto-connect (`0x600f139a`) or updates white-list (`0x6009ca80`). | 1 caller / 4 callees |
+| `0x600f7278` |   62 | GATT / Core | **`gatt_start_listen_dev`** — GATT start background listen on device: unholds direct link (`0x600f5a98`) and registers background listen (`0x600f74a8`). | 1 caller / 3 callees |
+| `0x600f72b6` |   74 | GATT / Core | **`gatt_num_apps_listening_dev`** — GATT count number of applications listening for device in background white-list array `+0..9`. | 1 caller / 1 callee |
+| `0x600f7300` |   90 | GATT / Core | **`gatt_get_first_listening_app`** — GATT get first application ID listening for device in background white-list array `+0..9`. | 1 caller / 1 callee |
+| `0x600f735a` |  334 | GATT / Core | **`gatt_remove_bg_conn_dev`** — GATT remove device from background auto-connection or white-list: unlinks app, stops auto-conn (`0x600f139a`) or removes from white-list (`0x6009ca80`), freeing record if empty. | 1 caller / 4 callees |
+| `0x600f74a8` |  130 | GATT / Core | **`gatt_update_auto_connect_dev`** — GATT auto-connect / listen dispatcher: adds (`0x600f717c`) or removes (`0x600f735a`) background device registration, holding active link if connected. | 3 callers / 5 callees |
+| `0x600f752a` |  150 | HCI / BTU | **`btu_hcif_send_vsc`** — Broadcom BTU vendor-specific HCI command formatter and transmitter: builds VSC (`0xfc00 | param_2`) packet and sends via `0x600a9234`. | 1 caller / 1 callee |
+| `0x600f75c0` |  202 | L2CAP / Core | **`L2CA_Register`** — Broadcom L2CAP layer PSM registration API: allocates RCB (`0x600bc1a8`/`0x600bc158`), stores 11 callback pointers (44B), assigns fixed/dynamic PSM. | 2 callers / 2 callees |
+| `0x600f768a` |   34 | L2CAP / Core | **`L2CA_ConnectReq`** — Broadcom L2CAP connection request API wrapper: delegates to `0x600f76ac(param_1, param_2, 0)`. | 1 caller / 1 callee |
+| `0x600f76ac` |  288 | L2CAP / Core | **`L2CA_ErtmConnectReq`** — Broadcom L2CAP connection request implementation: allocates CCB (`0x600bbd3c`), configures ERTM QoS parameters, triggers state machine via `0x600b5e00`, and returns local CID. | 1 caller / 8 callees |
+
+
 
 
 
