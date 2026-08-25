@@ -4074,6 +4074,16 @@ Decompiled and documented 9 functions (1,168 bytes across `0x600f8aea`–`0x600f
 
 **Reliability read**: an outstanding wave for spec corroboration — the Command Reject reason-code/extra-data-length table is a rich, multi-branch match (three distinct reason codes, three distinct data lengths, all correct simultaneously), and the Connection Request/Response payload-size matches are similarly exact, making this one of the most thoroughly spec-verified waves in the L2CAP cluster.
 
+## Session 140 (Wave 110) — Broadcom L2CAP Configuration Request & Response Signaling Packet Formatters (2 functions, 2,444 bytes)
+
+Decompiled and documented 2 functions (2,444 bytes across `0x600f8f7a`–`0x600f9906`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f8f7a` | 1,256 | L2CAP / Signaling | **`l2cu_send_peer_config_req`** — Broadcom L2CAP format & send Configuration Request signaling packet (opcode 4): calculates option lengths, advances transaction ID (`0x600f8c34`), serializes TLV options (MTU, Flush Timeout, QoS, FCR, FCS, Extended Flow Spec), and transmits via `0x600b9408`. | 3 callers / 3 callees |
+| `0x600f9462` | 1,188 | L2CAP / Signaling | **`l2cu_send_peer_config_rsp`** — Broadcom L2CAP format & send Configuration Response signaling packet (opcode 5): encodes Source CID, Flags, Result code, and serializes response TLV options (MTU, Flush Timeout, QoS, FCR with local timer overrides, Extended Flow Spec) via `0x600b9408`. | 2 callers / 2 callees |
+
+
 
 
 
