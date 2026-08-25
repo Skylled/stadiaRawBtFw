@@ -4390,6 +4390,29 @@ Decompiled and documented 15 functions (1,130 bytes across `0x600fcc88`–`0x600
 
 Reliability read: a strong wave — the primary finding here follows the "read the actual callee body rather than trust its label" discipline that has repeatedly paid off in this SMP/BTA cluster (sessions 114, 123, 127, 136, 147), this time catching a fairly consequential mischaracterization (an "event router" that's really a single-CCB release routine) in a several-sessions-old established entry, plus two more instances of the exact-offset cross-session consistency this cluster has shown throughout.
 
+## Session 151 (Wave 121) — Broadcom BTM Security Handlers, Policy Updaters & Callback Dispatchers (15 functions, 566 bytes)
+
+Decompiled and documented 15 functions (566 bytes across `0x600fd0f2`–`0x600fd328`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fd0f2` |   30 | BTM / Security | **`btm_sec_send_auth_fail`** — Broadcom BTM send security authentication failure status 0x0B to BTM layer via `0x600a4a20`. | 0 callers / 1 callee |
+| `0x600fd110` |   58 | BTM / Security | **`btm_sec_mark_bond_complete`** — Broadcom BTM set bonded flag on device record (`0x600a21e4`) and advance security state machine via `0x600c3f04`. | 0 callers / 2 callees |
+| `0x600fd14a` |   24 | BTM / Security | **`btm_sec_stub_return_0xb`** — Broadcom BTM stub returning status 0x0B (Auth Fail, restored unlisted function, Fix #82). | 0 callers / 0 callees |
+| `0x600fd162` |   20 | BTM / Security | **`btm_sec_reset_context`** — Broadcom BTM reset security manager context via `0x600a14e4`. | 0 callers / 1 callee |
+| `0x600fd176` |   22 | BTM / Security | **`btm_sec_clear_connectability`** — Broadcom BTM clear connectable state via `0x600a014c(0)`. | 0 callers / 1 callee |
+| `0x600fd18c` |   38 | BTM / Security | **`btm_sec_invoke_callback_1`** — Broadcom BTM invoke registered 1-argument callback if non-null. | 0 callers / 0 callees |
+| `0x600fd1b2` |   58 | BTM / Security | **`btm_sec_process_sec_req_with_cb`** — Broadcom BTM request security link (`0x600f1800`) and invoke callback with failure on non-pending result. | 0 callers / 1 callee |
+| `0x600fd1ec` |   36 | BTM / Security | **`btm_sec_forward_auth_status`** — Broadcom BTM forward auth status and key data to BTM layer via `0x600a4a20`. | 0 callers / 1 callee |
+| `0x600fd210` |   26 | BTM / Security | **`btm_sec_set_security_mode`** — Broadcom BTM set security mode via `0x6009a8ec`. | 0 callers / 1 callee |
+| `0x600fd22a` |   40 | BTM / Security | **`btm_sec_set_link_key`** — Broadcom BTM store device link key record via `0x600f0568`. | 0 callers / 1 callee |
+| `0x600fd252` |   36 | BTM / Security | **`btm_sec_set_link_policy`** — Broadcom BTM configure link policy parameters via `0x6009a9c4`. | 0 callers / 1 callee |
+| `0x600fd276` |   62 | BTM / Security | **`btm_sec_confirm_link_status_1`** — Broadcom BTM confirm link status (success 0 or fail 0x0B) to security manager via `0x600f068e`. | 0 callers / 1 callee |
+| `0x600fd2b4` |   50 | BTM / Security | **`btm_sec_confirm_link_status_2`** — Broadcom BTM confirm link status (success 0 or fail 0x0B) to security manager via `0x600f06dc`. | 0 callers / 1 callee |
+| `0x600fd2e6` |   34 | BTM / Security | **`btm_sec_set_encryption_state`** — Broadcom BTM update device encryption state via `0x600f0662`. | 0 callers / 1 callee |
+| `0x600fd308` |   32 | BTM / Security | **`btm_sec_process_hci_command`** — Broadcom BTM send security HCI command via `0x6009c9d4`. | 0 callers / 1 callee |
+
+
 
 
 
