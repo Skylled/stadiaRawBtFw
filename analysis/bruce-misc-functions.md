@@ -3696,6 +3696,28 @@ All three corrected in place; no `GHIDRA-TODO` needed (identification-only, no b
 
 **Reliability read**: a moderate-correction wave (3 of 16 rows) with a shared root cause across findings 1 and 2 — both misread a callee's *direction* (read vs. write in #1, completion vs. initiation in #2) despite the callee already having a clear, previously-verified established identity one grep away. Finding 3 is the pipeline's now-familiar "informal synonym instead of the established name" citation slip. All three were caught purely by the standing "check every named callee against the existing appendix" technique, without needing fresh disassembly.
 
+## Session 126 (Wave 96) — Broadcom GATT Server Value Indications/Notifications & Client Discovery/Connection APIs (14 functions, 1,922 bytes)
+
+Decompiled and documented 14 functions (1,922 bytes across `0x600f3620`–`0x600f3da6`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f3620` |   94 | GATT / SMP | **`gatt_sec_verify_key_attr`** — GATT / SMP security attribute key validator: looks up handle buffer via `gatt_find_hdl_buffer_by_app_id` (`0x600af3f4`), validates key length (2, 4, 16), and calls `0x600f5446`. | 2 callers / 2 callees |
+| `0x600f367e` |  340 | GATT / Server | **`gatts_send_handle_value_indication`** — GATT server handle value indication sender: validates registration (`0x600afd28`) and connection (`0x600af7c8`), formats indication packet, and transmits or queues via `0x600c7eb8` / `0x600ff9fe` / `0x600af2d0`. | 3 callers / 6 callees |
+| `0x600f37d2` |  254 | GATT / Server | **`gatts_send_handle_value_notification`** — GATT server handle value notification sender: validates registration (`0x600afd28`) and connection (`0x600af7c8`), formats notification packet, and transmits via `0x600c7eb8` / `0x600ff9fe`. | 1 caller / 4 callees |
+| `0x600f38d0` |  124 | GATT / Server | **`gatts_send_response`** — GATT server send response API: validates transaction ID `param_2 == *(int *)(iVar3 + 0x2c)` and sends server response via `0x600f622a`. | 2 callers / 3 callees |
+| `0x600f394c` |   14 | GATT / Client | **`gattc_configure_mtu`** — GATT client MTU exchange initiator entry point (spurious split at `+14` with `0x600f395a`): validates MTU range (23..517), allocates holding record via `0x600afdf8`, and transmits MTU Request via `0x600ffada`. | 1 caller / 0 callees |
+| `0x600f395a` |  162 | GATT / Client | **`gattc_configure_mtu_body`** — GATT client MTU exchange initiator body (continuation fragment of `0x600f394c`): checks connection state (`+0x13 == 2`), formats MTU request, and delivers via `0x600ffada`. | 1 caller / 5 callees |
+| `0x600f39fc` |  178 | GATT / Client | **`gattc_init_discovery`** — GATT client service discovery initiator: validates client and connection records (`0x600af7c8`, `0x600afd28`), allocates holding record (`0x600afdf8`), and initiates search via `0x600ac524`. | 2 callers / 5 callees |
+| `0x600f3aae` |   44 | GATT / Client | **`gattc_discover_services_by_uuid`** — GATT client UUID service discovery continuation fragment: formats UUID request parameters and forwards to `0x600ac524`. | 1 caller / 1 callee |
+| `0x600f3ade` |   44 | GATT / Client | **`gattc_search_services`** — GATT client primary service discovery trigger: allocates holding record via `0x600afdf8` and starts discovery via `0x600f46b4`. | 1 caller / 1 callee |
+| `0x600f3b0a` |  110 | GATT / Client | **`gattc_search_services_body`** — GATT client primary service discovery trigger body: validates registration and starts discovery via `0x600f46b4`. | 1 caller / 4 callees |
+| `0x600f3b78` |  102 | GATT / Client | **`gattc_mtu_confirmation_cb`** — GATT client MTU exchange confirmation callback: stops timer `0x600aa3cc(local_10 + 0xe0)`, delivers completion event `0x1e` via `0x600ffada`, and clears flag `+0x96`. | 3 callers / 3 callees |
+| `0x600f3bde` |  100 | GATT / Core | **`gatt_disc_cmpl_handler`** — GATT disconnection completion handler: resolves connection record via `0x600af814`, disconnecting fixed channel 4 (`0x600f7a9c` / `0x600b4f34`) or L2CAP channel (`0x600b4ec4`). | 2 callers / 4 callees |
+| `0x600f3c42` |  104 | GATT / Core | **`gatt_connect_dev`** — GATT connect / listen initiator: routes connection requests to `0x600f74a8` or background connection listener `0x600f5b32`. | 6 callers / 3 callees |
+| `0x600f3caa` |  252 | GATT / Core | **`gatt_disconnect_dev`** — GATT disconnect / unlisten initiator: walks registered connection list and disconnects via `0x600f7278` or `0x600f7052`. | 5 callers / 6 callees |
+
+
 
 
 
