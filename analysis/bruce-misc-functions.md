@@ -4089,6 +4089,23 @@ Decompiled and documented 2 functions (2,444 bytes across `0x600f8f7a`–`0x600f
 
 **Reliability read**: a flagship-tier wave — two large, intricate wire-format-serialization functions, both matched byte-for-byte against the real Bluetooth L2CAP Configuration Request/Response specification across all six option types, with an added cross-session field-offset confirmation baked in. This is the kind of dense, multi-point exact-match evidence that leaves essentially no room for a wrong identification.
 
+## Session 141 (Wave 111) — Broadcom L2CAP Disconnect/Echo/Info Signaling, Channel Link Lists & Idle Management (9 functions, 1,810 bytes)
+
+Decompiled and documented 9 functions (1,810 bytes across `0x600f9906`–`0x600fa018`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f9906` |  232 | L2CAP / Signaling | **`l2cu_send_peer_disc_req`** — Broadcom L2CAP format & send Disconnection Request signaling packet (opcode 6): advances transaction ID (`0x600f8c34`), flushes pending basic tx queue, and sends 4-byte PDU (Dest CID, Source CID) via `0x600b9408`. | 5 callers / 5 callees |
+| `0x600f99ee` |  130 | L2CAP / Signaling | **`l2cu_send_peer_disc_rsp`** — Broadcom L2CAP format & send Disconnection Response signaling packet (opcode 7): formats 4-byte PDU (Dest CID, Source CID) and sends via `0x600b9408`. | 3 callers / 2 callees |
+| `0x600f9a70` |  118 | L2CAP / Signaling | **`l2cu_send_peer_echo_req`** — Broadcom L2CAP format & send Echo Request signaling packet (opcode 8): advances transaction ID, copies optional data payload, and sends via `0x600b9408`. | 1 caller / 3 callees |
+| `0x600f9ae6` |  118 | L2CAP / Signaling | **`l2cu_send_peer_info_req`** — Broadcom L2CAP format & send Information Request signaling packet (opcode 10): advances transaction ID, sets pending flag `+0xa3 = 1`, encodes 2-byte InfoType, and sends via `0x600b9408`. | 2 callers / 3 callees |
+| `0x600f9b5c` |  242 | L2CAP / Core | **`l2cu_link_ccb`** — Broadcom L2CAP channel queue manager: inserts CCB into priority-ordered LCB channel doubly-linked list (`+0x5c`) sorted by `tx_priority` byte (`+0xa4`). | 1 caller / 0 callees |
+| `0x600f9c4e` |  200 | L2CAP / Core | **`l2cu_unlink_ccb`** — Broadcom L2CAP channel queue manager: unlinks CCB from LCB channel doubly-linked list (`+0x5c`), updating head/tail/interior pointers. | 1 caller / 0 callees |
+| `0x600f9d16` |  158 | L2CAP / Link | **`l2c_link_check_idle_by_handle`** — Broadcom L2CAP physical link idle disconnect controller: checks LCB by handle (`0x600bcbe0`), issues HCI Disconnect (`0x600b218c` reason 0x13), sets state 5 (DISCONNECTING), and arms 30s timer. | 4 callers / 3 callees |
+| `0x600f9db4` |   60 | L2CAP / Core | **`l2cu_disconnect_and_free_ccb`** — Broadcom L2CAP channel teardown handler: for dynamic CIDs (`> 0x3f`), sends Disconnect Request PDU (`0x600f9906`), releases CCB (`0x600bc00c`), and invokes upper-layer disconnect callback. | 8 callers / 2 callees |
+| `0x600f9df0` |  552 | L2CAP / Core | **`l2cu_process_peer_cfg_req`** — Broadcom L2CAP process incoming peer Configuration Request options: validates MTU (min 48, clamp 584), Flush TO, QoS, and FCR options (`0x600f87b8`), returning 1 (SUCCESS), 0 (UNACCEPTABLE), or 2 (REJECT). | 2 callers / 2 callees |
+
+
 
 
 
