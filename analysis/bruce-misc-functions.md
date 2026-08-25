@@ -4030,6 +4030,21 @@ Decompiled and documented 15 functions (1,736 bytes across `0x600f7d88`–`0x600
 
 **Reliability read**: an outstanding wave — five independently-checkable exact numeric-range matches in a single function (`0x600f7d88`) is close to the strongest single-function spec corroboration this whole pipeline has produced, on par with sessions 72/78/84's flagship confirmations.
 
+## Session 138 (Wave 108) — Broadcom L2CAP ERTM/FCR Configuration Negotiation & Channel Security Callbacks (7 functions, 1,690 bytes)
+
+Decompiled and documented 7 functions (1,690 bytes across `0x600f8450`–`0x600f8aea`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f8450` |  344 | L2CAP / ERTM | **`l2cu_validate_fcr_config`** — Broadcom L2CAP validate & negotiate ERTM/FCR configuration: filters allowed modes (`0x600f83f2`), checks MTU/MPS, sets default MPS (1010), clamps MPS to 572, and copies options to CCB `+0x32`. | 1 caller / 2 callees |
+| `0x600f85a8` |   80 | L2CAP / ERTM | **`l2c_fcr_adj_monitor_retrans_timeouts`** — Broadcom L2CAP set ERTM retransmission and monitor timer defaults: sets monitor timer to 12000 ms (`+0x38`) and retrans timer to 2000 ms (`+0x36`). | 2 callers / 0 callees |
+| `0x600f85f8` |  108 | L2CAP / ERTM | **`l2c_fcr_adj_our_rsp_options`** — Broadcom L2CAP populate FCR response options structure: sets timer defaults (`0x600f85a8`) and copies negotiated mode/window/MPS fields into config structure. | 1 caller / 1 callee |
+| `0x600f8664` |  340 | L2CAP / ERTM | **`l2cu_process_unacceptable_fcr_rsp`** — Broadcom L2CAP process unacceptable FCR config response: decrements retry count `+0x11c`, renegotiates fallback mode (Streaming -> ERTM -> Basic), re-arms 30s timer, or disconnects (`0x600f9db4`). | 1 caller / 4 callees |
+| `0x600f87b8` |  562 | L2CAP / ERTM | **`l2cu_check_fcr_config_req`** — Broadcom L2CAP validate peer incoming FCR config request: verifies proposed mode, adjusts MPS against MTU/buffer pool (`sVar1 - 25`), returns 1 (acceptable), 0 (unacceptable fallback), or 2 (reject). | 1 caller / 1 callee |
+| `0x600f89ea` |  172 | L2CAP / Core | **`l2c_link_sec_comp`** — Broadcom L2CAP BR/EDR channel security check completion callback: walks LCB channel list and dispatches event 7 (`L2CEVT_SEC_COMP`) or 8 (`L2CEVT_SEC_COMP_FAIL`) via `0x600b5e00`. | 0 callers / 4 callees |
+| `0x600f8a96` |   84 | L2CAP / Core | **`l2c_ble_link_sec_comp`** — Broadcom L2CAP BLE link security status update: walks active channels for handle (`0x600bcbe0`) and dispatches event 6 (`L2CEVT_L2CA_CONNECT_PND`) via `0x600b5e00`. | 1 caller / 2 callees |
+
+
 
 
 
