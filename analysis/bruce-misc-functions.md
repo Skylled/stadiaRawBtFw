@@ -4494,6 +4494,12 @@ Decompiled and documented 10 functions (1,686 bytes across `0x600fdc46`–`0x600
 | `0x600fe146` |  164 | BTA / GATTC | **`bta_gattc_read_char_by_uuid`** — Broadcom BTA GATTC resolve characteristic handle by UUID (`0x600eedee`) and initiate GATT read via `GATTC_Read` (`0x600ab620`). | 0 callers / 5 callees |
 | `0x600fe1ea` |  276 | BTA / GATTC | **`bta_gattc_read_multiple`** — Broadcom BTA GATTC resolve multiple characteristic handles (`0x600eedee`) and initiate GATT Read Multiple via `GATTC_Read` (`0x600ab620`, type 3). | 0 callers / 5 callees |
 
+**⚠️ QA session 154 note:** Backbone: all 10 addresses/sizes match the census exactly (one small 34-byte gap between `0x600fdf94`'s end and `0x600fdff0` confirmed to have zero census entries — a genuine undecompiled region, not an error). Verified the Fix #83 spurious-split merge directly via disassembly: `0x600fe00e` is confirmed to be mid-stream (`ldrh r3, [r3, #8]`, no prologue) inside one continuous 106-byte function running `0x600fdff0`–`0x600fe058` (real `push {r7,lr}`…`pop {r7,pc}`), matching the claimed merge exactly. Independently re-derived `bruce-decompile-status.md`'s totals via a fresh header-parsed join (3,659 functions / 534,148 bytes, 0 mismatches, 0 duplicates, 0 non-census addresses) — matches the wave's claimed 1,686-byte/74.73% exactly.
+
+**Strong retroactive validation of last session's correction**: this wave calls the now-corrected `0x60094d24` (the generic state-machine event dispatcher, formerly mislabeled `BTM_SetPowerMode`) five more times, every single call passing a literal `0x1Dxx`-range value (`0x1d03`, `0x1d08`, `0x1d0e`, `0x1d10`×3, `0x1d12`) exactly as the corrected identity predicts — zero exceptions across this wave's own fresh evidence. Other citations spot-checked and confirmed clean: `0x600eedee` (`bta_gattc_find_char_handle_by_uuid`, session 112), `0x600ee89c` (`bta_gattc_search_service_dispatcher`, session 111), and `GATTC_Read` (`0x600ab620`, session 125) all match their established identities and argument shapes exactly; `bta_gattc_conn_open_complete`'s "default MTU 23" matches its own literal `0x17` store precisely.
+
+Reliability read: a clean wave on every front checked — the structural fix verified by disassembly, the totals verified independently, and last session's correction to `0x60094d24` now confirmed from five additional, independent angles in the same wave.
+
 
 
 
