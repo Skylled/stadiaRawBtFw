@@ -3759,6 +3759,23 @@ Decompiled and documented 15 functions (1,404 bytes across `0x600f3da6`–`0x600
 
 **Reliability read**: a strong, clean wave on its own merits — every checked claim held up, several with exact spec-constant matches. The value-add this session came from the now-familiar "cross-reference cuts both ways" pattern (sessions 114, 123): a new wave's fresh, correctly-identified context can reveal that an *older*, more thinly-evidenced appendix entry understated a shared helper's true complexity, rather than the new wave needing correction itself.
 
+## Session 128 (Wave 98) — Broadcom GATT Client Write / Prepare Write & Discovery Response Processors (9 functions, 1,818 bytes)
+
+Decompiled and documented 9 functions (1,818 bytes across `0x600f4322`–`0x600f4a3c`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f4322` |   84 | GATT / Client | **`gatt_check_sec_status`** — GATT client security requirement validator: queries BTM BLE security flags via `0x600f194c` and validates encryption/authentication requirements (`0x8e`/`0x8d`/0). | 1 caller / 1 callee |
+| `0x600f4376` |   74 | GATT / Discovery | **`gattc_map_disc_type`** — GATT discovery type mapper: maps discovery type codes (`4->2`, `5->3`, `3->1`). | 1 caller / 0 callees |
+| `0x600f43c0` |  486 | GATT / Discovery | **`gattc_send_disc_req`** — GATT client discovery request sender: constructs and transmits ATT discovery request packet based on discovery type via `0x600ffada`, ending operation via `0x600b00b4` on error. | 3 callers / 2 callees |
+| `0x600f45a6` |  270 | GATT / Client | **`gattc_send_write_req`** — GATT client write request builder & dispatcher: formats Write Request (`0x12`), Write Command (`0x52`/`0xd2`), or routes to chunked Prepare Write (`0x600f47a0`), transmitting via `0x600f70b4`. | 2 callers / 3 callees |
+| `0x600f46b4` |   58 | GATT / Discovery | **`gattc_send_search_req`** — GATT client service search request sender: transmits search/discovery request (opcode `0x18`) via `0x600ffada`, ending operation via `0x600b00b4` on error. | 3 callers / 2 callees |
+| `0x600f46ee` |  178 | GATT / Client | **`gattc_check_prepare_write_rsp`** — GATT client prepare write response validator: compares written chunk buffer via `memcmp` (`thunk_EXT_FUN_0000b554`), updates offset `*(iVar3 + 4) += chunk_len`, and sends Execute Write via `0x600f46b4`. | 1 caller / 2 callees |
+| `0x600f47a0` |  170 | GATT / Client | **`gattc_send_prepare_write_req`** — GATT client prepare write request sender: calculates chunk size based on MTU (`*(param_1 + 0x1a) - 5`), sends Prepare Write Request (opcode `0x16`) via `0x600f70b4`. | 2 callers / 2 callees |
+| `0x600f484a` |  214 | GATT / Discovery | **`gattc_process_find_type_val_rsp`** — GATT client Find By Type Value response processor: iterates handle range entries, notifies registered callback `*(param_2 + 4) + 0x1c`, updates next search start handle `*(param_2 + 0x28) = end_handle + 1`, and continues discovery via `0x600ac524`. | 1 caller / 2 callees |
+| `0x600f4920` |  284 | GATT / Discovery | **`gattc_process_find_info_rsp`** — GATT client Find Information response processor: iterates handle + 16-bit/128-bit UUID pairs via `0x600af9fc`, invokes registered callback, updates start handle `*(param_2 + 0x28) = last_handle + 1`, and continues discovery via `0x600ac524`. | 1 caller / 2 callees |
+
+
 
 
 
