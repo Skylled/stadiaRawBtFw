@@ -4111,6 +4111,30 @@ Decompiled and documented 9 functions (1,810 bytes across `0x600f9906`–`0x600f
 
 **Reliability read**: this wave sits at the tail of an unusually strong five-session run (137–141) for the L2CAP signaling cluster — every wave in that stretch has been zero-correction, with a dense, compounding web of exact real-spec matches and cross-session constant/function reuse that keeps checking out cleanly every time it's re-verified from a new angle.
 
+## Session 142 (Wave 112) — Broadcom L2CAP Link & MPS Adjusters, BLE Idle Timers, and SDP Parsing/Serialization (16 functions, 1,422 bytes)
+
+Decompiled and documented 16 functions (1,422 bytes across `0x600fa018`–`0x600fa5a6`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fa018` |   76 | L2CAP / Core | **`l2c_csm_adj_config_rsp_options`** — Broadcom L2CAP config response option merger: merges QoS options into CCB and invokes FCR response options adjustment (`0x600f85f8`). | 1 caller / 1 callee |
+| `0x600fa064` |  114 | L2CAP / Core | **`l2cu_adjust_out_mps`** — Broadcom L2CAP outbound MPS optimizer: queries controller ACL buffer size (`0x60099fdc`) and aligns MPS (`+0x118`) to packet payload boundaries. | 1 caller / 1 callee |
+| `0x600fa0d6` |  262 | L2CAP / BLE | **`l2c_ble_link_check_idle_timer`** — Broadcom L2CAP check BLE link idle state across fixed channels (0..3): starts 30s timeout or initiates HCI disconnect (`0x600b218c` opcode 0x13) via `0x600aa340` / `0x600aa3cc`. | 4 callers / 5 callees |
+| `0x600fa1dc` |  158 | L2CAP / Core | **`l2cu_get_next_ccb_to_tx`** — Broadcom L2CAP select next ready-to-transmit channel: traverses priority queue (`+0x5c`), checks congestion, suspension, and ERTM flow control (`0x600f82ea`). | 1 caller / 2 callees |
+| `0x600fa27a` |   30 | SDP / Core | **`sdp_feature_is_supported_stub`** — Broadcom SDP / profile capability query stub: returns 1 (constant true). | 2 callers / 0 callees |
+| `0x600fa298` |   26 | SDP / Core | **`sdp_feature_is_disabled_stub`** — Broadcom SDP / profile capability query stub: returns 0 (constant false). | 2 callers / 0 callees |
+| `0x600fa2b2` |   26 | SDP / Core | **`sdp_attr_disabled_stub_1`** — Broadcom SDP attribute query stub: returns 0. | 1 caller / 0 callees |
+| `0x600fa2cc` |   24 | SDP / Core | **`sdp_attr_disabled_stub_2`** — Broadcom SDP attribute query stub: returns 0. | 2 callers / 0 callees |
+| `0x600fa2e4` |   28 | SDP / Core | **`sdp_attr_disabled_stub_3`** — Broadcom SDP attribute query stub: returns 0. | 2 callers / 0 callees |
+| `0x600fa300` |   28 | SDP / Core | **`sdp_attr_disabled_stub_4`** — Broadcom SDP attribute query stub: returns 0. | 1 caller / 0 callees |
+| `0x600fa31c` |   28 | SDP / Core | **`sdp_get_default_attr_len`** — Broadcom SDP default attribute length query: returns 8. | 1 caller / 0 callees |
+| `0x600fa338` |   22 | SDP / Core | **`sdp_attr_disabled_stub_5`** — Broadcom SDP attribute query stub: returns 0. | 1 caller / 0 callees |
+| `0x600fa34e` |  154 | SDP / Core | **`sdpu_find_uuid_in_seq`** — Broadcom SDP recursive UUID search in data element sequence: parses elements via `0x600bfb4c`, checks UUID match (`0x600bfc34`), recurses on sequences (type 6) up to depth 4. | 2 callers / 3 callees |
+| `0x600fa3e8` |   88 | SDP / Core | **`sdpu_find_attr_in_rec`** — Broadcom SDP locate attribute in service record within ID range `[param_2, param_3]`. | 3 callers / 0 callees |
+| `0x600fa440` |  296 | SDP / Core | **`sdpu_build_protocol_desc_list`** — Broadcom SDP serialize Protocol Descriptor List: builds Data Element Sequence (0x35), UUID16 (0x19), RFCOMM 1-byte channel (type 8), and L2CAP 2-byte PSM (type 9). | 1 caller / 0 callees |
+| `0x600fa568` |   62 | SDP / Core | **`sdp_conn_close`** — Broadcom SDP close connection: finds SDP CCB (`0x600bf2d8`), disconnects L2CAP CID if requested (`0x600f7a68`), and releases SDP CCB (`0x600bf374`). | 0 callers / 3 callees |
+
+
 
 
 
