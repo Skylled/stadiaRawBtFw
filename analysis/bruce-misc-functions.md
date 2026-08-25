@@ -4360,6 +4360,29 @@ Decompiled and documented 15 functions (1,928 bytes across `0x600fc438`–`0x600
 
 Reliability read: an outstanding wave for spec-level precision (three exact multi-field payload-size matches), paired with the strongest evidence yet — no longer just a hedge — that this cluster's buffers are built in globally reversed field order, and one more instance of the "does this wave's context contradict an older row" check paying off, this time by finally resolving what a mysterious pre-existing callee actually does.
 
+## Session 150 (Wave 120) — Broadcom SMP Passkey, Address Formatters & BTM Security Handlers (15 functions, 1,130 bytes)
+
+Decompiled and documented 15 functions (1,130 bytes across `0x600fcc88`–`0x600fd0f2`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fcc88` |   72 | Crypto / SMP | **`smp_sc_extract_passkey_round_bit`** — Broadcom SMP extract i-th bit of 20-bit passkey as `0x80 \| bit` for SC confirmation function `f4`. | 2 callers / 0 callees |
+| `0x600fccd0` |   56 | BTM / SMP | **`smp_pack_local_iocap_3b`** — Broadcom SMP pack 3-byte local IO capabilities (IOcap, OOB, AuthReq) for `f6` check value calculation. | 1 caller / 0 callees |
+| `0x600fcd08` |   56 | BTM / SMP | **`smp_pack_peer_iocap_3b`** — Broadcom SMP pack 3-byte peer IO capabilities (IOcap, OOB, AuthReq) for `f6` check value calculation. | 1 caller / 0 callees |
+| `0x600fcd40` |   86 | BTM / SMP | **`smp_format_local_addr_7b`** — Broadcom SMP format 7-byte local address block (reversed BD_ADDR + AddrType) for SC crypto functions (`f5`/`f6`). | 3 callers / 1 callee |
+| `0x600fcd96` |   94 | BTM / SMP | **`smp_format_peer_addr_7b`** — Broadcom SMP format 7-byte peer address block (reversed BD_ADDR + AddrType) for SC crypto functions (`f5`/`f6`). | 3 callers / 1 callee |
+| `0x600fcdf4` |  152 | BTM / SMP | **`smp_save_sc_ltk_records`** — Broadcom SMP persist Secure Connections LTK key records into security database (`0x6009ad00`). | 1 caller / 3 callees |
+| `0x600fce8c` |  154 | BTM / SMP | **`smp_sc_derive_mackey_ltk`** — Broadcom SMP Secure Connections derive MacKey and LTK from DHKey and random nonces via `f5` (`0x600c13e8`). | 1 caller / 3 callees |
+| `0x600fcf26` |   28 | BTM / SMP | **`smp_release_l2cap_buffer`** — Broadcom SMP release L2CAP channel 6 (SMP) security context buffer (`0x600b542c`). | 1 caller / 1 callee |
+| `0x600fcf42` |   26 | BTM / Security | **`btm_sec_cleanup_device_record`** — Broadcom BTM clear device security record via `0x600a10e0`. | 0 callers / 1 callee |
+| `0x600fcf5c` |   32 | BTM / Security | **`btm_sec_update_policy_flags`** — Broadcom BTM update security policy flags via `0x600c7048`. | 0 callers / 1 callee |
+| `0x600fcf7c` |   36 | BTM / Security | **`btm_sec_forward_event`** — Broadcom BTM forward security event parameters to handler `0x600a1394`. | 0 callers / 1 callee |
+| `0x600fcfa0` |   28 | BTM / Security | **`btm_sec_process_hci_status`** — Broadcom BTM process status byte via `0x600f1854`. | 0 callers / 1 callee |
+| `0x600fcfbc` |  126 | BTM / Security | **`btm_sec_process_enc_key_refresh`** — Broadcom BTM process encryption key refresh / parameters via `0x600a42d0`. | 0 callers / 4 callees |
+| `0x600fd03a` |  136 | BTM / Security | **`btm_sec_update_security_mask`** — Broadcom BTM set or clear security mask bits in device record and notify security manager (`0x600f0252` / `0x600942d4`). | 0 callers / 3 callees |
+| `0x600fd0c2` |   48 | BTM / Security | **`btm_sec_send_auth_confirm`** — Broadcom BTM send security authentication confirmation to BTM layer via `0x600a4984`. | 0 callers / 1 callee |
+
+
 
 
 
