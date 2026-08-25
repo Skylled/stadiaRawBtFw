@@ -4142,6 +4142,25 @@ Decompiled and documented 16 functions (1,422 bytes across `0x600fa018`–`0x600
 
 **Reliability read**: a sixth consecutive strong wave (137–142) for this signaling/SDP corner of the codebase, and the SDP DES encoding-formula match is a particularly rigorous confirmation — the kind that would be very hard to produce by coincidence across four independently-checkable header bytes.
 
+## Session 143 (Wave 113) — Broadcom SDP Request Dispatcher, Attribute Range Evaluators & BTM Security Policy Handlers (11 functions, 1,516 bytes)
+
+Decompiled and documented 11 functions (1,516 bytes across `0x600fa5a6`–`0x600fab92`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fa5a6` |   32 | SDP / Core | **`sdp_disconnect_req`** — Broadcom SDP disconnect L2CAP CID (`0x600f7a34`) and release SDP control block (`0x600bf374`). | 0 callers / 2 callees |
+| `0x600fa5c6` |  246 | SDP / Core | **`sdpu_process_incoming_pdu`** — Broadcom SDP server PDU dispatcher: parses header, arms 30s timer, dispatches PDU 2 (Search), PDU 4 (Attr), PDU 6 (SearchAttr), or sends SDP error response (`0x600bf5a4`). | 1 caller / 5 callees |
+| `0x600fa6bc` |   36 | SDP / Core | **`sdpu_clear_cont_state`** — Broadcom SDP reset continuation offset (`+0x2c = 0`) and zero continuation token buffer (`+0x30`). | 3 callers / 1 callee |
+| `0x600fa6e0` |   92 | SDP / Core | **`sdpu_get_active_record_resp_size`** — Broadcom SDP calculate total response byte length for all matching service records (`0x600bd4bc` / `0x600fa73c`). | 1 caller / 2 callees |
+| `0x600fa73c` |  162 | SDP / Core | **`sdpu_get_attrib_seq_len`** — Broadcom SDP calculate serialized byte length of requested attributes in service record matching ID ranges. | 3 callers / 2 callees |
+| `0x600fa7de` |  248 | BTM / Security | **`btm_sec_clr_service_bits`** — Broadcom BTM clear service security requirement bits: updates local (`+0x1b4`) and remote (`+0x1b5`) security bitmasks based on role and direction. | 7 callers / 0 callees |
+| `0x600fa8d6` |  492 | BTM / Security | **`btm_sec_check_security_callback`** — Broadcom BTM security callback evaluator: executes security callback with state (`+0x2a`), updates flags, evaluates BLE encryption, and triggers BTM events (`0x600c1a34`). | 0 callers / 2 callees |
+| `0x600faac2` |   74 | BTM / Security | **`btm_sec_set_pin_type`** — Broadcom BTM PIN code handler: configures PIN length (1..15) and triggers event 5 via `0x600c1b74`. | 0 callers / 1 callee |
+| `0x600fab0c` |   28 | BTM / Security | **`btm_sec_bond_cancel_entry`** — Broadcom BTM bond cancellation helper (head): cancels bond timer/device entry via `0x6009ff18` and notifies security dispatcher. | 0 callers / 2 callees |
+| `0x600fab28` |   22 | BTM / Security | **`btm_sec_bond_cancel_exit`** — Broadcom BTM bond cancellation helper (exit branch): calls `0x600f2080` and `0x600c1b74(1, dev_rec)`. | 1 caller / 2 callees |
+| `0x600fab3e` |   84 | BTM / Security | **`btm_sec_auth_complete`** — Broadcom BTM authorization completion dispatcher: masks security requirement bits against capabilities and triggers security callback event 2 (`0x600c1b74`). | 2 callers / 2 callees |
+
+
 
 
 
