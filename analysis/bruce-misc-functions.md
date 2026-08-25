@@ -4052,6 +4052,23 @@ Decompiled and documented 7 functions (1,690 bytes across `0x600f8450`–`0x600f
 
 **Reliability read**: another strong wave — dense, independently-checkable numeric-constant corroboration throughout, plus two instances of correctly reusing session 137's own established functions/constants, showing this L2CAP ERTM/FCR sub-cluster's internal consistency is holding up wave over wave.
 
+## Session 139 (Wave 109) — Broadcom L2CAP Link Timers & Signaling Packet Builders (9 functions, 1,168 bytes)
+
+Decompiled and documented 9 functions (1,168 bytes across `0x600f8aea`–`0x600f8f7a`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f8aea` |  190 | L2CAP / Link | **`l2c_link_timeout_disconnect`** — Broadcom L2CAP physical link disconnect timeout handler: checks connecting channels or tx queue, and dispatches event 0x13 (`L2CEVT_LP_DISCONNECT_IND`) via `0x600b5e00` to all open CCBs. | 1 caller / 3 callees |
+| `0x600f8ba8` |   44 | L2CAP / Core | **`L2CA_GetLinkRole`** — Broadcom L2CAP get BR/EDR link role: queries role byte `*(p_lcb + 10)` (0=master, 1=slave) or 0xff via `0x600bb6dc`. | 1 caller / 1 callee |
+| `0x600f8bd4` |   54 | L2CAP / Link | **`l2c_link_check_idle_timer`** — Broadcom L2CAP link idle timer manager: starts 120s timer (`0x78`) on BR/EDR link via `0x600aa340` if no active channels open. | 4 callers / 2 callees |
+| `0x600f8c0a` |   42 | L2CAP / Link | **`l2c_link_set_tx_active`** — Broadcom L2CAP set link transmit activity status: updates byte `*(p_lcb + 0x16)` for BR/EDR link. | 4 callers / 1 callee |
+| `0x600f8c34` |   54 | L2CAP / Signaling | **`l2cu_adj_sig_id`** — Broadcom L2CAP validate signaling transaction identifier: ensures command identifier `*(p_lcb + 0xb)` is non-zero (increments 0 to 1). | 6 callers / 0 callees |
+| `0x600f8c6a` |  202 | L2CAP / Signaling | **`l2cu_send_peer_cmd_reject`** — Broadcom L2CAP format & send Command Reject signaling packet (opcode 1): encodes reject reason (not understood, MTU exceeded, invalid CID), optional CIDs/MTU, and transmits via `0x600b9408`. | 3 callers / 2 callees |
+| `0x600f8d34` |  180 | L2CAP / Signaling | **`l2cu_send_peer_connect_req`** — Broadcom L2CAP format & send Connection Request signaling packet (opcode 2): advances transaction ID (`0x600f8c34`), encodes PSM and Source CID (4 bytes), and sends via `0x600b9408`. | 3 callers / 3 callees |
+| `0x600f8de8` |  232 | L2CAP / Signaling | **`l2cu_send_peer_connect_rsp`** — Broadcom L2CAP format & send Connection Response signaling packet (opcode 3): encodes Dest CID, Source CID, Result, and Status (8 bytes), sets pending flag if needed, and sends via `0x600b9408`. | 3 callers / 2 callees |
+| `0x600f8ed0` |  170 | L2CAP / Signaling | **`l2cu_send_peer_connect_rsp_neg`** — Broadcom L2CAP format & send negative Connection Response signaling packet (opcode 3): encodes Dest CID 0, remote Source CID, and error reason (8 bytes) via `0x600b9408`. | 1 caller / 2 callees |
+
+
 
 
 
