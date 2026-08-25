@@ -4420,6 +4420,29 @@ Decompiled and documented 15 functions (566 bytes across `0x600fd0f2`–`0x600fd
 
 Reliability read: a coherent, higher-value-than-usual wave for QA — four related findings sharing one root cause (treating an arbitrary/boolean "reject" signal as if it were a specific, meaningful status/reason code being transmitted), three of which were caught by the now-familiar "check the callee against the standing appendix" discipline and one by reading the callee's own body directly. Continues this cluster's pattern of a single misreading recurring across several sibling functions in the same wave rather than being an isolated slip.
 
+## Session 152 (Wave 122) — Broadcom BTA DM BLE Parameter Updaters & Event Dispatchers (15 functions, 742 bytes)
+
+Decompiled and documented 15 functions (742 bytes across `0x600fd328`–`0x600fd60e`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fd328` |   46 | BTA / DM BLE | **`bta_dm_ble_set_conn_params_handler`** — Broadcom BTA DM BLE handler unpacking connection parameters (min/max interval, latency, timeout) and calling `bta_dm_ble_set_conn_params` (`0x600f0726`). | 0 callers / 1 callee |
+| `0x600fd356` |   32 | BTA / DM BLE | **`bta_dm_ble_set_adv_params_handler`** — Broadcom BTA DM BLE handler forwarding advertising min/max interval values to `BTM_BleSetAdvParams` (`0x6009abf4`). | 0 callers / 1 callee |
+| `0x600fd376` |   46 | BTA / DM BLE | **`bta_dm_ble_update_conn_params_handler`** — Broadcom BTA DM BLE handler unpacking connection update parameters and calling `L2CA_UpdateBleConnParams` (`0x600f7b48`). | 0 callers / 1 callee |
+| `0x600fd3a4` |   26 | BTA / DM BLE | **`bta_dm_set_sec_param_handler`** — Broadcom BTA DM handler forwarding 1-byte security parameter to `0x6009c914`. | 0 callers / 1 callee |
+| `0x600fd3be` |   34 | BTA / DM BLE | **`bta_dm_ble_set_adv_config_handler`** — Broadcom BTA DM BLE advertising configuration handler configuring interval and channel map mask 7 via `BTM_SetAdvParams` (`0x6009cc7c`). | 0 callers / 1 callee |
+| `0x600fd3e0` |   98 | BTA / DM BLE | **`bta_dm_ble_set_adv_or_scan_rsp_data_handler`** — Broadcom BTA DM BLE handler routing Advertising Data (`0x6009cec8`, opcode `0x2008`) or Scan Response Data (`0x6009ce30`, opcode `0x2009`) and invoking callback. | 0 callers / 2 callees |
+| `0x600fd442` |   34 | BTA / DM BLE | **`bta_dm_ble_set_data_length_handler`** — Broadcom BTA DM BLE data length extension handler forwarding BD_ADDR and tx/rx length to `BTM_SetBleDataLength` (`0x6009ac8c`). | 0 callers / 1 callee |
+| `0x600fd464` |   42 | BTA / DM BLE | **`bta_dm_ble_dispatch_event_5`** — Broadcom BTA DM BLE dispatch event 5 (2-byte payload) to application layer via `0x60095d9c`. | 0 callers / 1 callee |
+| `0x600fd48e` |   82 | BTA / DM BLE | **`bta_dm_ble_dispatch_event_6`** — Broadcom BTA DM BLE dispatch event 6 (14-byte payload: 6B BD_ADDR + 4B flags + 4B ptr) via `0x60095d9c`. | 0 callers / 2 callees |
+| `0x600fd4e0` |   64 | BTA / DM BLE | **`bta_dm_ble_dispatch_event_7`** — Broadcom BTA DM BLE dispatch event 7 (8-byte payload: 4B flags + 4B ptr) via `0x60095d9c`. | 0 callers / 1 callee |
+| `0x600fd520` |   46 | BTA / DM BLE | **`bta_dm_ble_dispatch_event_8`** — Broadcom BTA DM BLE dispatch event 8 (12-byte payload: 1B status + two 4B ptrs) via `0x60095d9c`. | 0 callers / 1 callee |
+| `0x600fd54e` |   54 | BTA / DM BLE | **`bta_dm_ble_dispatch_event_9`** — Broadcom BTA DM BLE dispatch event 9 (10-byte payload: 1B status + 1B flag + two 4B ptrs) via `0x60095d9c`. | 0 callers / 1 callee |
+| `0x600fd584` |   46 | BTA / DM BLE | **`bta_dm_ble_dispatch_event_10`** — Broadcom BTA DM BLE dispatch event 10 (0x0A, 12-byte payload: three 4B ptrs) via `0x60095d9c`. | 0 callers / 1 callee |
+| `0x600fd5b2` |   40 | BTA / DM BLE | **`bta_dm_ble_dispatch_event_11`** — Broadcom BTA DM BLE dispatch event 11 (0x0B, 8-byte payload: 1B status + 4B ptr) via `0x60095d9c`. | 0 callers / 1 callee |
+| `0x600fd5da` |   52 | BTA / DM BLE | **`bta_dm_ble_dispatch_event_12`** — Broadcom BTA DM BLE dispatch event 12 (0x0C, 10-byte payload: 1B status + 1B flag + two 4B ptrs) via `0x60095d9c`. | 0 callers / 1 callee |
+
+
 
 
 
