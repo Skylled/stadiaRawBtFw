@@ -4295,6 +4295,28 @@ Decompiled and documented 15 functions (1,148 bytes across `0x600fba06`–`0x600
 
 Reliability read: a genuinely productive wave — the wave's own table needed two corrections (a spec-name slip and a callee mischaracterization), but the more consequential finding came from the standing "does this wave's fresh context contradict an older appendix entry" check, which uncovered a two-function chain of wrong identities that had apparently gone unquestioned since whichever earlier session first assigned them, both now resolved to their real, well-evidenced role as core RFC 4493 CMAC engine internals.
 
+## Session 148 (Wave 118) — Broadcom SMP c1 Confirm Function, PDU Serializers & Key Derivation Handlers (14 functions, 1,462 bytes)
+
+Decompiled and documented 14 functions (1,462 bytes across `0x600fbe82`–`0x600fc438`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fbe82` |  132 | BTM / SMP | **`smp_pack_local_pairing_params`** — Broadcom SMP serialize local 7-byte Pairing Request/Response payload (Opcode, IO Cap, OOB, AuthReq, MaxKeySize, InitKeyDist, RespKeyDist). | 1 caller / 0 callees |
+| `0x600fbf06` |  132 | BTM / SMP | **`smp_pack_peer_pairing_params`** — Broadcom SMP serialize peer 7-byte Pairing Request/Response payload (Opcode, IO Cap, OOB, AuthReq, MaxKeySize, InitKeyDist, RespKeyDist). | 1 caller / 0 callees |
+| `0x600fbf8a` |  192 | BTM / SMP | **`smp_build_c1_p1_params`** — Broadcom SMP format 16-byte `p1` parameter block (`pres || preq || rat || iat`) for SMP confirm function `c1`. | 1 caller / 4 callees |
+| `0x600fc04a` |  198 | BTM / SMP | **`smp_build_c1_p2_params`** — Broadcom SMP format 16-byte `p2` parameter block (`padding || ia || ra`) for SMP confirm function `c1`. | 1 caller / 2 callees |
+| `0x600fc110` |  106 | BTM / SMP | **`smp_c1_step1`** — Broadcom SMP compute first step `e(TK, r XOR p1)` of confirmation function `c1`. | 2 callers / 5 callees |
+| `0x600fc17a` |  140 | BTM / SMP | **`smp_c1_step2`** — Broadcom SMP compute second step `e(TK, e(TK, r XOR p1) XOR p2)` of confirmation function `c1` and route result to local confirm (`0x600fc29c`) or peer verification (`0x600fc260`). | 1 caller / 6 callees |
+| `0x600fc206` |   44 | BTM / SMP | **`smp_c1_verify_peer_confirm`** — Broadcom SMP initiate peer pairing confirmation calculation using `c1` algorithm. | 1 caller / 1 callee |
+| `0x600fc232` |   46 | BTM / SMP | **`smp_c1_generate_local_confirm`** — Broadcom SMP initiate local pairing confirmation calculation using `c1` algorithm. | 0 callers / 1 callee |
+| `0x600fc260` |   60 | BTM / SMP | **`smp_c1_peer_confirm_complete`** — Broadcom SMP store calculated peer confirm value at `+0x2d` and dispatch confirm ready event 0x10. | 1 caller / 2 callees |
+| `0x600fc29c` |   42 | BTM / SMP | **`smp_c1_local_confirm_complete`** — Broadcom SMP dispatch local confirm ready event 0x10. | 1 caller / 1 callee |
+| `0x600fc2c6` |   60 | BTM / SMP | **`smp_stk_complete`** — Broadcom SMP mask Short Term Key (STK) and dispatch STK ready event 0x10. | 1 caller / 2 callees |
+| `0x600fc302` |  126 | BTM / SMP | **`smp_generate_ltk`** — Broadcom SMP generate Long Term Key (LTK) via AES (`0x6009ab94` / `0x600fbc02`), mask to key size (`0x600fc9c4`), and save LTK record (`0x600c0ed4`). | 2 callers / 6 callees |
+| `0x600fc380` |   90 | BTM / SMP | **`smp_generate_ediv_rand`** — Broadcom SMP generate 16-byte encrypted block for EDIV/Rand derivation (`0x6009abd4` / `0x600fbc02`). | 1 caller / 4 callees |
+| `0x600fc3da` |   94 | BTM / SMP | **`smp_d1_diversify_ediv`** — Broadcom SMP compute diversified EDIV (`local_e ^ *(param_1 + 0x1d6)`) and dispatch EDIV/Rand event 0x10. | 1 caller / 1 callee |
+
+
 
 
 
