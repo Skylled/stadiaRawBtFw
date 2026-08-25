@@ -3914,6 +3914,29 @@ Decompiled and documented 13 functions (1,588 bytes across `0x600f6516`–`0x600
 
 **Reliability read**: a clean wave overall — the one finding is cosmetic (an arithmetic slip in the prose, the same low-severity class as sessions 31/50/121), and every functional/behavioral claim checked out, several with strong cross-session corroboration reinforcing prior sessions' work rather than needing correction themselves.
 
+## Session 134 (Wave 104) — Broadcom GATT Link Security, App Callbacks, SDP Registration & Prepare/Execute State (15 functions, 1,518 bytes)
+
+Decompiled and documented 15 functions (1,518 bytes across `0x600f6b4a`–`0x600f7138`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600f6b4a` |   76 | GATT / Security | **`gatt_get_link_sec_info`** — GATT link security query: queries BTM security flags (masked with `0x34`) via `0x600f194c` and encryption key size via `0x600f0994`. | 4 callers / 2 callees |
+| `0x600f6b96` |   80 | GATT / Server | **`gatts_invoke_app_cback`** — GATT server dispatch application callback: locates registration record (`0x600afd28`) and invokes `p_app_cb(conn_id, trans_id, op_code, p_data)`. | 5 callers / 1 callee |
+| `0x600f6be6` |  102 | GATT / Server | **`gatts_send_error_rsp`** — GATT server send ATT Error Response (`0x01`): builds error response via `0x600c7eb8`, transmits via `0x600ff9fe`, optionally clears transaction (`0x600adc88`). | 11 callers / 3 callees |
+| `0x600f6c4c` |  336 | GATT / Server | **`gatt_create_sdp_record`** — GATT SDP record creator: registers Bluetooth SDP record for GATT service with Service Class UUID, Protocol Descriptor List (L2CAP PSM `0x1f`, ATT `0x0007`), and Public Browse Group (`0x1002`). | 1 caller / 6 callees |
+| `0x600f6d9c` |   42 | GATT / Client | **`gatt_clcb_dealloc`** — GATT client control block deallocator: zeros 96-byte (`0x60`) CLCB structure if allocated. | 6 callers / 1 callee |
+| `0x600f6dc6` |   62 | GATT / Core | **`gatt_num_apps_holding_link`** — GATT application hold counter: counts number of active non-zero app entries in 10-slot array `param_1 + 0x1e`. | 7 callers / 0 callees |
+| `0x600f6e04` |   70 | GATT / Server | **`gatts_copy_prep_to_exec_flags`** — GATT server copy prepare write flags to execute write response flags (`+0x8c` -> `+0x58`). | 1 caller / 0 callees |
+| `0x600f6e4a` |   76 | GATT / Server | **`gatts_is_all_exec_rsp_rcvd`** — GATT server check if all application execute write responses received (all `+0x58` entries zero). | 1 caller / 0 callees |
+| `0x600f6e96` |   76 | GATT / Server | **`gatts_is_prep_queue_empty`** — GATT server check if prepare write buffer queue is empty (all `+0x8c` entries zero). | 1 caller / 0 callees |
+| `0x600f6ee2` |   56 | GATT / Server | **`gatts_clear_exec_rsp_flags`** — GATT server clear all execute write response flags (`+0x58` array of 10 entries zeroed). | 3 callers / 0 callees |
+| `0x600f6f1a` |   56 | GATT / Server | **`gatts_clear_prep_write_flags`** — GATT server clear all prepare write application flags (`+0x8c` array of 10 entries zeroed). | 1 caller / 0 callees |
+| `0x600f6f52` |  128 | GATT / Server | **`gatts_update_exec_rsp_flags`** — GATT server update execute write response tracking counter for application ID at `+0x58 + (app_id - 1)`. | 2 callers / 1 callee |
+| `0x600f6fd2` |  128 | GATT / Server | **`gatts_update_prep_write_flags`** — GATT server update prepare write buffer tracking counter for application ID at `+0x8c + (app_id - 1)`. | 1 caller / 1 callee |
+| `0x600f7052` |   98 | GATT / Core | **`gatt_cancel_open_dev`** — GATT cancel pending connection request action: removes app hold via `0x600f5a98`, tears down transport if no apps remaining via `0x600f592e`. | 1 caller / 5 callees |
+| `0x600f70b4` |  132 | GATT / Client | **`gattc_build_and_send_write_req`** — GATT client write request builder and event dispatcher: copies write buffer and dispatches via `0x600ffada`. | 2 callers / 2 callees |
+
+
 
 
 
