@@ -5624,5 +5624,22 @@ Verified all 5 boundary fixes directly via raw disassembly rather than trusting 
 
 Reliability read: this wave's own 27 functions are clean throughout, all 5 boundary fixes verified precise via direct disassembly, and — most notably — the "100% decompiled" milestone claim for the entire 0x600d0000-0x600dffff section survives the full mandatory structural gate on independent re-derivation, not just narrative confidence.
 
+## Session 183 (Wave 153) — Audio DSP & Floating-Point Filter / Synthesizer Engine (12 functions, 1,768 bytes)
 
+Decompiled and documented 12 functions (1,768 bytes across `0x60049b3c`–`0x6004a862`, closing multiple contiguous gaps in the audio DSP synthesizer subsystem):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x60049b3c` |  178 | Audio DSP / Stream Queue | **`audio_dsp_stream_queue_process`** — Process audio stream queue chunks, update block counters and dispatch buffers via `0x6004bf64` and `0x6004c3ec`. | 2 callers / 2 callees |
+| `0x60049bee` |   68 | Audio DSP / Peak Amplitude | **`audio_dsp_calc_max_peak_amplitude`** — Compute maximum absolute peak sample amplitude across float audio buffer (`vldr s0, [r3]`, `vabs.f32`). | 1 caller / 0 callees |
+| `0x60049c32` |   20 | Audio DSP / Ring Buffer | **`audio_dsp_ring_buffer_advance_ptr`** — Advance ring buffer write pointer by sample count delta: `param_2[1] - *param_2`, wrap and store. | 2 callers / 0 callees |
+| `0x6004a04c` |  154 | Audio DSP / Biquad Response | **`audio_dsp_biquad_frequency_response`** — Compute complex frequency response / magnitude of biquad filter section across frequency bins using floating-point SIMD/VFP (`vsub.f32`, `vstr`). | 1 caller / 0 callees |
+| `0x6004a35c` |   50 | Audio DSP / Channel Filter | **`audio_dsp_filter_bank_step_ch0`** — Step filter bank for audio channel 0 via `0x600454c4` and write back filtered samples (`vstmia r1!, {s0}`). | 1 caller / 1 callee |
+| `0x6004a38e` |   54 | Audio DSP / Channel Filter | **`audio_dsp_filter_bank_step_ch1`** — Step filter bank for audio channel 1 via `0x600454ec` and write back filtered samples (`vstmia r1!, {s0}`). | 1 caller / 1 callee |
+| `0x6004a3c4` |   94 | Audio DSP / Stream Render | **`audio_dsp_render_stream_blocks`** — Render stream blocks: load frame descriptors, invoke `0x6004a82e` (status update), and dispatch `0x6004a4e6` (render pipeline). | 1 caller / 4 callees |
+| `0x6004a422` |   18 | Audio DSP / Config | **`audio_dsp_channel_config_enable`** — Initialize channel configuration structure via `0x6004bf94` (`+0xc`) and set active flag `+5`. | 1 caller / 1 callee |
+| `0x6004a434` |  120 | Audio DSP / Biquad Cascade | **`audio_dsp_biquad_cascade_step`** — Execute cascaded biquad IIR filter section over float sample buffer with state memory feedback. | 1 caller / 0 callees |
+| `0x6004a4e6` |  840 | Audio DSP / Render Pipeline | **`audio_dsp_render_pcm_frame_pipeline`** — Master audio synthesis frame render pipeline: mix multi-channel inputs, apply gain and compression, call ring buffer helpers (`0x60049c32`), and output PCM stream. | 1 caller / 19 callees |
+| `0x6004a82e` |   52 | Audio DSP / Stream Status | **`audio_dsp_stream_status_update`** — Query stream state via `0x6004560c`, update channel status flags (`+0x58`, `+0x64`), and commit transitions via `0x6004c02c`. | 1 caller / 3 callees |
+| `0x6004a862` |  120 | Audio DSP / Resampler | **`audio_dsp_resample_linear_interp`** — Linear interpolation audio resampler: interpolate sample points using floating-point scaling factor `3.0f` (`vmov.f32 s14, #3.0`). | 1 caller / 0 callees |
 
