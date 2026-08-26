@@ -164,10 +164,25 @@ public class FixTailCalls extends GhidraScript {
             toAddr(0x600d4ef0),
             toAddr(0x600d4f80),
             toAddr(0x600d4f94),
-            toAddr(0x600d4fac)
+            toAddr(0x600d4fac),
+            toAddr(0x600d52d6),
+            toAddr(0x600d52ec),
+            toAddr(0x600d53f8),
+            toAddr(0x600d5408),
+            toAddr(0x600d547e),
+            toAddr(0x600d5490),
+            toAddr(0x600d54a2),
+            toAddr(0x600d54b4),
+            toAddr(0x600d54c6),
+            toAddr(0x600d54d8),
+            toAddr(0x600d54ea)
         };
         for (Address a : branchAddrs) {
             Instruction ins = getInstructionAt(a);
+            if (ins == null) {
+                disassemble(a);
+                ins = getInstructionAt(a);
+            }
             if (ins != null) {
                 ins.setFlowOverride(FlowOverride.CALL_RETURN);
                 println("Set CALL_RETURN flow override at " + a + " (" + ins + ")");

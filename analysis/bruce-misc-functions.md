@@ -5041,6 +5041,49 @@ Decompiled and documented 35 functions (918 bytes across `0x600d4d98`–`0x600d5
 
 Reliability read: the strongest wave in this recent run — the session-168 fix landed exactly as predicted, every one of the 34 new functions read cleanly, and the two minor artifacts spotted are both already-understood, low-severity decompiler quirks rather than content errors.
 
+## Session 170 (Wave 140) — USB Audio Atomic Dispatch, Crash Field Reader & Power Handlers (35 functions, 964 bytes)
+
+Decompiled and documented 35 functions (964 bytes across `0x600d512e`–`0x600d54dc`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d512e` |   34 | Storage / Crash Register | **`persistent_crash_read_fields`** — Read 4 crash register fields from non-volatile storage via `0x60059f00`. | 3 callers / 1 callee |
+| `0x600d5150` |   44 | Storage / Crash Register | **`persistent_crash_has_panic`** — Read crash fields via `0x600d512e` and check high-order panic bits (`>> 25`). | 1 caller / 2 callees |
+| `0x600d517c` |   70 | C Runtime / Algorithm | **`bsearch_28byte_table`** — Binary search lookup across 28-byte array entries. | 0 callers / 0 callees |
+| `0x600d51c2` |   46 | Storage / Crash Register | **`persistent_crash_log_entry`** — Read crash fields via `0x600d512e` and log formatted entry via `0x60061c48`. | 0 callers / 3 callees |
+| `0x600d51f0` |    4 | Audio / USB Audio | **`usb_audio_set_handle`** — Store handle pointer to `+4`. | 0 callers / 0 callees |
+| `0x600d51f4` |    2 | Audio / USB Audio | **`usb_audio_noop_stub`** — Noop stub returning void (`bx lr`). | 0 callers / 0 callees |
+| `0x600d51f6` |    6 | Audio / USB Audio | **`usb_audio_indirect_call_pair`** — Load pair of pointers (`[r0]`, `[r0, #4]`) and indirect branch (`bx r3`). | 2 callers / 0 callees |
+| `0x600d51fc` |   34 | C Runtime / String | **`str_append_char_fmt_3`** — Append character to string buffer via `0x60050c18` and flush (`0x60101ba2`). | 0 callers / 2 callees |
+| `0x600d521e` |   34 | C Runtime / String | **`str_format_signed_int`** — Format 32-bit signed integer via `0x60101b0c` and flush (`0x60101ba2`). | 2 callers / 2 callees |
+| `0x600d5240` |   18 | Hardware / Concurrency | **`atomic_flag_read_barrier`** — Atomic load with data memory barrier (`dmb ish; ldrb; dmb ish`). | 6 callers / 0 callees |
+| `0x600d5252` |   50 | Hardware / Timer | **`timer_tick_accumulate_ms`** — Millisecond timer tick calculation using `udiv` by 1000 with rounding (+500). | 3 callers / 1 callee |
+| `0x600d5284` |   52 | Audio / USB Audio | **`usb_audio_rx_callback_dispatch`** — Store pair to `+0x8c`, check atomic flag at `+0xaf` (`0x600d5240`), and dispatch indirect callback at `+0x8c`. | 1 caller / 1 callee |
+| `0x600d52b8` |   12 | Audio / USB Audio | **`usb_audio_store_pair_94`** — Store 8-byte pointer pair to `+0x94`. | 1 caller / 0 callees |
+| `0x600d52c4` |   22 | Audio / USB Audio | **`usb_audio_dispatch_pair_9c`** — Store 8-byte pair to `+0x9c`, load flag at `+0xac`, and tail call indirect dispatch `0x600d51f6`. | 1 caller / 1 callee |
+| `0x600d52da` |   22 | Audio / USB Audio | **`usb_audio_dispatch_pair_a4`** — Store 8-byte pair to `+0xa4`, load flag at `+0xad`, and tail call indirect dispatch `0x600d51f6`. | 1 caller / 1 callee |
+| `0x600d52f0` |  104 | Audio / USB Audio | **`usb_audio_atomic_buffer_send`** — Atomic test-and-set spinlock with `LDREXB`/`STREXB` at `+0xaf`, bounds check length (`<= 0x200`), send buffer via `0x600d0658`, translate status via `0x600d4946`, and unlock. | 1 caller / 2 callees |
+| `0x600d5358` |   12 | Audio / USB Audio | **`usb_audio_check_flag_af`** — Test atomic flag at `+0xaf` via `0x600d5240`. | 2 callers / 1 callee |
+| `0x600d5364` |    6 | Audio / USB Audio | **`usb_audio_indirect_call_pair_alt`** — Load pair of pointers (`[r0]`, `[r0, #4]`) and indirect branch (`bx r3`). | 3 callers / 0 callees |
+| `0x600d536a` |   28 | Audio / USB Audio | **`usb_audio_dispatch_pair_7c`** — Store 8-byte pair to `+0x7c`, check flag at `+0xac`, and invoke indirect dispatch `0x600d5364`. | 0 callers / 1 callee |
+| `0x600d5386` |   40 | Audio / USB Audio | **`usb_audio_dispatch_pair_84`** — Store 8-byte pair to `+0x84`, check flag at `+0xad` and atomic flag at `+0xb0` (`0x600d5240`), and invoke indirect dispatch `0x600d5364`. | 1 caller / 2 callees |
+| `0x600d53ae` |   22 | C Runtime / String | **`str_format_timestamp`** — Format 30-character timestamp string buffer via `0x601016f0`. | 5 callers / 1 callee |
+| `0x600d53c4` |   52 | Power / Management | **`power_mode_event_handler_3`** — Handle power events 9 and 0xa, trigger state transition `0x60061e70` / `0x60062124`, and set flag. | 0 callers / 2 callees |
+| `0x600d53f8` |    4 | Infrastructure / Veneer | **`thunk_FUN_6006222c__600d53f8`** — 4-byte veneer forwarding to `0x6006222c`. | 0 callers / 1 callee |
+| `0x600d53fc` |    4 | Audio / USB Audio | **`usb_audio_store_handle_4`** — Store pointer to `+4`. | 0 callers / 0 callees |
+| `0x600d5400` |   12 | Audio / USB Audio | **`usb_audio_pipe_send_cmd3`** — Tail call `0x600d0e38` with command 3 and payload offset `+0x40`. | 0 callers / 1 callee |
+| `0x600d540c` |   48 | Power / Management | **`power_mode_event_handler_4`** — Handle power events 9 and 0xf, trigger state transition `0x60062634` or store state payload. | 0 callers / 1 callee |
+| `0x600d543c` |   26 | Audio / USB Audio | **`usb_audio_dispatch_pair_8`** — Store 8-byte pair to `+8`, check flag at `+0x18`, and invoke indirect dispatch `0x600d5364`. | 2 callers / 1 callee |
+| `0x600d5456` |   20 | Audio / USB Audio | **`usb_device_context_free`** — Free USB context at `+0x9c` via `0x600d3202` and clear pointer. | 1 caller / 1 callee |
+| `0x600d546a` |   24 | Audio / USB Audio | **`usb_device_context_reset`** — Reset USB context at `+0x9c` via `0x60057e88` and tail call `0x600652d4`. | 0 callers / 2 callees |
+| `0x600d5482` |   18 | Hardware / Timer | **`timer_forward_3args`** — Forward 3 arguments to `0x60065004`. | 0 callers / 1 callee |
+| `0x600d5494` |   18 | Hardware / Timer | **`timer_forward_2args_1`** — Forward 2 arguments to `0x60064fe4`. | 1 caller / 1 callee |
+| `0x600d54a6` |   18 | Hardware / Timer | **`timer_forward_2args_2`** — Forward 2 arguments to `0x60064fc4`. | 1 caller / 1 callee |
+| `0x600d54b8` |   18 | Audio / USB Topology | **`usb_topology_forward_2args_1`** — Forward 2 arguments to `0x6006386c`. | 1 caller / 1 callee |
+| `0x600d54ca` |   18 | Audio / USB Topology | **`usb_topology_forward_2args_2`** — Forward 2 arguments to `0x6006388c`. | 0 callers / 1 callee |
+| `0x600d54dc` |   22 | Audio / USB Topology | **`usb_topology_check_state`** — Verify USB topology state == 3 and flag at `+0x104` != 0, tail call `0x600638ac`. | 1 caller / 1 callee |
+
+
 
 
 
