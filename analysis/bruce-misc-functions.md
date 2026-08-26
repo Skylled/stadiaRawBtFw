@@ -5248,7 +5248,7 @@ Decompiled and documented 32 functions (1,358 bytes across `0x600d643e`–`0x600
 | `0x600d68d4` |    2 | Stubs / Noop | **`stub_noop_68d4`** — No-op return stub (`bx lr`). | 0 callers / 0 callees |
 | `0x600d68d6` |    4 | Stubs / Return Zero | **`stub_return_zero_68d6`** — Return zero stub (`movs r0, #0; bx lr`). | 0 callers / 0 callees |
 | `0x600d68da` |    4 | Stubs / Return Zero | **`stub_return_zero_68da`** — Return zero stub (`movs r0, #0; bx lr`). | 0 callers / 0 callees |
-| `0x600d68de` |   10 | USB / Struct | **`zero_struct_5bytes_68de`** — Zero 5 bytes at `[r0]..[r0, #4]`. | 0 callers / 0 callees |
+| `0x600d68de` |   10 | USB / Struct | ~~**`zero_struct_5bytes_68de`** — Zero 5 bytes at `[r0]..[r0, #4]`~~ **⚠️ corrected, QA session 174: zeros 8 distinct bytes, not 5** — disassembly-identical to session 171's `audio_descriptor_zero_9b` (`0x600d564c`, byte-for-byte the same `movs r2,#0; strd r2,r2,[r0]; strb r2,[r0,#4]; bx lr`): the `strd` zeroes offsets 0-7 (two 4-byte words), and the trailing `strb` redundantly re-zeroes offset 4, already covered. No offset beyond 7 is ever written. | 0 callers / 0 callees |
 | `0x600d68e8` |    4 | Stubs / Return Zero | **`stub_return_zero_68e8`** — Return zero stub (`movs r0, #0; bx lr`). | 0 callers / 0 callees |
 | `0x600d68ec` |    8 | Stubs / Indirect Call | **`indirect_call_vtable_14_68ec`** — Load context from `+0x5c` and indirect jump via vtable `+0x14`. | 0 callers / 0 callees |
 | `0x600d68f4` |   10 | Stubs / Indirect Call | **`indirect_call_vtable_18_68f4`** — Load context from `+0x5c` and indirect jump via vtable `+0x18`. | 0 callers / 0 callees |
@@ -5259,6 +5259,11 @@ Decompiled and documented 32 functions (1,358 bytes across `0x600d643e`–`0x600
 | `0x600d6956` |   14 | USB / HID | **`usb_host_hid_replace_and_free_block`** — Exchange active heap block pointer and free previous block via `0x600d15c4`. | 4 callers / 1 callee |
 | `0x600d6964` |   40 | USB / HID | **`usb_host_hid_reset_and_dispatch_event`** — Reset block at `+0x108` via `0x600d6956` and forward status event (event 1/8) via `0x600d68fe`. | 0 callers / 3 callees |
 
+**⚠️ QA session 174 note:** Backbone clean — all 32 addresses/sizes match the census exactly, summing to the claimed 1,358 bytes, fully contiguous `0x600d643e`–`0x600d698c` with zero gaps/overlaps. Every caller/callee-count tuple matches its file's own header exactly. Independently re-derived `bruce-decompile-status.md`'s totals via a fresh header-parsed join (4,084 functions / 561,010 bytes, 0 mismatches, 0 non-census, 0 duplicates) — matches the wave's claimed 78.48% exactly. A full-repository overlap scan found 75 pre-existing overlaps (unchanged), none touching this wave.
+
+Good news on last session's finding: this wave cites `0x6013d068` twice (`usb_host_topology_build_unit_routes` and `tree_root_free_recursive_custom`), and **both are correctly framed as "free"/"free-veneer" this time**, not "allocate" — the correction appears to have taken. `usb_host_hid_free_heap_block`/`usb_host_hid_replace_and_free_block` correctly cite the already-established, file-integrity-restored `private_heap__600835ac` (sessions 56-57) for their free operations.
+
+**One confirmed correction**: `zero_struct_5bytes_68de` (`0x600d68de`) claims to zero 5 bytes — disassembly is byte-for-byte identical to session 171's already-corrected `audio_descriptor_zero_9b` (`0x600d564c`): `movs r2,#0; strd r2,r2,[r0]; strb r2,[r0,#4]; bx lr`. The `strd` zeroes offsets 0-7 and the trailing `strb` redundantly re-zeroes offset 4; no byte beyond offset 7 is ever touched, so the real count is 8, not 5 — this time an undercount rather than session 171's overcount, on the exact same instruction sequence. Corrected in place. Reliability read: the `0000b52e` correction held up under direct test, but this identical-code recurrence of the "count the bytes a `strd`+redundant-`strb` pair actually touches" mistake — now the second instance of this exact pattern — suggests it's worth a standing note for future waves rather than treating each occurrence as independent.
 
 
 
