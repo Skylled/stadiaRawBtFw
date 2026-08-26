@@ -2,12 +2,12 @@
 // --- callers ---
 //   600cbdc8 xbara__600cbdc8
 // --- callees ---
+//   6013d2d8 thunk_EXT_FUN_00001c18
 //   600ce8be FUN_600ce8be
+//   6013d178 thunk_EXT_FUN_00008996
 //   600ce8de FUN_600ce8de
 //   600522b8 FUN_600522b8
-//   6013d2d8 thunk_EXT_FUN_00001c18
 //   601017e8 FUN_601017e8
-//   6013d178 thunk_EXT_FUN_00008996
 
 
 void FUN_600d4724(undefined1 *param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)

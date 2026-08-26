@@ -4898,6 +4898,40 @@ But this wave drew its addresses from inside `bruce-decompile-status.md`'s own �
 
 Reliability read: this is a different failure class than the usual "plausible name doesn't match the callee's real behavior" pattern this project's QA has cataloged extensively — here the underlying *disassembly itself* is compromised for most of the wave, a known, pre-flagged hazard of this specific address range that this wave's function-selection process didn't check for before diving in. The two clean functions (one with an exact, falsifiable Bluetooth spec match) show the wave's methodology is otherwise sound — the issue is specific to picking work out of this particular, already-cautioned range.
 
+## Session 167 (Wave 137) — Flash Memory Driver, XBARA Routing & RPC Calibration Handlers (26 functions, 862 bytes)
+
+Decompiled and documented 26 functions (862 bytes across `0x600d45a4`–`0x600d4902`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d45a4` |   14 | VFS / Streams | **`vfs_fd_alloc_init`** — Allocate 20-byte file descriptor structure via `0x6013d068` and return pointer. | 0 callers / 1 callee |
+| `0x600d45b2` |    8 | VFS / Streams | **`vfs_fd_get_pair`** — Load pair of stream pointers from descriptor structure (`[r0]`, `[r0, #4]`). | 0 callers / 0 callees |
+| `0x600d45ba` |   42 | RPC / Events | **`rpc_client_send_event_packet`** — Format 532-byte event packet on stack (`0x6005e39c`), copy payload via `0x600cbccc`, and broadcast event via `0x6010138c` (`rpc_service_send_event`). | 1 caller / 3 callees |
+| `0x600d45e4` |    4 | Infrastructure / Veneer | **`thunk_FUN_600d45ba`** — 4-byte tail-call veneer forwarding to `0x600d45ba`. | 0 callers / 1 callee |
+| `0x600d45e8` |   36 | RPC / Endpoints | **`rpc_endpoint_init_queue`** — Initialize endpoint message queue via `0x601017e8` (`rtos_queue_init_lazy`), store IDs and init header (`0x6005e39c`). | 0 callers / 2 callees |
+| `0x600d460c` |   70 | C Runtime / Algorithm | **`bsearch_12byte_table`** — Binary search lookup across sorted 12-byte element table comparing key in `r1`. | 0 callers / 0 callees |
+| `0x600d4652` |   18 | Infrastructure / Dispatch | **`vtable_dispatch_method_5_scale`** — Indirect vtable method invocation (`+0x14`) scaled by multiplier at `+4`. | 0 callers / 0 callees |
+| `0x600d4664` |   48 | RPC / Endpoints | **`rpc_endpoint_send_checked`** — Check endpoint state via `0x60071870`, validate flags (`0x6005e25c`, `0x6005e3d0`), and tail call `0x6005e4a0`. | 1 caller / 4 callees |
+| `0x600d4694` |    4 | Infrastructure / Veneer | **`thunk_FUN_6005e6e8`** — 4-byte veneer forwarding to `0x6005e6e8`. | 0 callers / 1 callee |
+| `0x600d4698` |    6 | RPC / Endpoints | **`rpc_endpoint_reset_error`** — Clear `r0` and tail call error handler `0x6005e164`. | 0 callers / 1 callee |
+| `0x600d469e` |   48 | Calibration / Profile | **`calibration_profile_allocate_copy`** — Allocate 6,264-byte calibration block (`0x6005e1c0`), copy default parameters from ROM (`0x600585f8`), and initialize descriptor (`0x6005e310`). | 0 callers / 4 callees |
+| `0x600d46ce` |   48 | Calibration / Packets | **`calibration_packet_create`** — Allocate 13-byte packet (`0x6005e1c0`), copy 12-byte payload, and compute CRC16 (`0x600cc29c`). | 0 callers / 4 callees |
+| `0x600d46fe` |   38 | Diagnostics / JSON | **`json_init_null_literal`** — Write ASCII `"null"` string literal (`0x6e, 0x75, 0x6c, 0x6c`) with length 4 into descriptor structure. | 6 callers / 0 callees |
+| `0x600d4724` |   46 | Hardware / XBARA | **`xbara_signal_sync_event`** — Signal crossbar event queue (`0x601017e8`), take lock (`0x600ce8be`), dispatch handler (`0x600522b8`), and unlock (`0x600ce8de`). | 1 caller / 5 callees |
+| `0x600d4752` |   32 | Flash / Partition | **`partition_table_read_block`** — Compute flash offset from partition descriptor (`piVar1[1] * (block_idx - base) + offset + start`) and dispatch read method (`+0x20`). | 5 callers / 0 callees |
+| `0x600d4772` |   18 | Hardware / Security | **`bee_security_state_is_active`** — Query BEE hardware encryption engine state (`0x6005f1d4`) and test if status is active (2 or 3). | 2 callers / 1 callee |
+| `0x600d4784` |   10 | Hardware / Security | **`security_mode_validate`** — Test if security mode index is valid (< 3). | 0 callers / 0 callees |
+| `0x600d478e` |   38 | Hardware / XBARA | **`xbara_peripheral_route_config`** — Configure XBARA peripheral hardware routing register at `0x400ec000 + (param_3 * 4)` with enable bit `0x80000000`. | 1 caller / 0 callees |
+| `0x600d47b4` |    4 | Infrastructure / Stubs | **`device_stub_return_zero`** — Stub returning 0. | 1 caller / 0 callees |
+| `0x600d47b8` |    8 | Flash / Driver | **`flash_driver_clear_busy`** — Clear busy flag at `+0x19`. | 0 callers / 0 callees |
+| `0x600d47c0` |    4 | Flash / Driver | **`flash_driver_get_busy`** — Query busy flag from `+0x19`. | 0 callers / 0 callees |
+| `0x600d47c4` |  140 | Flash / Driver | **`flash_memory_verify_blank`** — Verify blank / erased sector state in 16-byte chunks comparing against erased pattern (`thunk_EXT_FUN_0000b5ba`, `thunk_EXT_FUN_0000b554`). | 0 callers / 2 callees |
+| `0x600d4850` |   44 | Flash / Driver | **`flash_driver_lock_and_flush`** — Acquire mutex at `+0x1c` (`thunk_EXT_FUN_0000b4c2`), check busy flag, trigger cache flush (`thunk_EXT_FUN_00008996`), and release mutex (`thunk_EXT_FUN_00007d10`). | 0 callers / 4 callees |
+| `0x600d487c` |   72 | Flash / Driver | **`flash_driver_locked_read_block`** — Acquire mutex at `+0x1c`, call vtable read block method (`+0x20`), copy buffer (`thunk_EXT_FUN_0000b572`), and release mutex. | 0 callers / 4 callees |
+| `0x600d48c4` |   20 | Flash / Driver | **`flash_driver_invalidate_cache`** — Test flag and trigger hardware cache invalidation (`thunk_EXT_FUN_000009c0`). | 1 caller / 1 callee |
+| `0x600d48d8` |   42 | Flash / Driver | **`flash_lut_multi_block_erase`** — Loop over `param_3` blocks computing offsets and calling `flash_lut__6005fa0c` block erase. | 0 callers / 1 callee |
+
+
 
 
 
