@@ -5189,6 +5189,34 @@ Corrected this wave's two directly-affected rows above (both `0x600d5ae0` and `0
 
 Reliability read: this is likely the single largest correction-in-waiting surfaced by this pipeline to date, in raw row-count terms — a well-evidenced, multi-source-corroborated (own disassembly + `bruce-itcm.md`'s independent prior finding + this same wave's own correct `0000b532` usage as a contrasting positive control) finding that a whole class of "zero/clear" claims spanning ~18 sessions of the pipeline's history rests on a name-pattern-matching error that was never checked against the codebase's own existing, definitive documentation of that exact thunk.
 
+## Session 173 (Wave 143) — USB Host Audio Topology Unit Parsing, Tree Iterators & Dynamic Buffer Management (20 functions, 1,846 bytes)
+
+Decompiled and documented 20 functions (1,846 bytes across `0x600d5d08`–`0x600d63b4`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d5d08` |  188 | Audio / USB Topology | **`usb_host_topology_unit_type_switch`** — Switch on USB terminal/feature/processing unit types via `0x60063b48` and dispatch format config `0x60063c58`. | 1 caller / 2 callees |
+| `0x600d5dc4` |   80 | Audio / USB Topology | **`usb_host_topology_filter_units`** — Iterate through units at `param_2 + 0x5c` matching unit type `param_3` and append to list via `0x60063c58`. | 2 callers / 1 callee |
+| `0x600d5e14` |   16 | Audio / USB Host | **`tree_iterator_step_forward`** — Advance tree cursor iterator via `0x60101cfa`. | 5 callers / 1 callee |
+| `0x600d5e24` |   38 | Audio / USB Host | **`tree_iterate_and_format_units`** — Iterate through unit tree from `param_1 + 0x54` and format unit names via `0x60063c08`. | 1 caller / 2 callees |
+| `0x600d5e4a` |   34 | Memory / Tree | **`tree_node_alloc_init_24b`** — Allocate 24-byte (`0x18`) tree node via `0x6013d378`, zero-fill via `0x6013cf90`, and initialize pointers. | 2 callers / 2 callees |
+| `0x600d5e6c` |  122 | Memory / Tree | **`tree_node_clone_subnodes`** — Clone node structure, allocate dynamic memory via `0x600d5bd2`, and copy elements with offset calculation. | 1 caller / 1 callee |
+| `0x600d5ee6` |  152 | Memory / Tree | **`tree_buffer_reallocate_and_copy`** — Grow buffer capacity using `0x600d5bd2`, copy elements, and free old storage via `0x600d5bca`. | 1 caller / 2 callees |
+| `0x600d5f7e` |   68 | Memory / Heap | **`buffer_clone_and_memcpy`** — Allocate buffer via `0x6013d378` and copy payload via `0x6013d238`. | 2 callers / 2 callees |
+| `0x600d5fc2` |   16 | Memory / Heap | **`buffer_free_checked`** — Free buffer pointer `*param_1` via `0x6013d310` if non-null. | 8 callers / 1 callee |
+| `0x600d5fd2` |   56 | Memory / Heap | **`buffer_swap_and_free_old`** — Swap triple pointer buffers between `param_1` and `param_2`, then free old buffer via `0x600d5fc2`. | 1 caller / 1 callee |
+| `0x600d600a` |   30 | Audio / USB Topology | **`usb_host_topology_query_unit_count`** — Query unit list via `0x600d5dc4`, calculate count (`sub`), and free temporary buffer via `0x600d5fc2`. | 1 caller / 2 callees |
+| `0x600d6028` |   42 | Memory / Tree | **`tree_find_node_by_id`** — Traverse binary search tree from `param_0 + 4` matching 8-bit ID `*param_1`. | 10 callers / 0 callees |
+| `0x600d6052` |   34 | Audio / USB Host | **`usb_host_audio_map_channel_desc`** — Invoke topology descriptor mapper `0x60063e24` and compute channel table offset. | 1 caller / 1 callee |
+| `0x600d6074` |  140 | Audio / USB Topology | **`usb_host_topology_recursive_tree_traverse`** — Recursively traverse descriptor topology matching unit type `param_4`, invoking handlers `0x600d5c16`/`0x600d5c6a` and `0x60063c58`. | 2 callers / 6 callees |
+| `0x600d6100` |   74 | Audio / USB Topology | **`usb_host_topology_tree_lock_and_traverse`** — Acquire lock `0x6013d3d8`, reset node flags, traverse tree via `0x600d6074`, and unlock `0x6013cf40`. | 1 caller / 4 callees |
+| `0x600d614a` |  126 | Audio / USB Topology | **`usb_host_topology_find_output_terminal`** — Search tree for output terminal descriptor matching ID, validating types via `0x600d5c1c` and `0x600d5c90`. | 1 caller / 6 callees |
+| `0x600d61c8` |  142 | Audio / USB Topology | **`usb_host_topology_find_input_terminal`** — Search tree for input terminal descriptor matching ID, validating types via `0x600d5c70` and `0x600d5c3c`. | 1 caller / 6 callees |
+| `0x600d6256` |  162 | Memory / Tree | **`tree_insert_versioned_node`** — Insert 24-byte version-tagged node into red-black/binary tree using `version_tag_compare` (`0x600d5be6`) and `0x60101d4e`. | 1 caller / 4 callees |
+| `0x600d62f8` |  188 | Audio / USB Host | **`usb_host_descriptor_alloc_and_insert`** — Parse descriptor interface/endpoint info, allocate buffer via `0x60101c52`, zero/init, and insert into versioned tree via `0x600d6256`. | 1 caller / 8 callees |
+| `0x600d63b4` |  138 | Memory / Vector | **`vector_insert_realloc`** — Insert element into dynamically-sized vector, growing capacity via `0x6013d378`, shifting elements via `0x6013d238`, and freeing old buffer via `0x6013d310`. | 1 caller / 4 callees |
+
+
 
 
 
