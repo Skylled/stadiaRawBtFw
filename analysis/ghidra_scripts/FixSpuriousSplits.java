@@ -3287,9 +3287,54 @@ public class FixSpuriousSplits extends GhidraScript {
             f600d7cac.setBody(new AddressSet(a600d7cac, toAddr(0x600d7cc3)));
         }
 
+        // 306. Create missing function 0x600d7e28 (26 bytes: 0x600d7e28..0x600d7e41)
+        Address a600d7e28 = toAddr(0x600d7e28);
+        Function f600d7e28 = fm.getFunctionAt(a600d7e28);
+        if (f600d7e28 == null) {
+            createFunction(a600d7e28, "FUN_600d7e28");
+            f600d7e28 = fm.getFunctionAt(a600d7e28);
+        }
+        if (f600d7e28 != null) {
+            f600d7e28.setBody(new AddressSet(a600d7e28, toAddr(0x600d7e41)));
+        }
+
+        // 307. Create missing function 0x600d7ea6 (6 bytes: 0x600d7ea6..0x600d7eab)
+        Address a600d7ea6 = toAddr(0x600d7ea6);
+        Function f600d7ea6 = fm.getFunctionAt(a600d7ea6);
+        if (f600d7ea6 == null) {
+            createFunction(a600d7ea6, "FUN_600d7ea6");
+            f600d7ea6 = fm.getFunctionAt(a600d7ea6);
+        }
+        if (f600d7ea6 != null) {
+            f600d7ea6.setBody(new AddressSet(a600d7ea6, toAddr(0x600d7eab)));
+        }
+
+        // 308. Create missing function 0x600d7eac (2 bytes: 0x600d7eac..0x600d7ead)
+        Address a600d7eac = toAddr(0x600d7eac);
+        Function f600d7eac = fm.getFunctionAt(a600d7eac);
+        if (f600d7eac == null) {
+            createFunction(a600d7eac, "FUN_600d7eac");
+            f600d7eac = fm.getFunctionAt(a600d7eac);
+        }
+        if (f600d7eac != null) {
+            f600d7eac.setBody(new AddressSet(a600d7eac, toAddr(0x600d7ead)));
+        }
+
+        // 309. Create missing function 0x600d7f5e (2 bytes: 0x600d7f5e..0x600d7f5f)
+        Address a600d7f5e = toAddr(0x600d7f5e);
+        Function f600d7f5e = fm.getFunctionAt(a600d7f5e);
+        if (f600d7f5e == null) {
+            createFunction(a600d7f5e, "FUN_600d7f5e");
+            f600d7f5e = fm.getFunctionAt(a600d7f5e);
+        }
+        if (f600d7f5e != null) {
+            f600d7f5e.setBody(new AddressSet(a600d7f5e, toAddr(0x600d7f5f)));
+        }
+
         println("FixSpuriousSplits completed successfully.");
     }
 }
+
 
 
 

@@ -5480,7 +5480,38 @@ Continuing sessions 176-177's precedent, checked every one of this wave's 11 rin
 
 Reliability read: a third consecutive exceptionally clean wave on the ring-buffer/near-duplicate front, plus a satisfying cross-session validation of an old fix — no findings this session.
 
+## Session 179 (Wave 149) — Stream Channels, Hex Encoders & Flash Memory Block Packet Operations (28 functions, 1,200 bytes)
 
+Decompiled and documented 28 functions (1,200 bytes across `0x600d7d48`–`0x600d80f4`):
 
-
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d7d48` |    4 | Haptics / Trampoline | **`thunk_FUN_600d7cdc__600d7d48`** — Tail-call trampoline to `haptics_query_and_update_state` (`0x600d7cdc`). | 1 caller / 1 callee |
+| `0x600d7d4c` |    4 | Haptics / Trampoline | **`thunk_FUN_600d7cdc__600d7d4c`** — Tail-call trampoline to `haptics_query_and_update_state` (`0x600d7cdc`). | 5 callers / 1 callee |
+| `0x600d7d50` |   28 | Driver / Slot | **`device_driver_deactivate_slot`** — Slot deactivation routine calling driver vtable `+4` and clearing slot via `0x600e02f4`. | 0 callers / 2 callees |
+| `0x600d7d6c` |   22 | Driver / Slot | **`device_driver_activate_slot`** — Slot activation routine clearing state via `0x600e02f4` and configuring slot via `0x600e02fc`. | 0 callers / 2 callees |
+| `0x600d7d82` |   26 | String / Dispatch | **`string_format_and_dispatch`** — Calculate string length via `0x6004cb28` and tail-call forward to `0x60067b50`. | 0 callers / 2 callees |
+| `0x600d7d9c` |   58 | Stream / Reader | **`stream_read_line_until_crlf`** — Read stream characters until CR (`\r`), LF (`\n`), or buffer limit, null-terminating output. | 0 callers / 1 callee |
+| `0x600d7dd6` |   38 | Stream / Channel | **`stream_open_channel`** — Allocate stream channel via `0x600ea6f8` and configure channel ID via `0x600ea712`. | 0 callers / 2 callees |
+| `0x600d7dfc` |   44 | Stream / Writer | **`stream_write_buffer_checked`** — Check channel pointer at `+0xc` and write buffer payload via `0x6013d298`. | 0 callers / 1 callee |
+| `0x600d7e28` |   26 | Stream / Flush | **`stream_flush_buffer`** — Flush stream channel buffer via `0x6008cb7c`. | 0 callers / 1 callee |
+| `0x600d7e42` |   20 | Stream / Destructor | **`stream_close_channel_and_free_20b`** — Close stream channel via `0x60067dc4` and free 20-byte context via `0x6013d068`. | 0 callers / 2 callees |
+| `0x600d7e56` |   80 | Stream / Hex | **`stream_read_hex_bytes`** — Read and validate hex-encoded bytes from stream channel via `0x600ea74a`, `0x600e02a8`, and `0x6013d1b0`. | 0 callers / 3 callees |
+| `0x600d7ea6` |    6 | Stubs / Return Zero | **`stub_return_zero_7ea6`** — Return zero stub (`mov.w r0, #0; bx lr`). | 0 callers / 0 callees |
+| `0x600d7eac` |    2 | Stubs / Return Void | **`stub_nop_7eac`** — Empty function stub (`bx lr`). | 0 callers / 0 callees |
+| `0x600d7eae` |   14 | Stream / Destructor | **`stream_context_free_8b`** — Deallocate 8-byte stream context via `0x6013d068`. | 0 callers / 1 callee |
+| `0x600d7ebc` |  162 | Stream / Hex | **`stream_format_hex_ascii_chunks`** — Format binary buffer into two-character hex ASCII strings (nibble table lookup) and write via `0x600e02a8` and `0x6013d1b0`. | 0 callers / 2 callees |
+| `0x600d7f5e` |    2 | Stubs / Return Void | **`stub_nop_7f5e`** — Empty function stub (`bx lr`). | 0 callers / 0 callees |
+| `0x600d7f60` |  126 | Stream / Buffer | **`stream_line_buffer_append`** — Append data to stream line buffer, flushing on newline (`\n`) or buffer capacity (`0x60` bytes) via vtable callback `+0x14`. | 0 callers / 1 callee |
+| `0x600d7fde` |   14 | Stream / Destructor | **`stream_context_free_112b`** — Deallocate 112-byte stream context via `0x6013d068`. | 1 caller / 1 callee |
+| `0x600d7fec` |   34 | Stream / Buffer | **`stream_line_buffer_read`** — Copy up to `r2 - 1` bytes from line buffer at `+0xc` to destination buffer, appending null terminator. | 1 caller / 1 callee |
+| `0x600d800e` |    6 | Endian / Swap | **`endian_swap_u32`** — 32-bit endian swap helper (`rev r0, r0; bx lr`). | 2 callers / 0 callees |
+| `0x600d8014` |    4 | Flash / Accessor | **`flash_get_context_field_0xc`** — Accessor loading word at `[r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d8018` |    4 | Flash / Accessor | **`flash_get_context_field_0x18`** — Accessor loading byte at `[r0, #0x18]`. | 0 callers / 0 callees |
+| `0x600d801c` |   34 | Flash / Offset | **`flash_calculate_offset_and_sync`** — Compute offset from struct bounds and trigger sync via `0x60050c18` and `0x60101ba2`. | 1 caller / 2 callees |
+| `0x600d803e` |   20 | Flash / Slot | **`flash_calculate_slot_index`** — Compute linear slot index via `mla r0, r0, r2, r1`. | 5 callers / 0 callees |
+| `0x600d8052` |   60 | Flash / Write | **`flash_forward_write_payload`** — Validate write range via `0x60067e8c`, calculate slot offset (`0x600d803e`), and dispatch write callback `+0x14`. | 2 callers / 2 callees |
+| `0x600d808e` |   66 | Flash / Status | **`flash_forward_write_status`** — Validate sector status at `+0x10`, check range via `0x60067e8c`, calculate slot (`0x600d803e`), and dispatch write callback `+0x10`. | 0 callers / 2 callees |
+| `0x600d80d0` |   36 | Flash / Header | **`flash_encode_endian_header`** — Check 4-bit alignment and encode 32-bit big-endian swapped word via `0x600d800e`. | 3 callers / 1 callee |
+| `0x600d80f4` |  260 | Flash / Block Packet | **`flash_process_data_block_packet`** — Validate packet block alignment and length against sector size at `+0x18`, initialize buffer with `0xff` (`0x6013cf90`), encode header (`0x600d80d0`), dispatch write (`0x600d8052`), and verify with `memcmp` (`0x6013d168`). | 0 callers / 6 callees |
 

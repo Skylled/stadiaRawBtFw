@@ -1,12 +1,12 @@
 // 600d80f4  FUN_600d80f4  size=260 bytes
 // --- callers ---
 // --- callees ---
-//   600d4752 FUN_600d4752
 //   6013cf90 thunk_EXT_FUN_0000b5ba
+//   600d4752 FUN_600d4752
+//   60067f20 FUN_60067f20
 //   600d8052 FUN_600d8052
 //   6013d168 thunk_EXT_FUN_0000b554
 //   600d80d0 FUN_600d80d0
-//   60067f20 FUN_60067f20
 
 
 uint FUN_600d80f4(int param_1,uint param_2,uint param_3,undefined1 *param_4)
