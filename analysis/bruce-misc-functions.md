@@ -5472,3 +5472,15 @@ Decompiled and documented 52 functions (1,490 bytes across `0x600d7776`–`0x600
 | `0x600d7cdc` |   64 | Haptics / Status State | **`haptics_query_and_update_state`** — Query status via `0x600d9934` and update state with fallback via `0x600d72ec`. | 3 callers / 2 callees |
 | `0x600d7d1c` |   44 | Haptics / Status State | **`haptics_query_status_wrapper`** — Query status via `0x600d7cc4` and check boolean property via `0x600d72ec`. | 2 callers / 2 callees |
 
+**⚠️ QA session 178 note:** Backbone clean — all 52 addresses/sizes match the census exactly, summing to the claimed 1,490 bytes, fully contiguous `0x600d7776`–`0x600d7d48` with zero gaps/overlaps. Every caller/callee-count tuple matches its file's own header exactly. Independently re-derived `bruce-decompile-status.md`'s totals via a fresh header-parsed join (4,247 functions / 566,022 bytes, 0 mismatches, 0 non-census, 0 duplicates) — matches the wave's claimed 78.96% exactly. A full-repository overlap scan found 74 pre-existing overlaps (unchanged), none touching this wave.
+
+Continuing sessions 176-177's precedent, checked every one of this wave's 11 ring-buffer channel-count claims (17-alt/5/5-alt/14/11/11-alt/6-alt/3/16/4/4-alt) directly against its own modulo-or-mask literal and struct-offset base — all 11 match exactly, including the two mask-based ones (`& 0xf` for 16-channel, `& 3` for both 4-channel variants) correctly distinguished from the nine modulo-based ones.
+
+**Nice cross-session confirmation, not a correction**: `haptics_float_threshold_evaluate_step`/`_direct` (`0x600d7b22`/`0x600d7be0`) both branch on `*(float*)(...) < 1.0`, calling `func_0x6005df5c()` directly when below threshold or `led_calibration__600d4596` when at/above it. `led_calibration__600d4596` was established (session 167's QA fix) to be an 8-byte trampoline that calls `func_0x6005df5c(1.0f)` with the literal IEEE-754 `1.0f` — so this wave's two functions resolve, byte-for-byte, into a coherent amplitude-clamp-to-1.0 pattern: pass the value through unclamped when it's already `< 1.0`, otherwise route through the trampoline that substitutes the literal `1.0f`. A clean, independent confirmation that session 167's fix was correct, from a completely different angle (a live caller rather than the trampoline's own disassembly).
+
+Reliability read: a third consecutive exceptionally clean wave on the ring-buffer/near-duplicate front, plus a satisfying cross-session validation of an old fix — no findings this session.
+
+
+
+
+
