@@ -4573,6 +4573,14 @@ Decompiled and documented 11 functions (1,690 bytes across `0x600fefd8`–`0x600
 | `0x600ff586` |  140 | BTA / GATTS | **`bta_gatts_send_conn_cback`** — Broadcom BTA GATTS format and dispatch connection established event (0x0E / 0x0F) to server callback. | 0 callers / 3 callees |
 | `0x600ff612` |   96 | BTA / GATTS | **`bta_gatts_send_congest_cback`** — Broadcom BTA GATTS format and dispatch server congestion event (0x14, BTA_GATTS_CONGEST_EVT) to application callback. | 0 callers / 2 callees |
 
+**⚠️ QA session 157 note:** Backbone: all 11 addresses/sizes match the census exactly, fully contiguous `0x600fefd8`–`0x600ff672`. Independently re-derived `bruce-decompile-status.md`'s totals via a fresh header-parsed join (3,693 functions / 539,106 bytes, 0 mismatches, 0 duplicates, 0 non-census addresses) — matches the wave's claimed 1,690-byte/75.41% exactly.
+
+**Overwhelming, independent reconfirmation of last session's correction**: this wave calls the now-corrected `0x60095b2c` (GATTS server-control-block find-by-ID search) nine more times across 7 of its own 11 functions, every single call following the identical pattern this session's own reading of its body predicted — `local_c = FUN_60095b2c(key_byte); if (local_c != 0) { ...use *(local_c+0x18) as the registered application callback... }`. `bta_gatts_api_deregister` additionally performs the *same* 10-entry/`0x20`-byte-stride active-flag-plus-key-match search inline rather than through the shared helper — a fourth independent confirmation of that table's shape (after `0x60095b2c` itself, `bta_gatts_deregister_all`, and now this). No corrections needed to this wave's own claims.
+
+**Other citations spot-checked**: `GATTS_CreateService` (`0x600ab110`) is listed among this doc's own confirmed GATT server core string-sweep entries (`bruce-bta-stack.md`); the `GATT_Connect`/`GATT_CancelConnect`/`GATT_Disconnect`/`GATT_Listen` names for `0x600f3c42`/`0x600f3caa`/`0x600f3da6`/`0x600f3ed6` are informal synonyms for their already-established `gatt_connect_dev`/`gatt_disconnect_dev`/(unconfirmed)/`gatt_listen_cmd` identities respectively — consistent with the precedent already accepted for this pattern in session 154, not flagged.
+
+Reliability read: a clean wave whose real value was independent, large-scale corroboration of last session's finding — nine fresh, consistent call sites is about as strong a confirmation as this pipeline produces for a single-function correction.
+
 
 
 
