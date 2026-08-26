@@ -5345,103 +5345,67 @@ Verified the session-175 `GHIDRA-TODO` directly: `0x600d6d7c` is now genuinely 1
 
 Zero content corrections this wave. Given last session's finding traced to a near-identical sibling whose own differentiator (a bsearch table's `hi` bound) wasn't re-checked, gave this wave's own large near-duplicate cluster — 7 KVS getters and 10 KVS setters, differing only in a single literal type-size constant (1/2/4/8) — the same scrutiny: every one of the 17 type-tagged siblings correctly matches its own literal against its claimed type (1=8-bit, 2=16-bit, 4=32-bit, 8=64-bit), with no copy-paste-without-checking slips found. `kvs_get_property_bool_flag`'s underlying use of the type-4 (32-bit) query path for a "bool" property is coherent, not a mismatch: it reads a full int32 and normalizes to 0/1 via `!= 0`, a reasonable storage convention for a typed KVS store. Reliability read: a strong wave — the precision on the type-tagged sibling cluster is a good sign the extra scrutiny prompted by session 175's finding is being internalized, not just applied reactively to the specific function that triggered it.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## Session 177 (Wave 147) — Keypad Matrix String Scanners, Ring Buffer Channel Sampling & Sequence Steppers (57 functions, 1,034 bytes)
+
+Decompiled and documented 57 functions (1,034 bytes across `0x600d736c`–`0x600d7768`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d736c` |   34 | Keypad / Report | **`keypad_format_input_report`** — Format keypad input report struct and dispatch to `0x600666f0`. | 2 callers / 1 callee |
+| `0x600d738e` |   30 | Keypad / Property | **`keypad_query_bool_property`** — Query boolean property via `0x600d72ec` and return boolean flag. | 1 caller / 1 callee |
+| `0x600d73ac` |  148 | Algorithms / Search | **`keypad_linear_find_if_predicate`** — Linear search over array of 4-byte elements using predicate function `0x600d7272`, with 4x loop unrolling. | 1 caller / 1 callee |
+| `0x600d7440` |  112 | Keypad / Scanner | **`keypad_scan_find_matching_key_string`** — Iterate keypad matrix columns 0..66 (`0x43`) comparing string prefixes with `0x600667fc`, `0x6004cb28`, `0x60065dd8`, `memcmp` (`0x6013d168`), and cleanup `0x600d4550`. | 1 caller / 5 callees |
+| `0x600d74b0` |   30 | Keypad / Scanner | **`keypad_lookup_key_string_wrapper`** — Calculate string length via `0x6004cb28` and forward to `keypad_scan_find_matching_key_string` (`0x600d7440`). | 10 callers / 2 callees |
+| `0x600d74ce` |   30 | Keypad / Scanner | **`keypad_scan_column_by_string`** — Locate column index for string via `0x600d74b0` and trigger scan callback `0x60066284`. | 1 caller / 2 callees |
+| `0x600d74ec` |    4 | Stubs / Return Zero | **`stub_return_zero_74ec`** — Return zero stub (`movs r0, #0; bx lr`). | 0 callers / 0 callees |
+| `0x600d74f0` |    8 | Veneers / Indirect Jump | **`indirect_jump_r3_r0_r1_r2`** — Indirect call table jump moving arguments `(r1, r2) -> (r0, r1)` and jumping to `r0`. | 0 callers / 0 callees |
+| `0x600d74f8` |   22 | Sequence / Stepper | **`sequence_step_and_dispatch_74f8`** — Advance step counter `[r0, #4]` by 1 and dispatch indirect call via `[r0, #8]`. | 0 callers / 0 callees |
+| `0x600d750e` |    6 | Sequence / Reset | **`sequence_step_reset_750e`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d7514` |    4 | Sequence / Getter | **`sequence_context_get_7514`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d7518` |    6 | Sequence / Reset | **`sequence_step_reset_7518`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d751e` |    4 | Sequence / Getter | **`sequence_context_get_751e`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d7522` |    6 | Sequence / Reset | **`sequence_step_reset_7522`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d7528` |    4 | Sequence / Getter | **`sequence_context_get_7528`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d752c` |   22 | Sequence / Stepper | **`sequence_step_and_dispatch_752c`** — Advance step counter `[r0, #4]` by 1 and dispatch indirect call via `[r0, #8]`. | 0 callers / 0 callees |
+| `0x600d7542` |    6 | Sequence / Reset | **`sequence_step_reset_7542`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d7548` |    4 | Sequence / Getter | **`sequence_context_get_7548`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d754c` |   22 | Sequence / Stepper | **`sequence_step_and_dispatch_754c`** — Advance step counter `[r0, #4]` by 1 and dispatch indirect call via `[r0, #8]`. | 0 callers / 0 callees |
+| `0x600d7562` |    6 | Sequence / Reset | **`sequence_step_reset_7562`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d7568` |    4 | Sequence / Getter | **`sequence_context_get_7568`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d756c` |    6 | Sequence / Reset | **`sequence_step_reset_756c`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d7572` |    4 | Sequence / Getter | **`sequence_context_get_7572`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d7576` |   22 | Sequence / Stepper | **`sequence_step_and_dispatch_7576`** — Advance step counter `[r0, #4]` by 1 and dispatch indirect call via `[r0, #8]`. | 0 callers / 0 callees |
+| `0x600d758c` |    6 | Sequence / Reset | **`sequence_step_reset_758c`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d7592` |    4 | Sequence / Getter | **`sequence_context_get_7592`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d7596` |    6 | Sequence / Reset | **`sequence_step_reset_7596`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d759c` |    4 | Sequence / Getter | **`sequence_context_get_759c`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d75a0` |    6 | Sequence / Reset | **`sequence_step_reset_75a0`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d75a6` |    4 | Sequence / Getter | **`sequence_context_get_75a6`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d75aa` |    6 | Sequence / Reset | **`sequence_step_reset_75aa`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d75b0` |    4 | Sequence / Getter | **`sequence_context_get_75b0`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d75b4` |   22 | Sequence / Stepper | **`sequence_step_and_dispatch_75b4`** — Advance step counter `[r0, #4]` by 1 and dispatch indirect call via `[r0, #8]`. | 0 callers / 0 callees |
+| `0x600d75ca` |    6 | Sequence / Reset | **`sequence_step_reset_75ca`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d75d0` |    4 | Sequence / Getter | **`sequence_context_get_75d0`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d75d4` |    6 | Sequence / Reset | **`sequence_step_reset_75d4`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d75da` |    4 | Sequence / Getter | **`sequence_context_get_75da`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d75de` |    6 | Sequence / Reset | **`sequence_step_reset_75de`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d75e4` |    4 | Sequence / Getter | **`sequence_context_get_75e4`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d75e8` |    6 | Sequence / Reset | **`sequence_step_reset_75e8`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d75ee` |    4 | Sequence / Getter | **`sequence_context_get_75ee`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d75f2` |   22 | Sequence / Stepper | **`sequence_step_and_dispatch_75f2`** — Advance step counter `[r0, #4]` by 1 and dispatch indirect call via `[r0, #8]`. | 0 callers / 0 callees |
+| `0x600d7608` |    6 | Sequence / Reset | **`sequence_step_reset_7608`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d760e` |    4 | Sequence / Getter | **`sequence_context_get_760e`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d7612` |    6 | Sequence / Reset | **`sequence_step_reset_7612`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d7618` |    4 | Sequence / Getter | **`sequence_context_get_7618`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d761c` |    6 | Sequence / Reset | **`sequence_step_reset_761c`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d7622` |    4 | Sequence / Getter | **`sequence_context_get_7622`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d7626` |    6 | Sequence / Reset | **`sequence_step_reset_7626`** — Zero step counter `[r0, #4] = 0`. | 0 callers / 0 callees |
+| `0x600d762c` |    4 | Sequence / Getter | **`sequence_context_get_762c`** — Load context buffer pointer `return [r0, #0xc]`. | 0 callers / 0 callees |
+| `0x600d7630` |   70 | RingBuffer / Sample | **`ring_buffer_10channel_sample_lookup`** — Index into 10-channel ring buffer at `+0x11c` with modulo division and dispatch element processor. | 0 callers / 0 callees |
+| `0x600d7676` |   14 | RingBuffer / Sample | **`ring_buffer_10channel_advance_and_sample`** — Increment sample counter at `+4` and jump to `ring_buffer_10channel_sample_lookup` (`0x600d7630`). | 0 callers / 0 callees |
+| `0x600d7684` |   70 | RingBuffer / Sample | **`ring_buffer_6channel_sample_lookup`** — Index into 6-channel ring buffer at `+0xfc` with modulo division and dispatch element processor. | 0 callers / 0 callees |
+| `0x600d76ca` |   72 | RingBuffer / Sample | **`ring_buffer_9channel_sample_lookup`** — Index into 9-channel ring buffer at `+0xf8` with modulo division and dispatch element processor. | 0 callers / 0 callees |
+| `0x600d7712` |   14 | RingBuffer / Sample | **`ring_buffer_9channel_advance_and_sample`** — Increment sample counter at `+4` and jump to `ring_buffer_9channel_sample_lookup` (`0x600d76ca`). | 0 callers / 0 callees |
+| `0x600d7720` |   72 | RingBuffer / Sample | **`ring_buffer_17channel_sample_lookup`** — Index into 17-channel ring buffer at `+0x1c0` with modulo division and dispatch element processor. | 0 callers / 0 callees |
+| `0x600d7768` |   14 | RingBuffer / Sample | **`ring_buffer_17channel_advance_and_sample`** — Increment sample counter at `+4` and jump to `ring_buffer_17channel_sample_lookup` (`0x600d7720`). | 0 callers / 0 callees |
 
