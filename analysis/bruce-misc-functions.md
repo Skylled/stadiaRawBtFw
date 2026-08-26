@@ -5584,3 +5584,37 @@ Decompiled and documented 14 functions (628 bytes across `0x600d8778`–`0x600d8
 
 **One confirmed correction**: `connection_table_find_by_handle` (`0x600d8946`) claims the entry handle field sits at offset `+0x14`, but its own body compares `*psVar2` — the entry's first 2 bytes, i.e. offset `+0` — against the search handle; the `0x1994`-byte stride claim is correct. Independently confirmed from the writer side: its sole caller, `connection_table_clear_entry`, resets the found entry via `*puVar1 = 0xffff` at offset `+0` immediately after. Corrected in place. Reliability read: a clean wave overall, continuing session 180's strong spec-corroboration streak, with the one finding caught by cross-checking a search function's read against its own caller's write to the same field.
 
+## Session 182 (Wave 152) — Broadcom BTE Core Trampolines & Event Dispatch Thunk Table (27 functions, 450 bytes)
+
+Decompiled and documented 27 functions (450 bytes across `0x600d908e`–`0x600d9246`, completing the final gap in the `0x600d...` firmware section and resolving 5 pre-existing census overlaps):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d908e` |   14 | BTE / Init | **`bte_init_and_register_core`** — Initialize BTE core via `0x60098e78` and tail-call register `0x600aa6b0`. | 1 caller / 1 callee |
+| `0x600d909c` |    4 | BTE / Trampoline | **`thunk_FUN_6006be9c__600d909c`** — Tail-call trampoline to `0x6006be9c`. | 15 callers / 1 callee |
+| `0x600d90a0` |    4 | BTE / Trampoline | **`thunk_FUN_6006be9c__600d90a0`** — Tail-call trampoline to `0x6006be9c`. | 6 callers / 1 callee |
+| `0x600d90a4` |    4 | BTE / Trampoline | **`thunk_FUN_6006be9c__600d90a4`** — Tail-call trampoline to `0x6006be9c`. | 1 caller / 1 callee |
+| `0x600d90a8` |    4 | BTE / Trampoline | **`thunk_FUN_6006be9c__600d90a8`** — Tail-call trampoline to `0x6006be9c`. | 2 callers / 1 callee |
+| `0x600d90ac` |    4 | BTE / Trampoline | **`thunk_FUN_6006be9c__600d90ac`** — Tail-call trampoline to `0x6006be9c`. | 1 caller / 1 callee |
+| `0x600d90b0` |    6 | BTE / Mode | **`bte_set_active_mode_slot1`** — Tail-call to `0x6006c088(1)`. | 0 callers / 1 callee |
+| `0x600d90b6` |   38 | BTE / Channel | **`bte_check_channel_and_dispatch`** — Query state via `0x6006d770`, handle reconnect via `0x6006d734`, and notify via `0x6006ce90`. | 2 callers / 3 callees |
+| `0x600d90dc` |  148 | BTE / Trace | **`bte_dispatch_subsystem_trace_events`** — Unpack feature bitmask from `r0` and dispatch to 10 subsystem trace handlers (`0x60096424`, `0x60095dd4`, `0x600a9ed8`, `0x6009a570`, `0x600b4fe4`, `0x600bd118`, `0x600aa678`, `0x600c0524`, `0x600bd484`, `0x600ab048`). | 0 callers / 9 callees |
+| `0x600d9170` |    2 | Stubs / NOP | **`stub_nop_9170`** — Empty function stub (`bx lr`). | 2 callers / 0 callees |
+| `0x600d9172` |    2 | Stubs / NOP | **`stub_nop_9172`** — Empty function stub (`bx lr`). | 1 caller / 0 callees |
+| `0x600d9174` |    2 | Stubs / NOP | **`stub_nop_9174`** — Empty function stub (`bx lr`). | 1 caller / 0 callees |
+| `0x600d9176` |   16 | BTE / Command | **`bte_forward_command_0x6006c37c`** — Tail-call forward to `0x6006c37c`. | 1 caller / 0 callees |
+| `0x600d9186` |    6 | BTE / Command | **`bte_forward_command_0x6006c450`** — Forward 3 parameters and tail-call to `0x6006c450`. | 1 caller / 0 callees |
+| `0x600d918c` |    4 | BTE / Trampoline | **`thunk_FUN_6006c4bc__600d918c`** — Tail-call trampoline to `0x6006c4bc`. | 1 caller / 1 callee |
+| `0x600d9190` |    4 | BTE / Trampoline | **`thunk_FUN_6006ce40__600d9190`** — Tail-call trampoline to `0x6006ce40`. | 1 caller / 1 callee |
+| `0x600d9194` |    4 | BTE / Trampoline | **`thunk_FUN_6006c594__600d9194`** — Tail-call trampoline to `0x6006c594`. | 1 caller / 1 callee |
+| `0x600d9198` |   36 | BTE / Dispatch | **`bte_query_state_and_forward`** — Call `0x600d90b6` and tail-call forward to `0x6006d8c8`. | 2 callers / 1 callee |
+| `0x600d91bc` |   70 | BTE / Dispatch | **`bte_format_and_dispatch_event`** — Call `0x6006cfb8` and forward formatted event via `0x6006d8f0`. | 2 callers / 2 callees |
+| `0x600d9202` |   44 | BTE / Status | **`bte_send_event_status`** — Query event via `0x6006cf20` and forward to `0x6006d954`. | 1 caller / 1 callee |
+| `0x600d922e` |    2 | Stubs / NOP | **`stub_nop_922e`** — Empty function stub (`bx lr`). | 3 callers / 0 callees |
+| `0x600d9230` |    6 | BTE / Channel | **`bte_reconnect_slot_channel`** — Invoke `0x600d90b6(param_1, 1)`. | 2 callers / 1 callee |
+| `0x600d9236` |    4 | BTE / Trampoline | **`thunk_FUN_6006d02c__600d9236`** — Tail-call trampoline to `0x6006d02c`. | 1 caller / 1 callee |
+| `0x600d923a` |    4 | BTE / Trampoline | **`thunk_FUN_6006d1ac__600d923a`** — Tail-call trampoline to `0x6006d1ac`. | 1 caller / 1 callee |
+| `0x600d923e` |    4 | BTE / Trampoline | **`thunk_FUN_6006d9cc__600d923e`** — Tail-call trampoline to `0x6006d9cc`. | 1 caller / 1 callee |
+| `0x600d9242` |    4 | BTE / Trampoline | **`thunk_FUN_6006d9f0__600d9242`** — Tail-call trampoline to `0x6006d9f0`. | 1 caller / 1 callee |
+| `0x600d9246` |   10 | BTE / Context | **`bte_zero_init_10b_context`** — Zero out 10-byte structure at `[r0]` (`strd r3, r3, [r0]`, `strh r3, [r0, #8]`). | 8 callers / 0 callees |
+

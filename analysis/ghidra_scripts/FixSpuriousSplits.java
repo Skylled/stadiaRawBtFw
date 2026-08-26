@@ -3331,9 +3331,67 @@ public class FixSpuriousSplits extends GhidraScript {
             f600d7f5e.setBody(new AddressSet(a600d7f5e, toAddr(0x600d7f5f)));
         }
 
+        // 310. Fix spurious split for function 0x600d908e (14 bytes: 0x600d908e..0x600d909b)
+        Address a600d908e = toAddr(0x600d908e);
+        Function f600d908e = fm.getFunctionAt(a600d908e);
+        if (f600d908e != null) {
+            f600d908e.setBody(new AddressSet(a600d908e, toAddr(0x600d909b)));
+        }
+
+        // 311. Create missing function 0x600d90b0 (6 bytes: 0x600d90b0..0x600d90b5)
+        Address a600d90b0 = toAddr(0x600d90b0);
+        Function f600d90b0 = fm.getFunctionAt(a600d90b0);
+        if (f600d90b0 == null) {
+            createFunction(a600d90b0, "FUN_600d90b0");
+            f600d90b0 = fm.getFunctionAt(a600d90b0);
+        }
+        if (f600d90b0 != null) {
+            f600d90b0.setBody(new AddressSet(a600d90b0, toAddr(0x600d90b5)));
+        }
+
+        // 312. Create missing function 0x600d90dc (148 bytes: 0x600d90dc..0x600d916f)
+        Address a600d90dc = toAddr(0x600d90dc);
+        Function f600d90dc = fm.getFunctionAt(a600d90dc);
+        if (f600d90dc == null) {
+            createFunction(a600d90dc, "FUN_600d90dc");
+            f600d90dc = fm.getFunctionAt(a600d90dc);
+        }
+        if (f600d90dc != null) {
+            f600d90dc.setBody(new AddressSet(a600d90dc, toAddr(0x600d916f)));
+        }
+
+        // 313. Fix spurious split for function 0x600d9176 (16 bytes: 0x600d9176..0x600d9185)
+        Address a600d9176 = toAddr(0x600d9176);
+        Function f600d9176 = fm.getFunctionAt(a600d9176);
+        if (f600d9176 != null) {
+            f600d9176.setBody(new AddressSet(a600d9176, toAddr(0x600d9185)));
+        }
+
+        // 314. Fix spurious split for function 0x600d9186 (6 bytes: 0x600d9186..0x600d918b)
+        Address a600d9186 = toAddr(0x600d9186);
+        Function f600d9186 = fm.getFunctionAt(a600d9186);
+        if (f600d9186 != null) {
+            f600d9186.setBody(new AddressSet(a600d9186, toAddr(0x600d918b)));
+        }
+
+        // 315. Fix spurious split for function 0x600d9198 (36 bytes: 0x600d9198..0x600d91bb)
+        Address a600d9198 = toAddr(0x600d9198);
+        Function f600d9198 = fm.getFunctionAt(a600d9198);
+        if (f600d9198 != null) {
+            f600d9198.setBody(new AddressSet(a600d9198, toAddr(0x600d91bb)));
+        }
+
+        // 316. Fix spurious split for function 0x600d9202 (44 bytes: 0x600d9202..0x600d922d)
+        Address a600d9202 = toAddr(0x600d9202);
+        Function f600d9202 = fm.getFunctionAt(a600d9202);
+        if (f600d9202 != null) {
+            f600d9202.setBody(new AddressSet(a600d9202, toAddr(0x600d922d)));
+        }
+
         println("FixSpuriousSplits completed successfully.");
     }
 }
+
 
 
 
