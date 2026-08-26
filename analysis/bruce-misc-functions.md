@@ -4555,6 +4555,25 @@ Decompiled and documented 12 functions (1,634 bytes across `0x600fe960`–`0x600
 
 Reliability read: another instance of the "read the callee's own body, don't trust even a QA-tagged correction at face value" discipline paying off — this time resolving a gap session 114 had explicitly left open two-plus dozen sessions ago, and turning up a third, previously-unconsidered identity for an address two earlier narratives had already disagreed about.
 
+## Session 157 (Wave 127) — Broadcom BTA GATTS Server API Handlers & Request/Connection Dispatchers (11 functions, 1,690 bytes)
+
+Decompiled and documented 11 functions (1,690 bytes across `0x600fefd8`–`0x600ff672`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fefd8` |  196 | BTA / GATTS | **`bta_gatts_api_deregister`** — Broadcom BTA GATTS handle API deregister server interface request, free GATT server registration (`0x600ab9b8`), clear slot, and invoke callback with event 6. | 1 caller / 2 callees |
+| `0x600ff09c` |  346 | BTA / GATTS | **`bta_gatts_api_create_srvc`** — Broadcom BTA GATTS handle API create service request, create GATT service via `GATTS_CreateService` (`0x600ab110`), store service descriptor, and invoke callback with event 7. | 1 caller / 5 callees |
+| `0x600ff1f6` |   38 | BTA / GATTS | **`bta_gatts_api_send_rsp`** — Broadcom BTA GATTS handle API send response request via `GATTS_SendRsp` (`0x600f38d0`). | 1 caller / 1 callee |
+| `0x600ff21c` |  254 | BTA / GATTS | **`bta_gatts_api_send_indication_or_notification`** — Broadcom BTA GATTS handle API send notification/indication request via `GATTS_HandleValueNotification` (`0x600f37d2`) or `GATTS_HandleValueIndication` (`0x600f367e`). | 1 caller / 8 callees |
+| `0x600ff31a` |  136 | BTA / GATTS | **`bta_gatts_api_open`** — Broadcom BTA GATTS handle API open connection request via `GATT_Connect` (`0x600f3c42`) and invoke callback with event 0x10. | 1 caller / 3 callees |
+| `0x600ff3a2` |   98 | BTA / GATTS | **`bta_gatts_api_cancel_open`** — Broadcom BTA GATTS handle API cancel open connection request via `GATT_CancelConnect` (`0x600f3caa`) and invoke callback with event 0x11. | 1 caller / 2 callees |
+| `0x600ff404` |  126 | BTA / GATTS | **`bta_gatts_api_close`** — Broadcom BTA GATTS handle API close connection request via `GATT_Disconnect` (`0x600f3da6`) and invoke callback with event 0x12. | 1 caller / 4 callees |
+| `0x600ff482` |   92 | BTA / GATTS | **`bta_gatts_api_listen`** — Broadcom BTA GATTS handle API listen request via `GATT_Listen` (`0x600f3ed6`) and invoke callback with event 0x13. | 1 caller / 2 callees |
+| `0x600ff4de` |  168 | BTA / GATTS | **`bta_gatts_send_req_cback`** — Broadcom BTA GATTS format and dispatch GATT server request callback (Read/Write/Exec-Write) to registered application callback. | 0 callers / 6 callees |
+| `0x600ff586` |  140 | BTA / GATTS | **`bta_gatts_send_conn_cback`** — Broadcom BTA GATTS format and dispatch connection established event (0x0E / 0x0F) to server callback. | 0 callers / 3 callees |
+| `0x600ff612` |   96 | BTA / GATTS | **`bta_gatts_send_congest_cback`** — Broadcom BTA GATTS format and dispatch server congestion event (0x14, BTA_GATTS_CONGEST_EVT) to application callback. | 0 callers / 2 callees |
+
+
 
 
 
