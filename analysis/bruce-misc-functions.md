@@ -5031,6 +5031,16 @@ Decompiled and documented 35 functions (918 bytes across `0x600d4d98`–`0x600d5
 | `0x600d50be` |  100 | Storage / KVS | **`kvs_stream_read_bytes`** — Stream byte copy loop with automatic buffer replenishment (`0x600d5066`, `0x6013d3a0`). | 0 callers / 2 callees |
 | `0x600d5122` |   12 | Storage / Crash Register | **`persistent_crash_zero_16b`** — Zero-initialize 16-byte crash register structure via `0x6013cf90`. | 4 callers / 1 callee |
 
+**⚠️ QA session 169 note — session-168 `GHIDRA-TODO` confirmed genuinely resolved; zero content corrections, cleanest wave in this recent stretch.** Backbone: all 34 addresses/sizes match the census exactly (the 35th "function" is the `flash_lut__600d4902` fix, not new bytes), summing to the claimed 918 bytes, fully contiguous `0x600d4d98`–`0x600d5150` with zero gaps or overlaps — including the transition from session 168's last function (`xbara_deinit_io_pins`, ending exactly at `0x600d4d98`), confirming no residual boundary damage from the fix. Independently re-derived `bruce-decompile-status.md`'s totals via a fresh header-parsed join (3,932 functions / 554,844 bytes, 0 mismatches, 0 non-census) — matches the wave's claimed 77.65% exactly.
+
+**Fix verified directly**: `flash_lut__600d4902.c` is now genuinely 68 bytes, matching last session's disassembly-derived prediction exactly — `flash_lut__6005fa80()` call, two flag/range checks, then a clean tail-call `func_0x6005fb0c(...)` on success. No residual artifacts.
+
+**Two low-severity, already-cataloged patterns spotted, neither affecting any row's claim**: (1) `thunk_FUN_60060a88__600d4de8` (`0x600d4de8`, claimed 4 bytes) is another tail-call-bleed instance — its committed `.c` file renders a substantial ~15-line computation instead of the genuine 4-byte veneer, while the row's own prose ("4-byte veneer forwarding to `0x60060a88`") stays narrow and accurate; its sibling `thunk_FUN_60060a88__600d4dec` two doors down is clean, showing the artifact isn't systemic to this thunk pair. (2) `usb_audio_pipe_reset`'s helper `0x600d4e4c` and `usb_audio_callback_indirect` (`0x600d4fb0`) both carry a `Could not recover jumptable` warning, but both are genuinely trivial, benign indirect-call-through-a-struct-field functions when read directly — this reads as a decompiler false-positive on an unresolvable (not unrecognized-jump-table) indirect call target, distinct from session 166's genuine data-as-code corruption; no correction needed.
+
+**Strong cross-validation**: the three USB Audio control-request functions (`usb_audio_control_req_87_rx`/`_tx`/`_7_set`) all call session 168's `usb_audio_status_map` (`0x600d4946`) as their final step — three of that function's claimed 6 callers, now independently confirmed from the caller side. `str_append_char_fmt_1`/`_2` are confirmed byte-identical duplicate functions, consistent with their `_1`/`_2` naming. `kvs_stream_read_bytes`'s replenish-on-exhaustion loop correctly composes this wave's own `kvs_stream_buffer_replenish`.
+
+Reliability read: the strongest wave in this recent run — the session-168 fix landed exactly as predicted, every one of the 34 new functions read cleanly, and the two minor artifacts spotted are both already-understood, low-severity decompiler quirks rather than content errors.
+
 
 
 
