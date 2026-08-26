@@ -4989,6 +4989,49 @@ Decompiled and documented 25 functions (1,110 bytes across `0x600d459e`–`0x600
 
 Reliability read: a genuinely strong wave — three real GHIDRA-TODO fixes verified clean (not just trusted from the commit message), and the wave's own new content held up throughout. The value this session again came from the routine whole-repository overlap scan, this time catching an even larger instance of the same stale-boundary class it caught last session — worth flagging as a pattern: this pipeline's earliest sessions (pre-~session 30) likely have more of these waiting to be found wherever new work happens to grow into their territory.
 
+## Session 169 (Wave 139) — Audio Pipe Channel Enqueue, USB Audio Callbacks & KVS Stream Manager (35 functions, 918 bytes)
+
+Decompiled and documented 35 functions (918 bytes across `0x600d4d98`–`0x600d5122`) and resolved Session 168 QA finding (`flash_lut__600d4902` boundary shrunk from 474B to its real 68-byte extent `0x600d4902`–`0x600d4945`, eliminating the 406-byte overlap, with tail-call edge `0x600d4942` explicitly configured in `FixTailCalls.java`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d4d98` |   42 | Audio / SAI | **`sai_audio_stream_init_config`** — Configure SAI audio stream channels, sample rate divisor (`0x600d4d56`), bit depth 16 (`0x10`), and DMA buffer pointers. | 1 caller / 1 callee |
+| `0x600d4dc2` |   38 | Audio / SAI | **`sai_audio_stream_locked_cmd`** — Acquire stream mutex (`0x6013d3d8`), dispatch SAI stream command (`0x6006073c`), and release mutex (`0x6013cef0`). | 0 callers / 3 callees |
+| `0x600d4de8` |    4 | Audio / SAI | **`thunk_FUN_60060a88__600d4de8`** — 4-byte veneer forwarding to `0x60060a88`. | 0 callers / 1 callee |
+| `0x600d4dec` |    4 | Audio / SAI | **`thunk_FUN_60060a88__600d4dec`** — 4-byte veneer forwarding to `0x60060a88`. | 0 callers / 1 callee |
+| `0x600d4df0` |   92 | Audio / Pipeline | **`audio_pipe_channel_tx_enqueue`** — Acquire mutex at `+0x74`, invoke pipe write method (`+0x14`), push packet to queue (`0x60101822`), trigger DMA start (`+0x28`), and unlock (`0x6013cf40`). | 0 callers / 5 callees |
+| `0x600d4e4c` |    6 | Audio / Pipeline | **`audio_pipe_indirect_call_pair`** — Load pair of pointers (`[r0]`, `[r0, #4]`) and indirect branch (`bx r3`). | 1 caller / 0 callees |
+| `0x600d4e52` |   18 | Audio / Pipeline | **`audio_pipe_write_cmd_3`** — Invoke indirect call helper `0x600d4e4c` on `+0x114` with command index 3. | 0 callers / 1 callee |
+| `0x600d4e64` |   34 | Audio / State | **`audio_state_stream_flush_close`** — Verify stream state == 2, flush output via `0x600d1066`, and close stream via `0x600d105e`. | 2 callers / 2 callees |
+| `0x600d4e86` |   22 | Audio / USB Audio | **`usb_audio_pipe_reset`** — Reset audio pipe registers (`0x60060c70`) and tail call USB endpoint flush `0x60060fe8`. | 1 caller / 2 callees |
+| `0x600d4e9c` |    4 | Audio / USB Audio | **`usb_audio_set_rx_buffer`** — Store buffer pointer to `+0x6c`. | 0 callers / 0 callees |
+| `0x600d4ea0` |    4 | Audio / USB Audio | **`usb_audio_set_tx_buffer`** — Store buffer pointer to `+0x68`. | 0 callers / 0 callees |
+| `0x600d4ea4` |    2 | Audio / USB Audio | **`usb_audio_stub_noop`** — Noop stub returning void (`bx lr`). | 0 callers / 0 callees |
+| `0x600d4ea6` |   14 | Audio / USB Audio | **`usb_audio_alloc_context`** — Allocate 112-byte (`0x70`) context block via `0x6013d068`. | 0 callers / 1 callee |
+| `0x600d4eb4` |   20 | Audio / USB Audio | **`usb_audio_callback_invoke`** — Invoke indirect callback at `+0xc` with arguments if non-null. | 0 callers / 0 callees |
+| `0x600d4ec8` |   16 | Hardware / Timer | **`timer_channel_start_active`** — Start timer via `0x601017fc` and mark channel active (`*(param_1 + 0x10) = 1`). | 1 caller / 1 callee |
+| `0x600d4ed8` |   20 | Power / Management | **`power_mode_event_handler_1`** — Check event == 9, set flag, and trigger power state transition `0x60061390`. | 1 caller / 1 callee |
+| `0x600d4eec` |    8 | Power / Management | **`power_mode_event_handler_2`** — Check event == 9, set flag, and trigger power state transition `0x60061390`. | 0 callers / 1 callee |
+| `0x600d4ef4` |    4 | Infrastructure / Handle | **`device_handle_set_ptr`** — Store pointer to `+4`. | 0 callers / 0 callees |
+| `0x600d4ef8` |   12 | Infrastructure / Dispatch | **`device_callback_dispatch`** — Invoke function pointer at `param_3 + 0x10` with argument `*(param_3 + 0x14)`. | 0 callers / 0 callees |
+| `0x600d4f04` |    6 | Infrastructure / Stubs | **`device_stub_return_zero_4f04`** — Stub returning 0. | 0 callers / 0 callees |
+| `0x600d4f0a` |   34 | C Runtime / String | **`str_append_char_fmt_1`** — Append character to string buffer via `0x60050c18` and flush (`0x60101ba2`). | 0 callers / 2 callees |
+| `0x600d4f2c` |   34 | C Runtime / String | **`str_append_char_fmt_2`** — Append character to string buffer via `0x60050c18` and flush (`0x60101ba2`). | 0 callers / 2 callees |
+| `0x600d4f4e` |   30 | Power / Management | **`power_state_transition_dispatch`** — Handle power events 1 and 9 via `0x6006151c` and `0x60061430`. | 0 callers / 2 callees |
+| `0x600d4f6c` |   24 | Audio / USB Audio | **`usb_audio_control_req_87_rx`** — Format USB control request 0x87 via `0x600d1090` and translate status via `0x600d4946`. | 1 caller / 2 callees |
+| `0x600d4f84` |   20 | Audio / USB Audio | **`usb_audio_control_req_87_tx`** — Format USB control request 0x87 via `0x600d10a4` and translate status via `0x600d4946`. | 1 caller / 2 callees |
+| `0x600d4f98` |   24 | Audio / USB Audio | **`usb_audio_control_req_7_set`** — Format USB control request 7 via `0x600d109c` and translate status via `0x600d4946`. | 1 caller / 2 callees |
+| `0x600d4fb0` |    8 | Audio / USB Audio | **`usb_audio_callback_indirect`** — Load context from `+0x1c`, payload from `param_2 + 4`, and indirect branch to `+0x18`. | 1 caller / 0 callees |
+| `0x600d4fb8` |   12 | Audio / USB Audio | **`usb_audio_callback_thunk`** — Invoke `0x600d4fb0` with argument `param_3`. | 0 callers / 1 callee |
+| `0x600d4fc4` |   72 | Audio / USB Topology | **`usb_host_audio_status_map`** — 16-case `tbb` jump table translating USB host audio topology status codes (maps to 0, 2, 0xe, 3, 5, 0xc, 0xd, 0xa). | 1 caller / 0 callees |
+| `0x600d500c` |   54 | C Runtime / Algorithm | **`bsearch_8byte_table`** — Binary search lookup across 8-byte sorted element array. | 1 caller / 0 callees |
+| `0x600d5042` |   16 | Storage / KVS | **`kvs_descriptor_alloc_size`** — Store arguments to stack and return descriptor size 0xc. | 0 callers / 0 callees |
+| `0x600d5052` |   20 | Storage / KVS | **`kvs_stream_context_init`** — Call `0x60061944` and allocate 28-byte stream context via `0x6013d068`. | 0 callers / 2 callees |
+| `0x600d5066` |   88 | Storage / KVS | **`kvs_stream_buffer_replenish`** — Query stream state via `0x601010c8`, fetch key-value store block (`0x600cb598`), and advance buffer read cursor. | 1 caller / 2 callees |
+| `0x600d50be` |  100 | Storage / KVS | **`kvs_stream_read_bytes`** — Stream byte copy loop with automatic buffer replenishment (`0x600d5066`, `0x6013d3a0`). | 0 callers / 2 callees |
+| `0x600d5122` |   12 | Storage / Crash Register | **`persistent_crash_zero_16b`** — Zero-initialize 16-byte crash register structure via `0x6013cf90`. | 4 callers / 1 callee |
+
+
 
 
 

@@ -2,17 +2,17 @@
 
 Data-driven status doc for the "decompile all of `bruce` to source-reconstruction quality" effort. Regenerate the numbers here whenever `bruce_functions.csv`, `bruce_srcmap.csv`, or `analysis/decomp/` change materially — don't hand-edit stale tables into new prose, just re-run the join described in [Methodology](#methodology) below.
 
-**Snapshot: 2026-08-18 (full regeneration, session 168 / Wave 138).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 168 (3897 decomp files, 3897 in-census). Decompiled in-census functions grew to **3897** (554,332 bytes, 77.56% of code), with **139 of 139** attributed source files fully decompiled.
+**Snapshot: 2026-08-18 (full regeneration, session 169 / Wave 139).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 169 (3932 decomp files, 3932 in-census). Decompiled in-census functions grew to **3932** (554,844 bytes, 77.65% of code), with **139 of 139** attributed source files fully decompiled.
 
 ## 1. Top-line stats
 
-| Metric | Functions | % of 5,582 | Bytes | % of 714,701 |
+| Metric | Functions | % of 5,598 | Bytes | % of 714,527 |
 |---|---:|---:|---:|---:|
-| **Total functions (census)** | 5,582 | 100% | 714,701 | 100% |
-| **Attributed** (leaked `__FILE__` → 139 src files) | 448 | 8.03% | 96,142 | 13.45% |
-| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 3,897 | 69.81% | 554,332 | 77.56% |
-| **Attributed ∪ Decompiled** (understood in *some* way) | 3,897 | 69.81% | 554,332 | **77.56%** |
-| **Totally unknown** (no attribution, no decompile) | 1,685 | 30.19% | 160,369 | **22.44%** |
+| **Total functions (census)** | 5,598 | 100% | 714,527 | 100% |
+| **Attributed** (leaked `__FILE__` → 139 src files) | 448 | 8.00% | 95,736 | 13.40% |
+| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 3,932 | 70.24% | 554,844 | 77.65% |
+| **Attributed ∪ Decompiled** (understood in *some* way) | 3,932 | 70.24% | 554,844 | **77.65%** |
+| **Totally unknown** (no attribution, no decompile) | 1,666 | 29.76% | 159,683 | **22.35%** |
 
 ### 1a. Module-identified-but-not-formally-attributed (informational — not folded into "Attributed" above)
 
@@ -26,11 +26,11 @@ Data-driven status doc for the "decompile all of `bruce` to source-reconstructio
 
 Netting this out against §1's "Totally unknown" row gives the true unidentified figure:
 
-| | Functions | % of 5,582 | Bytes | % of 714,701 |
+| | Functions | % of 5,598 | Bytes | % of 714,527 |
 |---|---:|---:|---:|---:|
-| Totally unknown (§1, includes BTA-identified-but-undecompiled) | 1,685 | 30.19% | 160,369 | 22.44% |
+| Totally unknown (§1, includes BTA-identified-but-undecompiled) | 1,666 | 29.76% | 159,683 | 22.35% |
 | — of which: BTA-identified, module known, just not decompiled | 0 | 0.00% | 0 | 0.00% |
-| **— truly unidentified (no attribution, no decompile, no module ID)** | **1,685** | **30.19%** | **160,369** | **22.44%** |
+| **— truly unidentified (no attribution, no decompile, no module ID)** | **1,666** | **29.76%** | **159,683** | **22.35%** |
 
 ## 2. Per-source-file table (all 139 attributed files, sorted by total byte size descending)
 
@@ -70,7 +70,6 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 | `battery_gauge_bq2742X.cc` | 3 | 3 | 808 | 808 | 0 |
 | `usb_device_cdc_acm.c` | 3 | 3 | 750 | 750 | 0 |
 | `sleep_driver.cc` | 1 | 1 | 744 | 744 | 0 |
-| `flash_lut.cc` | 3 | 3 | 706 | 706 | 0 |
 | `headphone_state_machine.cc` | 5 | 5 | 672 | 672 | 0 |
 | `bug_report.cc` | 4 | 4 | 660 | 660 | 0 |
 | `heap_5_improved.c` | 4 | 4 | 650 | 650 | 0 |
@@ -106,6 +105,7 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 | `io_pin.cc` | 1 | 1 | 318 | 318 | 0 |
 | `advertiser.cc` | 1 | 1 | 316 | 316 | 0 |
 | `pattern_player.cc` | 1 | 1 | 308 | 308 | 0 |
+| `flash_lut.cc` | 3 | 3 | 300 | 300 | 0 |
 | `p_rsa_asn1.c` | 2 | 2 | 298 | 298 | 0 |
 | `private_heap.cc` | 3 | 3 | 292 | 292 | 0 |
 | `battery_gauge_bq2742X.h` | 1 | 1 | 290 | 290 | 0 |
@@ -207,16 +207,16 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 
 ## 4. The honest bottom line
 
-Of **5,582 total functions** (the current census):
+Of **5,598 total functions** (the current census):
 
 | | Functions | Bytes |
 |---|---:|---:|
-| Attributed to a source file | 448 | 96,142 |
-| Decompiled (in census) | 3,897 | 554,332 |
-| — of which both attributed AND decompiled | 448 | 96,142 |
+| Attributed to a source file | 448 | 95,736 |
+| Decompiled (in census) | 3,932 | 554,844 |
+| — of which both attributed AND decompiled | 448 | 95,736 |
 | — of which in the identified-but-not-formally-attributed BTA/BTE stack (§1a) | 1,116 | 213,911 |
-| **Understood in some way (union)** | **3,897 (69.8%)** | **554,332 (77.6%)** |
-| **Completely unknown — no attribution, no decompile, no module ID** | 1,685 (30.2%), or **1,685 (30.2%) excluding BTA-identified** | 160,369 (22.4%), or **160,369 (22.4%) excluding BTA-identified** |
+| **Understood in some way (union)** | **3,932 (70.2%)** | **554,844 (77.7%)** |
+| **Completely unknown — no attribution, no decompile, no module ID** | 1,666 (29.8%), or **1,666 (29.8%) excluding BTA-identified** | 159,683 (22.3%), or **159,683 (22.3%) excluding BTA-identified** |
 
 ## Methodology (for regenerating this doc)
 

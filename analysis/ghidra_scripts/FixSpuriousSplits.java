@@ -1214,6 +1214,210 @@ public class FixSpuriousSplits extends GhidraScript {
             f00d4d34.setBody(new AddressSet(a00d4d34, toAddr(0x600d4d55)));
         }
 
+        // 108. Fix flash_lut__600d4902 boundary (68 bytes: 0x600d4902..0x600d4945)
+        Address a00d4902 = toAddr(0x600d4902);
+        Function f00d4902 = fm.getFunctionAt(a00d4902);
+        if (f00d4902 != null) {
+            f00d4902.setBody(new AddressSet(a00d4902, toAddr(0x600d4945)));
+        }
+
+        // 109. Create missing function 0x600d4de8 (4 bytes: 0x600d4de8..0x600d4deb)
+        Address a00d4de8 = toAddr(0x600d4de8);
+        Function f00d4de8 = fm.getFunctionAt(a00d4de8);
+        if (f00d4de8 == null) {
+            createFunction(a00d4de8, "thunk_FUN_60060a88__600d4de8");
+            f00d4de8 = fm.getFunctionAt(a00d4de8);
+        }
+        if (f00d4de8 != null) {
+            f00d4de8.setBody(new AddressSet(a00d4de8, toAddr(0x600d4deb)));
+        }
+
+        // 110. Fix 0x600d4dec boundary (4 bytes: 0x600d4dec..0x600d4def)
+        Address a00d4dec = toAddr(0x600d4dec);
+        Function f00d4dec = fm.getFunctionAt(a00d4dec);
+        if (f00d4dec != null) {
+            f00d4dec.setBody(new AddressSet(a00d4dec, toAddr(0x600d4def)));
+        }
+
+        // 111. Fix 0x600d4e4c boundary (6 bytes: 0x600d4e4c..0x600d4e51)
+        Address a00d4e4c = toAddr(0x600d4e4c);
+        Function f00d4e4c = fm.getFunctionAt(a00d4e4c);
+        if (f00d4e4c != null) {
+            f00d4e4c.setBody(new AddressSet(a00d4e4c, toAddr(0x600d4e51)));
+        }
+
+        // 112. Create missing function 0x600d4e52 (18 bytes: 0x600d4e52..0x600d4e63)
+        Address a00d4e52 = toAddr(0x600d4e52);
+        Function f00d4e52 = fm.getFunctionAt(a00d4e52);
+        if (f00d4e52 == null) {
+            createFunction(a00d4e52, "FUN_600d4e52");
+            f00d4e52 = fm.getFunctionAt(a00d4e52);
+        }
+        if (f00d4e52 != null) {
+            f00d4e52.setBody(new AddressSet(a00d4e52, toAddr(0x600d4e63)));
+        }
+
+        // 113. Create missing function 0x600d4e9c (4 bytes: 0x600d4e9c..0x600d4e9f)
+        Address a00d4e9c = toAddr(0x600d4e9c);
+        Function f00d4e9c = fm.getFunctionAt(a00d4e9c);
+        if (f00d4e9c == null) {
+            createFunction(a00d4e9c, "FUN_600d4e9c");
+            f00d4e9c = fm.getFunctionAt(a00d4e9c);
+        }
+        if (f00d4e9c != null) {
+            f00d4e9c.setBody(new AddressSet(a00d4e9c, toAddr(0x600d4e9f)));
+        }
+
+        // 114. Create missing function 0x600d4ea0 (4 bytes: 0x600d4ea0..0x600d4ea3)
+        Address a00d4ea0 = toAddr(0x600d4ea0);
+        Function f00d4ea0 = fm.getFunctionAt(a00d4ea0);
+        if (f00d4ea0 == null) {
+            createFunction(a00d4ea0, "FUN_600d4ea0");
+            f00d4ea0 = fm.getFunctionAt(a00d4ea0);
+        }
+        if (f00d4ea0 != null) {
+            f00d4ea0.setBody(new AddressSet(a00d4ea0, toAddr(0x600d4ea3)));
+        }
+
+        // 115. Create missing function 0x600d4ea4 (2 bytes: 0x600d4ea4..0x600d4ea5)
+        Address a00d4ea4 = toAddr(0x600d4ea4);
+        Function f00d4ea4 = fm.getFunctionAt(a00d4ea4);
+        if (f00d4ea4 == null) {
+            createFunction(a00d4ea4, "FUN_600d4ea4");
+            f00d4ea4 = fm.getFunctionAt(a00d4ea4);
+        }
+        if (f00d4ea4 != null) {
+            f00d4ea4.setBody(new AddressSet(a00d4ea4, toAddr(0x600d4ea5)));
+        }
+
+        // 116. Create missing function 0x600d4ed8 (20 bytes: 0x600d4ed8..0x600d4eeb)
+        Address a00d4ed8 = toAddr(0x600d4ed8);
+        Function f00d4ed8 = fm.getFunctionAt(a00d4ed8);
+        if (f00d4ed8 == null) {
+            createFunction(a00d4ed8, "FUN_600d4ed8");
+            f00d4ed8 = fm.getFunctionAt(a00d4ed8);
+        }
+        if (f00d4ed8 != null) {
+            f00d4ed8.setBody(new AddressSet(a00d4ed8, toAddr(0x600d4eeb)));
+        }
+
+        // 117. Create missing function 0x600d4eec (8 bytes: 0x600d4eec..0x600d4ef3)
+        Address a00d4eec = toAddr(0x600d4eec);
+        Function f00d4eec = fm.getFunctionAt(a00d4eec);
+        if (f00d4eec == null) {
+            createFunction(a00d4eec, "FUN_600d4eec");
+            f00d4eec = fm.getFunctionAt(a00d4eec);
+        }
+        if (f00d4eec != null) {
+            f00d4eec.setBody(new AddressSet(a00d4eec, toAddr(0x600d4ef3)));
+        }
+
+        // 118. Create missing function 0x600d4ef4 (4 bytes: 0x600d4ef4..0x600d4ef7)
+        Address a00d4ef4 = toAddr(0x600d4ef4);
+        Function f00d4ef4 = fm.getFunctionAt(a00d4ef4);
+        if (f00d4ef4 == null) {
+            createFunction(a00d4ef4, "FUN_600d4ef4");
+            f00d4ef4 = fm.getFunctionAt(a00d4ef4);
+        }
+        if (f00d4ef4 != null) {
+            f00d4ef4.setBody(new AddressSet(a00d4ef4, toAddr(0x600d4ef7)));
+        }
+
+        // 119. Create missing function 0x600d4ef8 (12 bytes: 0x600d4ef8..0x600d4f03)
+        Address a00d4ef8 = toAddr(0x600d4ef8);
+        Function f00d4ef8 = fm.getFunctionAt(a00d4ef8);
+        if (f00d4ef8 == null) {
+            createFunction(a00d4ef8, "FUN_600d4ef8");
+            f00d4ef8 = fm.getFunctionAt(a00d4ef8);
+        }
+        if (f00d4ef8 != null) {
+            f00d4ef8.setBody(new AddressSet(a00d4ef8, toAddr(0x600d4f03)));
+        }
+
+        // 120. Create missing function 0x600d4f04 (6 bytes: 0x600d4f04..0x600d4f09)
+        Address a00d4f04 = toAddr(0x600d4f04);
+        Function f00d4f04 = fm.getFunctionAt(a00d4f04);
+        if (f00d4f04 == null) {
+            createFunction(a00d4f04, "FUN_600d4f04");
+            f00d4f04 = fm.getFunctionAt(a00d4f04);
+        }
+        if (f00d4f04 != null) {
+            f00d4f04.setBody(new AddressSet(a00d4f04, toAddr(0x600d4f09)));
+        }
+
+        // 121. Create missing function 0x600d4f0a (34 bytes: 0x600d4f0a..0x600d4f2b)
+        Address a00d4f0a = toAddr(0x600d4f0a);
+        Function f00d4f0a = fm.getFunctionAt(a00d4f0a);
+        if (f00d4f0a == null) {
+            createFunction(a00d4f0a, "FUN_600d4f0a");
+            f00d4f0a = fm.getFunctionAt(a00d4f0a);
+        }
+        if (f00d4f0a != null) {
+            f00d4f0a.setBody(new AddressSet(a00d4f0a, toAddr(0x600d4f2b)));
+        }
+
+        // 122. Create missing function 0x600d4f2c (34 bytes: 0x600d4f2c..0x600d4f4d)
+        Address a00d4f2c = toAddr(0x600d4f2c);
+        Function f00d4f2c = fm.getFunctionAt(a00d4f2c);
+        if (f00d4f2c == null) {
+            createFunction(a00d4f2c, "FUN_600d4f2c");
+            f00d4f2c = fm.getFunctionAt(a00d4f2c);
+        }
+        if (f00d4f2c != null) {
+            f00d4f2c.setBody(new AddressSet(a00d4f2c, toAddr(0x600d4f4d)));
+        }
+
+        // 123. Create missing function 0x600d4f4e (30 bytes: 0x600d4f4e..0x600d4f6b)
+        Address a00d4f4e = toAddr(0x600d4f4e);
+        Function f00d4f4e = fm.getFunctionAt(a00d4f4e);
+        if (f00d4f4e == null) {
+            createFunction(a00d4f4e, "FUN_600d4f4e");
+            f00d4f4e = fm.getFunctionAt(a00d4f4e);
+        }
+        if (f00d4f4e != null) {
+            f00d4f4e.setBody(new AddressSet(a00d4f4e, toAddr(0x600d4f6b)));
+        }
+
+        // 124. Create missing function 0x600d4fb0 (8 bytes: 0x600d4fb0..0x600d4fb7)
+        Address a00d4fb0 = toAddr(0x600d4fb0);
+        Function f00d4fb0 = fm.getFunctionAt(a00d4fb0);
+        if (f00d4fb0 == null) {
+            createFunction(a00d4fb0, "FUN_600d4fb0");
+            f00d4fb0 = fm.getFunctionAt(a00d4fb0);
+        }
+        if (f00d4fb0 != null) {
+            f00d4fb0.setBody(new AddressSet(a00d4fb0, toAddr(0x600d4fb7)));
+        }
+
+        // 125. Create missing function 0x600d4fb8 (12 bytes: 0x600d4fb8..0x600d4fc3)
+        Address a00d4fb8 = toAddr(0x600d4fb8);
+        Function f00d4fb8 = fm.getFunctionAt(a00d4fb8);
+        if (f00d4fb8 == null) {
+            createFunction(a00d4fb8, "FUN_600d4fb8");
+            f00d4fb8 = fm.getFunctionAt(a00d4fb8);
+        }
+        if (f00d4fb8 != null) {
+            f00d4fb8.setBody(new AddressSet(a00d4fb8, toAddr(0x600d4fc3)));
+        }
+
+        // 126. Fix 0x600d4fc4 boundary (72 bytes: 0x600d4fc4..0x600d500b)
+        Address a00d4fc4 = toAddr(0x600d4fc4);
+        Function f00d4fc4 = fm.getFunctionAt(a00d4fc4);
+        if (f00d4fc4 != null) {
+            f00d4fc4.setBody(new AddressSet(a00d4fc4, toAddr(0x600d500b)));
+        }
+
+        // 127. Create missing function 0x600d5042 (16 bytes: 0x600d5042..0x600d5051)
+        Address a00d5042 = toAddr(0x600d5042);
+        Function f00d5042 = fm.getFunctionAt(a00d5042);
+        if (f00d5042 == null) {
+            createFunction(a00d5042, "FUN_600d5042");
+            f00d5042 = fm.getFunctionAt(a00d5042);
+        }
+        if (f00d5042 != null) {
+            f00d5042.setBody(new AddressSet(a00d5042, toAddr(0x600d5051)));
+        }
+
         println("FixSpuriousSplits completed successfully.");
     }
 }
