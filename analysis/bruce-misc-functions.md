@@ -4581,6 +4581,27 @@ Decompiled and documented 11 functions (1,690 bytes across `0x600fefd8`–`0x600
 
 Reliability read: a clean wave whose real value was independent, large-scale corroboration of last session's finding — nine fresh, consistent call sites is about as strong a confirmation as this pipeline produces for a single-function correction.
 
+## Session 158 (Wave 128) — Broadcom BTA DM BLE MWS Config Handlers & GATT/ATT Packet Dispatchers (13 functions, 1,580 bytes)
+
+Decompiled and documented 13 functions (1,580 bytes across `0x600ff672`–`0x600ffc9e`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600ff672` |   34 | BTA / DM BLE | **`bta_dm_ble_set_host_channel_class`** — Broadcom BTA DM BLE set host BLE channel classification via HCI (`btsnd_hcic_ble_set_host_chnl_class`, `0x600b1264`). | 1 caller / 1 callee |
+| `0x600ff694` |   60 | BTA / DM BLE | **`bta_dm_ble_set_mws_channel_params`** — Broadcom BTA DM BLE configure MWS channel parameters via HCI (`btsnd_hcic_set_mws_chann_param`, `0x600b3dbc`). | 1 caller / 1 callee |
+| `0x600ff6d0` |   72 | BTA / DM BLE | **`bta_dm_ble_set_ext_frame_config`** — Broadcom BTA DM BLE configure external frame config via HCI (`btsnd_hcic_set_ext_frame_config`, `0x600b3ec0`). | 1 caller / 2 callees |
+| `0x600ff718` |   76 | BTA / DM BLE | **`bta_dm_ble_set_mws_signaling`** — Broadcom BTA DM BLE configure MWS signaling parameters via HCI (`btsnd_hcic_set_mws_signaling`, `0x600b400c`). | 1 caller / 1 callee |
+| `0x600ff764` |   58 | BTA / DM BLE | **`bta_dm_ble_set_mws_transport_layer`** — Broadcom BTA DM BLE configure MWS transport layer via HCI (`btsnd_hcic_set_mws_trans_layer`, `0x600b4258`). | 1 caller / 1 callee |
+| `0x600ff79e` |   98 | BTA / DM BLE | **`bta_dm_ble_set_mws_scan_freq_table`** — Broadcom BTA DM BLE configure MWS scan frequency table via HCI (`btsnd_hcic_set_mws_scan_freq_table`, `0x600b434c`). | 1 caller / 1 callee |
+| `0x600ff800` |   98 | BTA / DM BLE | **`bta_dm_ble_set_mws_pattern_config`** — Broadcom BTA DM BLE configure MWS pattern configuration via HCI (`btsnd_hcic_set_mws_pattern_config`, `0x600b4450`). | 1 caller / 1 callee |
+| `0x600ff862` |   38 | BTA / DM BLE | **`bta_dm_ble_get_mws_transport_layer_config`** — Broadcom BTA DM BLE request MWS transport layer config via HCI (`btsnd_hcic_get_mws_trans_layer_config`, `0x600b4548`). | 1 caller / 1 callee |
+| `0x600ff888` |  254 | BTA / DM BLE | **`bta_dm_ble_mws_hci_cback`** — Broadcom BTA DM BLE dispatch MWS / channel classification HCI command complete callbacks to BTA DM handlers (`0x600c70ac`–`0x600c74a0`). | 1 caller / 9 callees |
+| `0x600ff986` |  120 | GATT / Core | **`gatt_send_data_packet`** — Broadcom GATT data transmit router: send packet via fixed channel (`0x600b5264`) or dynamic L2CAP channel (`0x600f7b26`), or enqueue if link congested (`0x6006dfa4`). | 3 callers / 3 callees |
+| `0x600ff9fe` |   54 | GATT / Core | **`attp_send_msg_to_l2cap`** — Broadcom GATT/ATT transmit message veneer to L2CAP layer via `gatt_send_data_packet` (`0x600ff986`). | 10 callers / 1 callee |
+| `0x600ffa34` |  166 | GATT / Core | **`attp_send_cl_cmd`** — Broadcom GATT/ATT client command transmitter and queue scheduler (`gatt_enqueue_cl_cmd` `0x600aff88`, `gatt_start_rsp_timer` `0x600f6a8a`, `gatt_send_data_packet` `0x600ff986`). | 1 caller / 3 callees |
+| `0x600ffada` |  452 | GATT / Core | **`attp_build_and_send_cmd`** — Broadcom GATT/ATT client command PDU builder and transmitter: formats ATT PDU based on opcode (2..0xD2) via `0x600c7878`–`0x600c7d64` and dispatches via `attp_send_cl_cmd` (`0x600ffa34`). | 8 callers / 9 callees |
+
+
 
 
 
