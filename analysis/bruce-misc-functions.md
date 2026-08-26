@@ -4528,6 +4528,26 @@ Decompiled and documented 11 functions (1,634 bytes across `0x600fe2fe`–`0x600
 
 Reliability read: a genuinely productive wave — one real correction to an older entry (caught by noticing the same callee reused generically across many unrelated operations, a strong tell once six-plus call sites are visible) and one older ambiguity resolved by two independent sessions' evidence converging from opposite directions.
 
+## Session 156 (Wave 126) — Broadcom BTA GATTC/GATTS Discovery Pagination, Notification & Listen Handlers (12 functions, 1,634 bytes)
+
+Decompiled and documented 12 functions (1,634 bytes across `0x600fe960`–`0x600fefd8`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fe960` |  182 | BTA / GATTC | **`bta_gattc_disc_cmpl_handler`** — Broadcom BTA GATTC handle service discovery / SDP completion step, paginate discovery results (`0x600ef0f4`), and advance discovery FSM. | 0 callers / 5 callees |
+| `0x600fea16` |  180 | BTA / GATTC | **`bta_gattc_sdp_cmpl_handler`** — Broadcom BTA GATTC handle SDP discovery completion, parse records (`0x60094c5c`), and chain to GATT service discovery (`0x600fe05a`). | 0 callers / 5 callees |
+| `0x600feaca` |   78 | BTA / GATTC | **`bta_gattc_disc_res_handler`** — Broadcom BTA GATTC paginate service discovery results (`0x600ef0f4`) and complete discovery on end of list. | 0 callers / 3 callees |
+| `0x600feb2e` |  122 | BTA / GATTC | **`bta_gattc_send_notification_cback`** — Broadcom BTA GATTC deliver GATT notification or indication event (event 10, BTA_GATTC_NOTIF_EVT) to client application callback. | 1 caller / 2 callees |
+| `0x600feba8` |  400 | BTA / GATTC | **`bta_gattc_process_notification`** — Broadcom BTA GATTC process incoming GATT notification/indication, confirm indication (`0x600f3b78`), and deliver to registered client callback (`0x600feb2e`). | 1 caller / 10 callees |
+| `0x600fed38` |  102 | BTA / GATTC | **`bta_gattc_send_congest_cback`** — Broadcom BTA GATTC deliver congestion status change event (0x12, BTA_GATTC_CONGEST_EVT) to client callback. | 0 callers / 1 callee |
+| `0x600fed9e` |  162 | BTA / GATTC | **`bta_gattc_auto_open_connected_dev`** — Broadcom BTA GATTC check if device connected via GATT (`0x600f3e6a`), allocate CLCB (`0x600950bc`), and dispatch 0x1D00 open event. | 2 callers / 4 callees |
+| `0x600fee40` |  210 | BTA / GATTC | **`bta_gattc_process_api_listen`** — Broadcom BTA GATTC handle API listen request, configure GATT listener (`0x600f3ed6`), invoke callback (event 0x10), and auto-connect active devices (`0x600fed9e`). | 1 caller / 7 callees |
+| `0x600fef12` |   30 | BTA / GATTC | **`bta_gattc_start_timer`** — Broadcom BTA GATTC start timer via `0x600d9236`. | 0 callers / 1 callee |
+| `0x600fef30` |   36 | BTA / GATTC | **`bta_gattc_set_timer`** — Broadcom BTA GATTC configure timer via `0x6006d998`. | 0 callers / 1 callee |
+| `0x600fef54` |   88 | BTA / GATTS | **`bta_gatts_deregister_all`** — Broadcom BTA GATTS iterate 10 server connection records, deregister client/server interfaces (`0x600ab9b8`), and clear server control block. | 2 callers / 2 callees |
+| `0x600fefac` |   44 | BTA / GATTS | **`bta_gatts_deregister_if_active`** — Broadcom BTA GATTS find server control block (`0x60095b2c`) and deregister server interface from GATT core (`0x600abb14`). | 1 caller / 2 callees |
+
+
 
 
 
