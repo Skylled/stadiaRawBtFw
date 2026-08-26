@@ -5140,6 +5140,48 @@ Decompiled and documented 34 functions (898 bytes across `0x600d54f2`–`0x600d5
 
 Independently re-derived `bruce-decompile-status.md`'s totals via a fresh header-parsed join (3,998 functions / 556,634 bytes, 0 mismatches, 0 non-census, 0 duplicates) — matches the wave's claimed 77.89% exactly. Reliability read: a clean wave overall — caller/callee bookkeeping fully accurate, the stale-boundary fix verified precise, and the one content finding (a redundant byte-write miscounted as an extra byte) is minor and doesn't affect the function's real identity or purpose.
 
+## Session 172 (Wave 142) — USB Host Audio Channels, Recursive Tree Deallocation & Descriptor Parsing (34 functions, 1,172 bytes)
+
+Decompiled and documented 34 functions (1,172 bytes across `0x600d5874`–`0x600d5d02`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d5874` |   30 | Audio / USB Host | **`usb_host_worker_event_forward_1`** — Forward arguments to `0x600638e4`. | 1 caller / 1 callee |
+| `0x600d5892` |   26 | Audio / USB Host | **`usb_host_channel_status_check`** — Inspect 4 status fields and set result flags. | 1 caller / 0 callees |
+| `0x600d58ac` |  226 | Audio / USB Host | **`usb_host_channel_init_buffers`** — Initialize DMA and ring buffers for USB host audio channels with `DMB ISH` memory barriers, tail call `0x600d55e2`. | 0 callers / 2 callees |
+| `0x600d598e` |  226 | Audio / USB Host | **`bsearch_channel_descriptor_table`** — Binary search lookup across 16-entry 12-byte element table with sub-table parsing. | 1 caller / 1 callee |
+| `0x600d5a70` |   64 | Audio / USB Host | **`usb_host_channel_dispatch_event`** — Handle event codes 4 and 5 with audio channel offset calculation (`+0x110`, `+0x540`), invoking `0x60062f9c` and `0x600d598e`. | 0 callers / 2 callees |
+| `0x600d5ab0` |    6 | Audio / USB Host | **`usb_host_audio_state_dispatch_1`** — Load context from `+0x5c` and tail call `0x6006318c`. | 0 callers / 1 callee |
+| `0x600d5ab6` |   10 | Audio / USB Host | **`usb_host_audio_forward_540`** — Add offset `0x540` and tail call `0x600636e0`. | 0 callers / 0 callees |
+| `0x600d5ac0` |   10 | Audio / USB Host | **`usb_host_audio_forward_110`** — Add offset `0x110` and tail call `0x600636e0`. | 0 callers / 0 callees |
+| `0x600d5aca` |   18 | Audio / USB Topology | **`usb_host_topology_verify_route`** — Call `0x60062e00`, conditionally tail call `0x60062dd8`. | 1 caller / 1 callee |
+| `0x600d5adc` |    4 | Infrastructure / Veneer | **`thunk_FUN_60062e00__600d5adc`** — 4-byte veneer forwarding to `0x60062e00`. | 1 caller / 1 callee |
+| `0x600d5ae0` |   20 | Audio / USB Host | **`usb_host_context_alloc_60`** — Initialize context via `0x600638d4` and allocate 96-byte memory block (`0x60`) via `0x6013d068`. | 0 callers / 2 callees |
+| `0x600d5af4` |   42 | Memory / Allocator | **`usb_host_node_list_free_recursive_1`** — Recursively traverse node list at `+0xc`, freeing buffer at `+0x28`, `+0x1c` via `0x600d5828`, and node via `0x6013d310`. | 2 callers / 3 callees |
+| `0x600d5b1e` |   38 | Memory / Allocator | **`usb_host_node_list_free_recursive_2`** — Recursively traverse node list at `+0xc`, freeing item at `+0x14` via `0x60101c5c` and node via `0x6013d310`. | 2 callers / 2 callees |
+| `0x600d5b44` |   60 | Memory / Allocator | **`usb_host_tree_free`** — Free tree structures at `+0x6c`, `+0x60` via `0x600d5828`, and recursive lists at `+0x58`, `+0x54` via `0x600d5b1e` / `0x600d5af4`. | 1 caller / 4 callees |
+| `0x600d5b80` |   26 | Memory / Allocator | **`usb_host_context_tree_free`** — Free tree context via `0x600d5b44` and deallocate 124-byte context (`0x7c`) via `0x6013d068`. | 1 caller / 2 callees |
+| `0x600d5b9a` |   22 | Audio / USB Topology | **`usb_host_topology_context_alloc_9c8`** — Initialize topology via `0x600638f8` and allocate 2,504-byte (`0x9c8`) buffer via `0x6013d068`. | 0 callers / 2 callees |
+| `0x600d5bb0` |    6 | Audio / USB Host | **`usb_host_audio_state_dispatch_2`** — Load context from `+0x5c` and tail call `0x60063940`. | 0 callers / 0 callees |
+| `0x600d5bb6` |   16 | C Runtime / Data | **`uint24_unpack_little_endian`** — Unpack 3 consecutive bytes (`[r0]`, `[r0, #1]`, `[r0, #2]`) into little-endian unsigned 24-bit integer. | 3 callers / 0 callees |
+| `0x600d5bc6` |    4 | C Runtime / Pointer | **`deref_uint32_ptr`** — Dereference 32-bit pointer (`ldr r0, [r0]; bx lr`). | 2 callers / 0 callees |
+| `0x600d5bca` |    8 | Memory / Heap | **`memory_free_if_nonzero`** — Null check and tail call memory deallocator `0x6013d310`. | 4 callers / 1 callee |
+| `0x600d5bd2` |   20 | Memory / Heap | **`memory_alloc_power_of_two`** — Compute left shift by 1 and tail call `0x6013d378`. | 3 callers / 2 callees |
+| `0x600d5be6` |   30 | System / Version | **`version_tag_compare`** — Compare 2-byte version tags in major/minor order returning boolean (`0` or `1`). | 2 callers / 0 callees |
+| `0x600d5c04` |   18 | Audio / Descriptors | **`usb_descriptor_check_header_type`** — Check descriptor length at `+5` and compare header byte `+2` against parameter `r1`. | 6 callers / 0 callees |
+| `0x600d5c16` |    6 | Audio / Descriptors | **`usb_descriptor_check_type_2`** — Set descriptor type argument 2 and tail call `0x600d5c04`. | 6 callers / 1 callee |
+| `0x600d5c1c` |   32 | Audio / Descriptors | **`usb_descriptor_parse_endpoint_config_1`** — Verify descriptor type 2 and parse endpoint configuration flags at `+5`, `+4`. | 1 caller / 1 callee |
+| `0x600d5c3c` |   46 | Audio / Descriptors | **`usb_descriptor_parse_endpoint_config_2`** — Verify descriptor type 2 and parse endpoint configuration flags for mode 2 and mode 4. | 1 caller / 1 callee |
+| `0x600d5c6a` |    6 | Audio / Descriptors | **`usb_descriptor_check_type_3`** — Set descriptor type argument 3 and tail call `0x600d5c04`. | 6 callers / 1 callee |
+| `0x600d5c70` |   32 | Audio / Descriptors | **`usb_descriptor_parse_endpoint_config_3`** — Verify descriptor type 3 and parse configuration flags at `+5`, `+4`. | 1 caller / 1 callee |
+| `0x600d5c90` |   46 | Audio / Descriptors | **`usb_descriptor_parse_endpoint_config_4`** — Verify descriptor type 3 and parse configuration flags for modes 3 and 4. | 1 caller / 1 callee |
+| `0x600d5cbe` |    6 | Audio / Descriptors | **`usb_descriptor_check_type_a`** — Set descriptor type argument 0xa (10) and tail call `0x600d5c04`. | 6 callers / 1 callee |
+| `0x600d5cc4` |    6 | Audio / Descriptors | **`usb_descriptor_check_type_b`** — Set descriptor type argument 0xb (11) and tail call `0x600d5c04`. | 4 callers / 1 callee |
+| `0x600d5cca` |   50 | Audio / Descriptors | **`usb_descriptor_find_interface_index`** — Verify descriptor type 0xb and search byte array at `+5` for matching interface index. | 1 caller / 1 callee |
+| `0x600d5cfc` |    6 | Audio / Descriptors | **`usb_descriptor_check_type_c`** — Set descriptor type argument 0xc (12) and tail call `0x600d5c04`. | 2 callers / 1 callee |
+| `0x600d5d02` |    6 | Audio / Descriptors | **`usb_descriptor_check_type_6`** — Set descriptor type argument 6 and tail call `0x600d5c04`. | 2 callers / 1 callee |
+
+
 
 
 
