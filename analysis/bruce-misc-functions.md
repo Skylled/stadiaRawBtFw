@@ -5521,3 +5521,35 @@ All three `0x6013d068` citations this wave (`stream_close_channel_and_free_20b`,
 
 **One confirmed correction**: `flash_calculate_offset_and_sync` (`0x600d801c`) is not a flash-offset/sync function at all — its body is structurally byte-for-byte identical to session 176's confirmed `key_index_lookup_and_format_2` (`0x600d6db8`), using the same established `0x60050c18`(format-into-buffer)/`0x60101ba2`(advance-offset/commit) log-buffer-framework pair. Real behavior is formatting a raw value into a diagnostic/log buffer, most likely logging the flash offset for diagnostics rather than computing or syncing it. Corrected in place. Reliability read: a useful catch from recognizing an exact-shape match to an already-established pattern from three sessions prior, rather than trusting the plausible "flash operation" framing suggested by the enclosing cluster's theme.
 
+## Session 180 (Wave 150) — TS3A227E Audio Jack, BQ25601 Charger & BQ2742X Fuel Gauge I2C Drivers (25 functions, 1,408 bytes)
+
+Decompiled and documented 25 functions (1,408 bytes across `0x600d81f8`–`0x600d8722`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d81f8` |   46 | I2C / Driver | **`i2c_read_reg8_sync`** — Synchronous I2C read 1 byte from 8-bit register using `0x6013d0b0` with 200ms timeout (`0xc8`). | 5 callers / 1 callee |
+| `0x600d8226` |   50 | TS3A227E / Status | **`ts3a227e_read_accessory_status`** — Read register `0xb` via `0x600d81f8`, extract bit 3 into `[r0, #8]`, test bits 1..2 and clear `[r0, #9]` if zero. | 2 callers / 1 callee |
+| `0x600d8258` |   14 | TS3A227E / Status | **`ts3a227e_check_accessory_status`** — Check flag at `[r0, #0xa]`; if non-zero, tail-call `0x600d8226`, else return error 9. | 1 caller / 1 callee |
+| `0x600d8266` |   14 | TS3A227E / Register | **`ts3a227e_read_reg1`** — Read register 1 byte via `0x600d81f8`. | 1 caller / 1 callee |
+| `0x600d8274` |   14 | TS3A227E / Register | **`ts3a227e_read_reg2`** — Read register 2 byte via `0x600d81f8`. | 1 caller / 1 callee |
+| `0x600d8282` |   36 | I2C / Driver | **`i2c_write_reg8_byte`** — Synchronous I2C write 1 byte to 8-bit register via `0x6013d0b0` (length=2: reg+val). | 2 callers / 1 callee |
+| `0x600d82a6` |   26 | TS3A227E / Mode | **`ts3a227e_write_control_mode`** — If param 2 is 0 write value 8 to reg 3, else write 0 to reg 3 via `0x600d8282`. | 1 caller / 1 callee |
+| `0x600d82c0` |   24 | TS3A227E / Cache | **`ts3a227e_write_cached_reg`** — Check cached status byte at `[r0, #6]`; if non-zero return it, else write cached byte at `[r0, #5]` via `0x600d8282`. | 2 callers / 1 callee |
+| `0x600d82d8` |   30 | TS3A227E / Cache | **`ts3a227e_read_cached_reg`** — Read byte from register into `[r0, #5]` via `0x600d81f8` and update cached status at `[r0, #6]`. | 2 callers / 1 callee |
+| `0x600d82f6` |   44 | TS3A227E / Switch | **`ts3a227e_set_switch_bit`** — Read reg 5 via `0x600d82d8`, set or clear bit 2 (`0x4`), and write back via `0x600d82c0`. | 1 caller / 2 callees |
+| `0x600d8322` |   60 | BQ25601 / Register | **`bq25601_read_register_field`** — Read 1-byte charger register via `0x6013d0b0` (timeout 200ms) and store to output pointer. | 16 callers / 1 callee |
+| `0x600d835e` |   44 | BQ25601 / Register | **`bq25601_write_register_field`** — Write 1-byte charger register via `0x6013d0b0` (length=2: reg+val). | 10 callers / 1 callee |
+| `0x600d838a` |   50 | BQ25601 / Field | **`bq25601_modify_register_bit5`** — Read charger reg via `0x600d8322`, modify bit 5 (`0x20`), and write back via `0x600d835e`. | 2 callers / 2 callees |
+| `0x600d83bc` |   36 | BQ2742X / Register | **`bq2742x_write_reg8_byte`** — Write 1 byte to fuel gauge register via `0x6013d0b0`. | 3 callers / 1 callee |
+| `0x600d83e0` |  104 | BQ2742X / Threshold | **`bq2742x_write_threshold_pair`** — Write dual threshold words to registers `0x3e` and `0x3f` via `0x600d83bc` and write block checksum `0x60` via `0x6013d0b0`. | 3 callers / 3 callees |
+| `0x600d8448` |   52 | BQ2742X / Block | **`bq2742x_read_block_word_be`** — Read 16-bit big-endian word from block register offset (`reg + 0x40`) via `0x600d4330`. | 1 caller / 2 callees |
+| `0x600d847c` |   82 | BQ2742X / Flags | **`bq2742x_poll_flags_timeout`** — Poll fuel gauge flags register 6 via `0x600d4330` until mask matches expected value or timeout (4000ms, `0xfa0`). | 2 callers / 3 callees |
+| `0x600d84ce` |   36 | BQ2742X / Register | **`bq2742x_write_reg8_word16`** — Write 16-bit word to 8-bit register via `0x6013d0b0` (length=3: reg + 2 bytes data). | 5 callers / 1 callee |
+| `0x600d84f2` |   38 | BQ2742X / Block | **`bq2742x_write_block_word_be`** — Write 16-bit big-endian word to block register offset (`reg + 0x40`) via `0x600d84ce`. | 1 caller / 2 callees |
+| `0x600d8518` |   70 | BQ2742X / Checksum | **`bq2742x_update_block_checksum`** — Read old word via `0x600d8448`, write new word via `0x600d84f2`, and compute incremental block checksum `~checksum`. | 2 callers / 2 callees |
+| `0x600d855e` |  216 | BQ2742X / Profile | **`bq2742x_init_config_profile`** — Execute fuel gauge profile initialization: set block data control, write configuration parameters (design capacity `0x898`=2200mAh, design energy `0x4650`, taper rate), and verify checksum. | 1 caller / 3 callees |
+| `0x600d8636` |   52 | BQ2742X / Control | **`bq2742x_control_subcmd_read`** — Write control subcommand to reg 0 via `0x600d84ce`, delay 5ms (`0x6013cef8`), and read response word from reg 0 via `0x600d4330`. | 3 callers / 3 callees |
+| `0x600d866a` |   80 | BQ2742X / Control | **`bq2742x_poll_control_status`** — Repeatedly execute control command via `0x600d8636` until masked bits match expected or timeout expires. | 3 callers / 3 callees |
+| `0x600d86ba` |  104 | BQ2742X / Security | **`bq2742x_unseal_and_cfg_enter`** — Check if fuel gauge is sealed; if sealed, send unseal keys (`0x8000`, `0x8000`) via `0x600d84ce` and wait for `0x2000` status bit via `0x600d866a`. | 1 caller / 4 callees |
+| `0x600d8722` |   86 | BQ2742X / Config | **`bq2742x_cfg_update_exit`** — Send soft reset / config update exit command `0x42` via `0x600d84ce`, delay 100ms, poll flag bit 4 (`0x10`) to clear via `0x600d847c`, send command `0x20`, and poll status bit `0x2000` via `0x600d866a`. | 2 callers / 4 callees |
+
