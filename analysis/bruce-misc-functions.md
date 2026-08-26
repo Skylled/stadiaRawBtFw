@@ -5413,3 +5413,62 @@ Decompiled and documented 57 functions (1,034 bytes across `0x600d736c`–`0x600
 
 Zero content corrections. Given this wave's two dense near-duplicate clusters — 44 tiny sequence stepper/reset/getter functions (6 steppers × 22B, 18 resets × 6B, 18 getters × 4B) and 7 ring-buffer channel functions differing only by a modulo-divisor literal — checked every distinguishing literal directly: all 4 "N-channel" claims (10/6/9/17) match their own `% N` divisor and matching struct-offset base exactly (`+0x11c`/`+0xfc`/`+0xf8`/`+0x1c0`), and the group-3 sub-count/byte-total breakdown (6×22 + 18×6 + 18×4 + 8 + 4 = 324) is arithmetically exact. `keypad_scan_find_matching_key_string`'s "columns 0..66" claim matches its own `iVar6==0x43` (67) loop-exit sentinel precisely. Reliability read: an exceptionally clean wave — the large repetitive clusters that made session 175's/176's extra-scrutiny norm most relevant here held up perfectly, with every per-instance differentiator (channel count, column bound) independently verified rather than assumed from the template shape.
 
+## Session 178 (Wave 148) — Ring Buffer Multi-Channel Samplers & Haptics Driver Sync/Scale Routines (52 functions, 1,490 bytes)
+
+Decompiled and documented 52 functions (1,490 bytes across `0x600d7776`–`0x600d7d1c`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d7776` |   70 | RingBuffer / Sample | **`ring_buffer_14channel_sample_lookup`** — Index into 14-channel ring buffer at `+0x16c` with modulo division. | 1 caller / 0 callees |
+| `0x600d77bc` |   14 | RingBuffer / Sample | **`ring_buffer_14channel_advance_and_sample`** — Increment sample counter at `+4` and jump to `ring_buffer_14channel_sample_lookup` (`0x600d7776`). | 0 callers / 1 callee |
+| `0x600d77ca` |   64 | RingBuffer / Sample | **`ring_buffer_16channel_sample_lookup`** — Index into 16-channel ring buffer at `+0x21c` with mask `& 0xf`. | 1 caller / 0 callees |
+| `0x600d780a` |   14 | RingBuffer / Sample | **`ring_buffer_16channel_advance_and_sample`** — Increment sample counter at `+4` and jump to `ring_buffer_16channel_sample_lookup` (`0x600d77ca`). | 0 callers / 1 callee |
+| `0x600d7818` |   72 | RingBuffer / Sample | **`ring_buffer_17channel_sample_lookup_alt`** — Index into 17-channel ring buffer at `+0x22c` with modulo division. | 1 caller / 0 callees |
+| `0x600d7860` |   14 | RingBuffer / Sample | **`ring_buffer_17channel_advance_and_sample_alt`** — Increment sample counter at `+4` and jump to `ring_buffer_17channel_sample_lookup_alt` (`0x600d7818`). | 0 callers / 1 callee |
+| `0x600d786e` |   70 | RingBuffer / Sample | **`ring_buffer_11channel_sample_lookup`** — Index into 11-channel ring buffer at `+0x13c` with modulo division. | 1 caller / 0 callees |
+| `0x600d78b4` |   14 | RingBuffer / Sample | **`ring_buffer_11channel_advance_and_sample`** — Increment sample counter at `+4` and jump to `ring_buffer_11channel_sample_lookup` (`0x600d786e`). | 0 callers / 1 callee |
+| `0x600d78c2` |   72 | RingBuffer / Sample | **`ring_buffer_5channel_sample_lookup`** — Index into 5-channel ring buffer at `+0xa4` with modulo division. | 0 callers / 0 callees |
+| `0x600d790a` |   68 | RingBuffer / Sample | **`ring_buffer_3channel_sample_lookup`** — Index into 3-channel ring buffer at `+0x5c` with modulo division. | 1 caller / 0 callees |
+| `0x600d794e` |   14 | RingBuffer / Sample | **`ring_buffer_3channel_advance_and_sample`** — Increment sample counter at `+4` and jump to `ring_buffer_3channel_sample_lookup` (`0x600d790a`). | 0 callers / 1 callee |
+| `0x600d795c` |   70 | RingBuffer / Sample | **`ring_buffer_11channel_sample_lookup_alt`** — Index into 11-channel ring buffer at `+0x130` with modulo division. | 1 caller / 0 callees |
+| `0x600d79a2` |   14 | RingBuffer / Sample | **`ring_buffer_11channel_advance_and_sample_alt`** — Increment sample counter at `+4` and jump to `ring_buffer_11channel_sample_lookup_alt` (`0x600d795c`). | 0 callers / 1 callee |
+| `0x600d79b0` |   72 | RingBuffer / Sample | **`ring_buffer_5channel_sample_lookup_alt`** — Index into 5-channel ring buffer at `+0x94` with modulo division. | 1 caller / 0 callees |
+| `0x600d79f8` |   14 | RingBuffer / Sample | **`ring_buffer_5channel_advance_and_sample_alt`** — Increment sample counter at `+4` and jump to `ring_buffer_5channel_sample_lookup_alt` (`0x600d79b0`). | 0 callers / 1 callee |
+| `0x600d7a06` |   70 | RingBuffer / Sample | **`ring_buffer_6channel_sample_lookup_alt`** — Index into 6-channel ring buffer at `+0xbc` with modulo division. | 1 caller / 0 callees |
+| `0x600d7a4c` |   14 | RingBuffer / Sample | **`ring_buffer_6channel_advance_and_sample_alt`** — Increment sample counter at `+4` and jump to `ring_buffer_6channel_sample_lookup_alt` (`0x600d7a06`). | 0 callers / 1 callee |
+| `0x600d7a5a` |   64 | RingBuffer / Sample | **`ring_buffer_4channel_sample_lookup`** — Index into 4-channel ring buffer at `+0x94` with mask `& 3`. | 0 callers / 0 callees |
+| `0x600d7a9a` |   60 | RingBuffer / Sample | **`ring_buffer_4channel_sample_lookup_alt`** — Index into 4-channel ring buffer at `+0x7c` with mask `& 3`. | 0 callers / 0 callees |
+| `0x600d7ad6` |   26 | Haptics / Driver Sync | **`haptics_driver_channel_sync_init`** — Initialize haptics driver channel sync via `0x600653e0`, `0x600d8db2`, `0x600653e0`, and `0x600d8c7a`. | 2 callers / 3 callees |
+| `0x600d7af0` |   12 | Haptics / Driver Sync | **`haptics_driver_channel_sync_wrapper`** — Add offset `+8` and forward to `haptics_driver_channel_sync_init` (`0x600d7ad6`). | 0 callers / 1 callee |
+| `0x600d7afc` |   24 | Haptics / Driver Sync | **`haptics_driver_channel_sync_step`** — Compare index against bound at `+4`, step by `+0x14` and call `0x600d7ad6`. | 1 caller / 1 callee |
+| `0x600d7b14` |   14 | Haptics / Driver Sync | **`haptics_driver_channel_sync_advance`** — Increment counter at `+4` and jump to `haptics_driver_channel_sync_step` (`0x600d7afc`). | 0 callers / 1 callee |
+| `0x600d7b22` |   46 | Haptics / Amplitude | **`haptics_float_threshold_evaluate_step`** — Check floating-point amplitude at `+0x14` against 1.0f, branching to `0x600d4596` or `0x6005df5c`. | 0 callers / 0 callees |
+| `0x600d7b50` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7b50`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7b58` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7b58`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7b60` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7b60`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7b68` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7b68`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7b70` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7b70`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7b78` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7b78`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7b80` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7b80`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7b88` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7b88`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7b90` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7b90`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7b98` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7b98`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7ba0` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7ba0`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7ba8` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7ba8`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7bb0` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7bb0`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7bb8` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7bb8`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7bc0` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7bc0`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7bc8` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7bc8`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7bd0` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7bd0`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7bd8` |    8 | Haptics / JumpTable | **`haptics_indirect_dispatch_7bd8`** — Load indirect function pointer and context from `[r0, #0x10]` and jump to `r3`. | 0 callers / 0 callees |
+| `0x600d7be0` |   34 | Haptics / Amplitude | **`haptics_float_threshold_evaluate_direct`** — Check floating-point amplitude at `+8` against 1.0f, branching to `0x600d4596` or `0x6005df5c`. | 0 callers / 0 callees |
+| `0x600d7c02` |   42 | Haptics / Sequence | **`haptics_pattern_sequence_format_and_dispatch`** — Format haptics sequence report on stack and dispatch via `0x600d6d2a`. | 0 callers / 0 callees |
+| `0x600d7c2c` |   10 | Haptics / Sequence | **`haptics_pattern_sequence_format_wrapper`** — Wrapper invoking `haptics_pattern_sequence_format_and_dispatch` (`0x600d7c02`). | 0 callers / 0 callees |
+| `0x600d7c36` |   24 | Haptics / Sequence | **`haptics_pattern_sequence_step_and_format`** — Compare counter against bound at `+4`, step `+0xc` and call `0x600d7c02`. | 0 callers / 0 callees |
+| `0x600d7c4e` |   84 | Haptics / Amplitude | **`haptics_amplitude_scale_and_dispatch`** — Scale 4 haptics channel amplitudes by scaling factor clamped to 0..100 (`0x64`) and dispatch via `0x600d8d5a`. | 0 callers / 0 callees |
+| `0x600d7ca2` |   10 | Haptics / Amplitude | **`haptics_amplitude_scale_wrapper`** — Wrapper invoking `haptics_amplitude_scale_and_dispatch` (`0x600d7c4e`). | 0 callers / 0 callees |
+| `0x600d7cac` |   24 | Haptics / Amplitude | **`haptics_amplitude_scale_step`** — Compare counter against bound at `+4`, step `+0xc` and call `0x600d7c4e`. | 0 callers / 0 callees |
+| `0x600d7cc4` |   24 | Haptics / Status Query | **`haptics_query_status_byte_1`** — Query status byte via `0x600d995c`. | 3 callers / 1 callee |
+| `0x600d7cdc` |   64 | Haptics / Status State | **`haptics_query_and_update_state`** — Query status via `0x600d9934` and update state with fallback via `0x600d72ec`. | 3 callers / 2 callees |
+| `0x600d7d1c` |   44 | Haptics / Status State | **`haptics_query_status_wrapper`** — Query status via `0x600d7cc4` and check boolean property via `0x600d72ec`. | 2 callers / 2 callees |
+
