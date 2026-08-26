@@ -4792,6 +4792,42 @@ Decompiled and documented 37 functions (1,524 bytes across `0x6010162e`–`0x601
 
 Reliability read: a genuinely bifurcated wave — the `log_formatter_*` section is now among the most solidly evidenced clusters in the whole doc (dozens of already-established citations converging exactly on this session's fresh reads), while the "RPC argument" section shows the same "identity assigned from an assumed theme rather than the body's actual behavior" failure mode this pipeline has repeatedly caught elsewhere, this time at unusually large scale (8 of 14 rows in one section) — caught only because the section's own functions turned out to overlap directly with a completely different, already-established doc section from many sessions ago.
 
+## Session 164 (Wave 134) — VFS Stream Primitives, Red-Black Tree Engine, Assert/Panic Framework & Qsort Helpers (28 functions, 1,392 bytes)
+
+Decompiled and documented 28 functions (1,392 bytes across `0x60101c22`–`0x60102192`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x60101c22` |   38 | VFS / IO | **`vfs_read_exact`** — Loop read chunks via `0x6013d248` until requested byte count satisfied or EOF. | 0 callers / 4 callees |
+| `0x60101c48` |   10 | VFS / IO | **`vfs_seek_veneer`** — 10-byte 3-register swap tail-call veneer to `0x600cdb30`. | 1 caller / 1 callee |
+| `0x60101c52` |    4 | Infrastructure / Veneer | **`thunk_EXT_FUN_0000b532`** — 4-byte veneer forwarding to `0x6013d378`. | 0 callers / 0 callees |
+| `0x60101c56` |   10 | VFS / IO | **`vfs_flush_and_close`** — Flush buffers via `0x60101c6e` then tail-call close `0x6013d310` (pointed to by 60+ vtables). | 0 callers / 2 callees |
+| `0x60101c60` |    6 | Infrastructure / Veneer | **`thunk_vfs_ioctl`** — Parameter swap forwarding to `0x60101c1e` (`0x6013cff0`). | 0 callers / 1 callee |
+| `0x60101c66` |    8 | VFS / IO | **`callback_invoke_and_handle_error`** — Invoke callback in `r0`, then call error abort `0x6010209a`. | 1 caller / 2 callees |
+| `0x60101c6e` |   10 | VFS / IO | **`vfs_flush_locked`** — Flush driver stream via `0x600cc9d4`, then invoke error check `0x60101c66`. | 1 caller / 2 callees |
+| `0x60101c78` |   42 | Data Structures / RBTree | **`rbtree_rotate_left`** — Red-Black tree / binary search tree left rotation node balance operation. | 2 callers / 0 callees |
+| `0x60101ca2` |   42 | Data Structures / RBTree | **`rbtree_rotate_right`** — Red-Black tree / binary search tree right rotation node balance operation. | 2 callers / 0 callees |
+| `0x60101ccc` |   46 | Data Structures / RBTree | **`rbtree_find_min_max`** — Red-Black tree search for leftmost / rightmost node. | 4 callers / 0 callees |
+| `0x60101cfa` |   40 | Data Structures / RBTree | **`rbtree_find_predecessor`** — Red-Black tree find in-order predecessor node. | 1 caller / 0 callees |
+| `0x60101d22` |   40 | Data Structures / RBTree | **`rbtree_find_successor`** — Red-Black tree find in-order successor node. | 1 caller / 0 callees |
+| `0x60101d4a` |    4 | Infrastructure / Veneer | **`thunk_rbtree_find_min_max`** — 4-byte veneer forwarding to `0x60101ccc`. | 0 callers / 1 callee |
+| `0x60101d4e` |  196 | Data Structures / RBTree | **`rbtree_insert_rebalance`** — Red-Black tree insert color rebalancing and node rotation fixup (`0x60101c78`, `0x60101ca2`). | 1 caller / 2 callees |
+| `0x60101e12` |  436 | Data Structures / RBTree | **`rbtree_delete_rebalance`** — Red-Black tree node deletion and color fixup with multiple case rotations (`0x60101c78`, `0x60101ca2`). | 1 caller / 2 callees |
+| `0x60101fc6` |    6 | C Runtime / Panic | **`assert_fail_panic_1`** — Panic/abort forwarding to `0x6010209a` (32 callers). | 32 callers / 1 callee |
+| `0x60101fcc` |    6 | C Runtime / Panic | **`assert_fail_panic_2`** — Panic/abort forwarding to `0x6010209a`. | 1 caller / 1 callee |
+| `0x60101fd2` |    6 | C Runtime / Panic | **`assert_fail_panic_3`** — Panic/abort forwarding to `0x6010209a`. | 3 callers / 1 callee |
+| `0x60101fd8` |    6 | C Runtime / Panic | **`assert_fail_panic_4`** — Panic/abort forwarding to `0x6010209a` (11 callers). | 11 callers / 1 callee |
+| `0x60101fde` |    6 | C Runtime / Panic | **`assert_fail_panic_5`** — Panic/abort forwarding to `0x6010209a`. | 3 callers / 1 callee |
+| `0x60101fe4` |   54 | C Runtime / Panic | **`panic_vprintf_and_abort`** — Format assert message via `0x6010201a` and abort (`0x6010209a`). | 1 caller / 3 callees |
+| `0x6010201a` |  128 | C Runtime / Formatter | **`minimal_vsnprintf`** — Embedded `vsnprintf` parser (`%s`, `%zu`, `%%`) for panic/assert logger (`0x600cca30`, `0x600cc9e4`). | 1 caller / 2 callees |
+| `0x6010209a` |   14 | C Runtime / Panic | **`system_fatal_abort`** — System fatal abort handler invoking `exit` (`0x60051824`) and panic handler (32 callers). | 32 callers / 2 callees |
+| `0x601020a8` |   68 | C Runtime / Algorithm | **`bsearch_custom`** — Standard binary search (`bsearch`) algorithm across sorted array with custom comparator. | 1 caller / 0 callees |
+| `0x601020ec` |   18 | C Runtime / Ctype | **`ctype_is_xdigit_or_blank`** — Ctype query helper testing bit flags at `+1` from ctype table (`0x600cdbbc`). | 0 callers / 1 callee |
+| `0x601020fe` |   36 | Utility / String | **`str_parse_bool_or_byte`** — Read byte from string / pointer and return boolean/status (created missing function). | 0 callers / 0 callees |
+| `0x60102122` |   50 | C Runtime / Algorithm | **`qsort_swap_elements`** — Element swap helper for `qsort` (word-aligned or byte-by-byte). | 1 caller / 0 callees |
+| `0x60102154` |   62 | C Runtime / Algorithm | **`qsort_median_of_three`** — Median-of-three pivot selection helper for `qsort` (`0x60102192`). | 1 caller / 0 callees |
+
+
 
 
 

@@ -995,6 +995,66 @@ public class FixSpuriousSplits extends GhidraScript {
             f10149c.setBody(new AddressSet(a10149c, toAddr(0x601014c9)));
         }
 
+        // 89. Fix 0x60101c48 cluster (48 bytes: 0x60101c48..0x60101c77)
+        Address a101c48 = toAddr(0x60101c48);
+        Function f101c48 = fm.getFunctionAt(a101c48);
+        if (f101c48 != null) {
+            f101c48.setBody(new AddressSet(a101c48, toAddr(0x60101c51)));
+        }
+        Address a101c52 = toAddr(0x60101c52);
+        Function f101c52 = fm.getFunctionAt(a101c52);
+        if (f101c52 != null) {
+            f101c52.setBody(new AddressSet(a101c52, toAddr(0x60101c55)));
+        }
+        Address a101c5c = toAddr(0x60101c5c);
+        Function f101c5c = fm.getFunctionAt(a101c5c);
+        if (f101c5c != null) {
+            fm.removeFunction(a101c5c);
+        }
+        Address a101c56 = toAddr(0x60101c56);
+        Function f101c56 = fm.getFunctionAt(a101c56);
+        if (f101c56 == null) {
+            createFunction(a101c56, "FUN_60101c56");
+            f101c56 = fm.getFunctionAt(a101c56);
+        }
+        if (f101c56 != null) {
+            f101c56.setBody(new AddressSet(a101c56, toAddr(0x60101c5f)));
+        }
+        Address a101c60 = toAddr(0x60101c60);
+        Function f101c60 = fm.getFunctionAt(a101c60);
+        if (f101c60 != null) {
+            f101c60.setBody(new AddressSet(a101c60, toAddr(0x60101c65)));
+        }
+        Address a101c66 = toAddr(0x60101c66);
+        Function f101c66 = fm.getFunctionAt(a101c66);
+        if (f101c66 == null) {
+            createFunction(a101c66, "FUN_60101c66");
+            f101c66 = fm.getFunctionAt(a101c66);
+        }
+        if (f101c66 != null) {
+            f101c66.setBody(new AddressSet(a101c66, toAddr(0x60101c6d)));
+        }
+        Address a101c6e = toAddr(0x60101c6e);
+        Function f101c6e = fm.getFunctionAt(a101c6e);
+        if (f101c6e == null) {
+            createFunction(a101c6e, "FUN_60101c6e");
+            f101c6e = fm.getFunctionAt(a101c6e);
+        }
+        if (f101c6e != null) {
+            f101c6e.setBody(new AddressSet(a101c6e, toAddr(0x60101c77)));
+        }
+
+        // 90. Create missing function 0x601020fe (36 bytes: 0x601020fe..0x60102121)
+        Address a1020fe = toAddr(0x601020fe);
+        Function f1020fe = fm.getFunctionAt(a1020fe);
+        if (f1020fe == null) {
+            createFunction(a1020fe, "FUN_601020fe");
+            f1020fe = fm.getFunctionAt(a1020fe);
+        }
+        if (f1020fe != null) {
+            f1020fe.setBody(new AddressSet(a1020fe, toAddr(0x60102121)));
+        }
+
         println("FixSpuriousSplits completed successfully.");
     }
 }
