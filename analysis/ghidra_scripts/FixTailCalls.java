@@ -203,7 +203,14 @@ public class FixTailCalls extends GhidraScript {
             toAddr(0x600d5cc0),
             toAddr(0x600d5cc6),
             toAddr(0x600d5cfe),
-            toAddr(0x600d5d04)
+            toAddr(0x600d5d04),
+            toAddr(0x600d666c),
+            toAddr(0x600d68ac),
+            toAddr(0x600d6904),
+            toAddr(0x600d691e),
+            toAddr(0x600d6942),
+            toAddr(0x600d695e),
+            toAddr(0x600d697e)
         };
         for (Address a : branchAddrs) {
             Instruction ins = getInstructionAt(a);

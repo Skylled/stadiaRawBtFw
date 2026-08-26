@@ -5220,6 +5220,46 @@ Decompiled and documented 20 functions (1,846 bytes across `0x600d5d08`–`0x600
 
 Given last session's major `0000b52e` finding, gave every thunk citation in this wave extra scrutiny: all check out against already-established identities — `0x6013d378`/`0x60101c52` (`thunk_EXT_FUN_0000b532`, `pvPortMalloc`), `0x6013d310` (`thunk_EXT_FUN_0000b52a`, real free), `0x6013d238` (`thunk_EXT_FUN_0000b588`, `memmove`), `0x6013d3a0` (`thunk_EXT_FUN_0000b572`, `memcpy`), `0x6013cf90` (`thunk_EXT_FUN_0000b5ba`, zero-fill), `0x6013d3d8`/`0x6013cf40` (`thunk_EXT_FUN_0000b4c2`/`00007d10`, the same lock/unlock mutex-bracket pair documented elsewhere in this file and in `bruce-itcm.md`) — this wave does not repeat the `0000b52e` mislabel anywhere (it isn't cited here at all). `tree_insert_versioned_node`'s "red-black/binary tree" framing is a nice cross-session confirmation: its rebalancing callee `0x60101d4e` is the same function session 72 independently matched to real libstdc++'s `_Rb_tree_insert_and_rebalance` by exact argument-signature fingerprint. One minor completeness gap, not an error: `vector_insert_realloc`'s row cites 3 of its 4 callees (malloc/memmove/free) but omits mentioning its `thunk_EXT_FUN_0000b572` (memcpy) call, used for a secondary tail-copy — not flagged as wrong, just incomplete. Reliability read: a clean, well-corroborated wave — the extra scrutiny prompted by session 172's finding turned up nothing further wrong in this wave's own thunk usage.
 
+## Session 174 (Wave 144) — USB Host Audio Topology Route Building, HID Dispatch & State Machine (32 functions, 1,358 bytes)
+
+Decompiled and documented 32 functions (1,358 bytes across `0x600d643e`–`0x600d6964`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d643e` |   34 | Memory / Vector | **`vector_uint8_insert_realloc`** — Vector byte insertion helper invoking dynamic vector reallocator `0x600d63b4`. | 1 caller / 1 callee |
+| `0x600d6460` |  236 | Audio / USB Topology | **`usb_host_topology_unit_subdescriptor_parse`** — Parse unit subdescriptors, allocating buffers and invoking formatting dispatchers. | 1 caller / 4 callees |
+| `0x600d654c` |   60 | Audio / USB Topology | **`usb_host_topology_find_and_parse_unit`** — Find node in tree by ID via `0x600d6028` and parse subdescriptors via `0x600d6460`. | 1 caller / 3 callees |
+| `0x600d6588` |  138 | Memory / Vector | **`vector_uint16_insert_realloc`** — Insert 16-bit word into dynamic vector, allocating via `0x6013d378` and freeing old storage via `0x6013d310`. | 1 caller / 2 callees |
+| `0x600d6612` |   34 | Memory / Vector | **`vector_uint16_push_back`** — Push 16-bit element to vector tail, resizing via `0x600d6588` if capacity is reached. | 1 caller / 1 callee |
+| `0x600d6634` |   36 | Memory / Tree | **`tree_node_list_free_recursive_custom`** — Recursively traverse node list at `+0xc`, freeing custom buffer at `+0x28` via `0x600d5bca` and node via `0x6013d310`. | 2 callers / 3 callees |
+| `0x600d6658` |   26 | Memory / Tree | **`tree_root_free_recursive_custom`** — Free recursive child node lists via `0x600d6634` and tail-call free-veneer `0x6013d068` on root context. | 2 callers / 2 callees |
+| `0x600d6672` |   38 | Memory / Tree | **`tree_node_list_free_recursive_vector`** — Recursively traverse node list at `+0xc`, freeing vector buffer at `+0x10` via `0x600d5fc2` and node via `0x6013d310`. | 2 callers / 3 callees |
+| `0x600d6698` |  136 | Memory / Vector | **`vector_uint16_realloc_and_insert_ordered`** — Allocate buffer via `0x600d5bd2`, insert 16-bit element in order, and free old storage via `0x600d5bca`. | 1 caller / 2 callees |
+| `0x600d6720` |   48 | Memory / Tree | **`tree_key_compare_memcmp`** — Compare bounded-length byte keys using `memcmp` (`0x6013d168`). | 1 caller / 1 callee |
+| `0x600d6750` |  152 | Memory / Tree | **`tree_insert_byte_keyed_node`** — Insert 28-byte node with byte key into binary/red-black tree using `tree_key_compare_memcmp` (`0x600d6720`), `0x6013d378`, and `0x60101d4e`. | 1 caller / 5 callees |
+| `0x600d67e8` |  126 | Audio / USB Topology | **`usb_host_topology_tree_traverse_and_build`** — Acquire mutex lock `0x6013d3d8`, traverse topology tree, build parsed nodes, and unlock `0x6013cf40`. | 1 caller / 9 callees |
+| `0x600d6866` |   80 | Audio / USB Topology | **`usb_host_topology_build_unit_routes`** — Iterate through parsed tree items, invoke route builder `0x600641a8`, free recursive vectors via `0x600d6672`, and free context via `0x6013d068`. | 1 caller / 6 callees |
+| `0x600d68b6` |    4 | Stubs / Return Zero | **`stub_return_zero_68b6`** — Return zero stub (`movs r0, #0; bx lr`). | 0 callers / 0 callees |
+| `0x600d68ba` |   14 | USB / HID | **`usb_host_hid_indirect_dispatch`** — Indirect function jump to handler at `+0x2a4` with context pointer `+0x100`. | 3 callers / 0 callees |
+| `0x600d68c8` |    2 | Stubs / Noop | **`stub_noop_68c8`** — No-op return stub (`bx lr`). | 0 callers / 0 callees |
+| `0x600d68ca` |    2 | Stubs / Noop | **`stub_noop_68ca`** — No-op return stub (`bx lr`). | 0 callers / 0 callees |
+| `0x600d68cc` |    2 | Stubs / Jump | **`stub_jump_r0_68cc`** — Indirect jump through `r0` (`bx r0`). | 0 callers / 0 callees |
+| `0x600d68ce` |    6 | USB / HID | **`usb_host_hid_clear_byte_flag_4`** — Clear byte flag at `[r0, #4]`. | 0 callers / 0 callees |
+| `0x600d68d4` |    2 | Stubs / Noop | **`stub_noop_68d4`** — No-op return stub (`bx lr`). | 0 callers / 0 callees |
+| `0x600d68d6` |    4 | Stubs / Return Zero | **`stub_return_zero_68d6`** — Return zero stub (`movs r0, #0; bx lr`). | 0 callers / 0 callees |
+| `0x600d68da` |    4 | Stubs / Return Zero | **`stub_return_zero_68da`** — Return zero stub (`movs r0, #0; bx lr`). | 0 callers / 0 callees |
+| `0x600d68de` |   10 | USB / Struct | **`zero_struct_5bytes_68de`** — Zero 5 bytes at `[r0]..[r0, #4]`. | 0 callers / 0 callees |
+| `0x600d68e8` |    4 | Stubs / Return Zero | **`stub_return_zero_68e8`** — Return zero stub (`movs r0, #0; bx lr`). | 0 callers / 0 callees |
+| `0x600d68ec` |    8 | Stubs / Indirect Call | **`indirect_call_vtable_14_68ec`** — Load context from `+0x5c` and indirect jump via vtable `+0x14`. | 0 callers / 0 callees |
+| `0x600d68f4` |   10 | Stubs / Indirect Call | **`indirect_call_vtable_18_68f4`** — Load context from `+0x5c` and indirect jump via vtable `+0x18`. | 0 callers / 0 callees |
+| `0x600d68fe` |   10 | USB / HID | **`usb_host_hid_forward_event_e4`** — Add offset `0xe4` and tail call worker event forwarder `0x60065290`. | 6 callers / 0 callees |
+| `0x600d6908` |   54 | USB / HID | **`usb_host_hid_retry_state_machine`** — Retry counter increment (up to 2 retries, event 7) or status event dispatch (event 1/2/8) via `0x600d68fe`. | 1 caller / 1 callee |
+| `0x600d693e` |    8 | USB / HID | **`usb_host_hid_event_dispatch_wrapper`** — Set retry parameters and forward to `0x600d6908`. | 0 callers / 1 callee |
+| `0x600d6946` |   16 | USB / HID | **`usb_host_hid_free_heap_block`** — Free heap block referenced by pointer via `0x600d15c4`. | 3 callers / 1 callee |
+| `0x600d6956` |   14 | USB / HID | **`usb_host_hid_replace_and_free_block`** — Exchange active heap block pointer and free previous block via `0x600d15c4`. | 4 callers / 1 callee |
+| `0x600d6964` |   40 | USB / HID | **`usb_host_hid_reset_and_dispatch_event`** — Reset block at `+0x108` via `0x600d6956` and forward status event (event 1/8) via `0x600d68fe`. | 0 callers / 3 callees |
+
+
 
 
 
