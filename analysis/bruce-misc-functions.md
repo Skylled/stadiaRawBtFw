@@ -5649,5 +5649,24 @@ This is the pipeline's first wave in genuinely new territory — floating-point/
 
 Reliability read: a genuinely mixed wave — the biquad-cascade and peak-amplitude claims are among the most precisely verifiable in this pipeline's history, while two smaller helper functions were mislabeled in a way that would not have been caught without disassembling past the first matching literal/instruction to check the *complete* algorithm shape. Worth flagging to future waves in this DSP domain: a correct instruction-level citation (a real constant, a real intrinsic) does not guarantee the surrounding algorithmic narrative is correct.
 
+## Session 184 (Wave 154) — Audio DSP Accumulator, Bit-Parallel Permutations & FreeRTOS Queue IPC (14 functions, 1,688 bytes)
 
+Decompiled and documented 14 functions (1,688 bytes across `0x6004b37c`–`0x6004bcf8`, completely closing all remaining gaps in the `0x6004b344`–`0x6004bd46` region):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x6004b37c` |   24 | Audio DSP / Float Select | **`audio_dsp_float_min_max_select`** — Pointer select based on float comparison: if `*param_1 < *param_2` return `param_1`, else return `param_2`. | 1 caller / 0 callees |
+| `0x6004b394` |  142 | Audio DSP / Accumulator | **`audio_dsp_float_running_accumulator`** — Floating-point running accumulator and threshold evaluator with dynamic array sorting/comparison via `0x6004b37c`. | 1 caller / 1 callee |
+| `0x6004b4aa` |  278 | Crypto / Bit Permutation | **`bit_parallel_matrix_permute_64`** — 64-bit parallel bit matrix permutation/transposition using mask constants `0x22222222`, `0x11111111`, `0x0c0c0c0c`, `0x03030303`, `0x00f000f0`, `0x000f000f`. | 1 caller / 0 callees |
+| `0x6004b5c0` |  110 | Crypto / Permute Step | **`block_transform_apply_permute_step`** — Step block transformation round: apply 64-bit bit permutation via `0x6004b4aa` across state words. | 1 caller / 1 callee |
+| `0x6004b62e` |  374 | Crypto / Block Transform | **`block_transform_process_state_matrix`** — Iterate multi-round block state transformation matrix using permutation steps via `0x6004b5c0`. | 2 callers / 1 callee |
+| `0x6004b7b4` |   62 | Crypto / Vector Transform | **`block_transform_eval_vector_4w`** — Compute 4-word vector transformation across `param_1[8..11]` via `0x6004b62e`. | 0 callers / 1 callee |
+| `0x6004b7f2` |  146 | Crypto / Stream Transform | **`block_transform_dispatch_stream`** — Multi-block stream transformation dispatch loop: apply `0x6004b62e` and trigger notification `0x6004b7a4`. | 0 callers / 2 callees |
+| `0x6004b8ce` |  112 | FreeRTOS / IPC Message | **`rtos_ipc_send_message_sync`** — Synchronous RTOS IPC message dispatch: post to FreeRTOS queue via `0x60047678`/`0x60047834`, wait for task event via `0x60047aa8`, and release via `0x6004bab0`. | 0 callers / 7 callees |
+| `0x6004ba16` |   88 | FreeRTOS / IPC Message | **`rtos_ipc_receive_message_timeout`** — FreeRTOS IPC queue receive helper with timeout: dequeue from `0x60047678` and process response packet via `0x60046fa4`. | 1 caller / 4 callees |
+| `0x6004bb82` |   22 | FreeRTOS / Critical Section | **`rtos_critical_section_test_and_unlock`** — Critical section helper: enter via `0x60048580` (`taskENTER_CRITICAL`), inspect byte `[param_1 + 0x45]`, and exit via `0x600485c8` (`taskEXIT_CRITICAL`). | 2 callers / 2 callees |
+| `0x6004bb98` |  102 | FreeRTOS / Queue Event | **`rtos_queue_wait_event_with_cleanup`** — FreeRTOS queue event wait helper with callback notification via `0x60048014` and event cleanup via `0x6004bd8e`. | 2 callers / 2 callees |
+| `0x6004bc28` |  112 | FreeRTOS / Queue Drainage | **`rtos_queue_drain_pending_events`** — FreeRTOS queue drainage loop: enter critical section `0x60048580`, inspect pending counts `+0x44`/`+0x45`, invoke event callbacks `0x60047d80` and `0x6004bfb4`, and exit critical section `0x600485c8`. | 4 callers / 4 callees |
+| `0x6004bc98` |   70 | FreeRTOS / Queue Drainage | **`rtos_queue_notify_and_drain`** — Notify RTOS task `0x60047d3c` under critical section and tail-call drain queue via `0x6004bc28`. | 1 caller / 4 callees |
+| `0x6004bcf8` |   46 | FreeRTOS / Ring Buffer | **`rtos_ring_buffer_write_advance`** — RTOS message ring buffer write index computation: compute available capacity `(capacity - 1) - head + tail` and advance write pointer. | 1 caller / 0 callees |
 
