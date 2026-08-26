@@ -2,8 +2,8 @@
 // --- callers ---
 //   600cdc90 FUN_600cdc90
 // --- callees ---
-//   600cdca0 FUN_600cdca0
 //   6010244a thunk_FUN_600ce1d8
+//   600cdca0 FUN_600cdca0
 
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */

@@ -4837,6 +4837,28 @@ Decompiled and documented 28 functions (1,392 bytes across `0x60101c22`–`0x601
 
 Reliability read: an outstanding wave for cross-session validation — two flagship-tier confirmations reaching back 92 and 116 sessions respectively, both landing precisely, alongside one instance of an already-well-understood decompiler artifact class caught and flagged rather than trusted at face value.
 
+## Session 165 (Wave 135) — C Runtime Qsort Core, String Primitives & Vsnprintf Engine (14 functions, 1,460 bytes)
+
+Decompiled and documented 14 functions (1,460 bytes across `0x60102192`–`0x60102746`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x60102192` |  590 | C Runtime / Algorithm | **`qsort_main`** — Standard C library `qsort` (Bentley-McIlroy 3-way partitioning quicksort algorithm, using `0x60102122` and `0x60102154`). | 0 callers / 3 callees |
+| `0x601023e0` |   26 | Data Structures / Tree | **`tree_free_nodes`** — Recursive binary search tree node deallocation via `free` (`0x600d359a`). | 2 callers / 2 callees |
+| `0x601023fa` |   80 | C Runtime / Signal | **`posix_signal_dispatch`** — POSIX signal / exception handler dispatch table check and invocation (signal 0..31). | 1 caller / 2 callees |
+| `0x6010244a` |    4 | Infrastructure / Veneer | **`thunk_FUN_600ce1d8`** — 4-byte veneer forwarding to `0x600ce1d8`. | 1 caller / 1 callee |
+| `0x6010244e` |   60 | C Runtime / String | **`strcasecmp_custom`** — Case-insensitive string comparison (`strcasecmp`) using ctype table `0x600cdbbc`. | 2 callers / 1 callee |
+| `0x6010248a` |   26 | C Runtime / String | **`strchr_custom`** — Find first occurrence of character in string (`strchr`). | 3 callers / 0 callees |
+| `0x601024a4` |   16 | C Runtime / String | **`strcpy_custom`** — Copy null-terminated string (`strcpy`). | 7 callers / 0 callees |
+| `0x601024b4` |   36 | C Runtime / String | **`strncmp_custom`** — Bounded string comparison (`strncmp`). | 4 callers / 0 callees |
+| `0x601024d8` |   42 | C Runtime / String | **`strncpy_custom`** — Bounded string copy with zero padding (`strncpy`). | 22 callers / 0 callees |
+| `0x60102502` |   52 | C Runtime / String | **`strstr_custom`** — Locate substring in string (`strstr`). | 1 caller / 0 callees |
+| `0x60102536` |   88 | C Runtime / Printf | **`vsnprintf_wrapper`** — Standard `vsnprintf` driver wrapper setting up format context struct and calling core engine `0x600cddc8`. | 1 caller / 1 callee |
+| `0x6010258e` |   26 | C Runtime / Printf | **`vsnprintf_emit_char`** — Emit single character into output buffer with bounds and overflow check (created missing function). | 0 callers / 0 callees |
+| `0x601025a8` |  180 | C Runtime / Printf | **`vsnprintf_buffer_realloc_append`** — Dynamic output buffer reallocation and string append during printf formatting (`0x600d3594`, `0x600d35a0`, `memcpy`). | 1 caller / 5 callees |
+| `0x6010265c` |  234 | C Runtime / Printf | **`vsnprintf_format_field`** — Field width padding, sign prefixing, and precision alignment engine for `vsnprintf`. | 1 caller / 0 callees |
+
+
 
 
 

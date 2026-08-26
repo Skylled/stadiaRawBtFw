@@ -1055,6 +1055,17 @@ public class FixSpuriousSplits extends GhidraScript {
             f1020fe.setBody(new AddressSet(a1020fe, toAddr(0x60102121)));
         }
 
+        // 91. Create missing function 0x6010258e (26 bytes: 0x6010258e..0x601025a7)
+        Address a10258e = toAddr(0x6010258e);
+        Function f10258e = fm.getFunctionAt(a10258e);
+        if (f10258e == null) {
+            createFunction(a10258e, "FUN_6010258e");
+            f10258e = fm.getFunctionAt(a10258e);
+        }
+        if (f10258e != null) {
+            f10258e.setBody(new AddressSet(a10258e, toAddr(0x601025a7)));
+        }
+
         println("FixSpuriousSplits completed successfully.");
     }
 }
