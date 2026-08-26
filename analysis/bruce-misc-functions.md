@@ -5265,6 +5265,42 @@ Good news on last session's finding: this wave cites `0x6013d068` twice (`usb_ho
 
 **One confirmed correction**: `zero_struct_5bytes_68de` (`0x600d68de`) claims to zero 5 bytes — disassembly is byte-for-byte identical to session 171's already-corrected `audio_descriptor_zero_9b` (`0x600d564c`): `movs r2,#0; strd r2,r2,[r0]; strb r2,[r0,#4]; bx lr`. The `strd` zeroes offsets 0-7 and the trailing `strb` redundantly re-zeroes offset 4; no byte beyond offset 7 is ever touched, so the real count is 8, not 5 — this time an undercount rather than session 171's overcount, on the exact same instruction sequence. Corrected in place. Reliability read: the `0000b52e` correction held up under direct test, but this identical-code recurrence of the "count the bytes a `strd`+redundant-`strb` pair actually touches" mistake — now the second instance of this exact pattern — suggests it's worth a standing note for future waves rather than treating each occurrence as independent.
 
+## Session 175 (Wave 145) — USB Host HID Binary Search, Sized Context Destructors & Haptics Sequences (28 functions, 1,160 bytes)
+
+Decompiled and documented 28 functions (1,160 bytes across `0x600d698c`–`0x600d6dda`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d698c` |   68 | Algorithms / BSearch | **`bsearch_8entry_8byte_table`** — Binary search lookup across 8-entry 8-byte sorted table. | 0 callers / 0 callees |
+| `0x600d69d0` |    6 | USB / HID | **`usb_host_hid_indirect_dispatch_5c_1`** — Load context from `+0x5c` and tail call `0x600648b0`. | 0 callers / 1 callee |
+| `0x600d69d6` |    8 | USB / HID | **`usb_host_hid_state_machine_init`** — Forward context pointer `+8` to state machine initializer `0x600849a4`. | 0 callers / 1 callee |
+| `0x600d69de` |   26 | USB / HID | **`usb_host_hid_reset_context_buffers`** — Reset active block at `+0x108` via `0x600d6956` and flush context buffer `+0x238` via `0x60101832`. | 0 callers / 2 callees |
+| `0x600d69f8` |   68 | Algorithms / BSearch | **`bsearch_10entry_8byte_bytekey_table`** — Binary search lookup across 10-entry 8-byte table with byte key comparison. | 0 callers / 0 callees |
+| `0x600d6a3c` |   18 | USB / HID | **`usb_host_hid_check_status_and_forward`** — Inspect status code (event 1 if status 10, otherwise forward with retry flag via `0x600d6908`). | 0 callers / 2 callees |
+| `0x600d6a4e` |    6 | USB / HID | **`usb_host_hid_indirect_dispatch_5c_2`** — Load context from `+0x5c` and tail call `0x600649d4`. | 0 callers / 1 callee |
+| `0x600d6a54` |   26 | USB / HID | **`usb_host_hid_copy_report_struct`** — Copy 11-byte report structure if active flag is set. | 1 caller / 0 callees |
+| `0x600d6a6e` |   88 | USB / HID | **`usb_host_hid_alloc_and_sync_buffer`** — Allocate buffer via `0x600d15c8`, free previous via `0x600d15e4`, copy data via `0x6013d3a0`, set flag with `DMB ISH`, and forward to `0x600d6908`. | 0 callers / 5 callees |
+| `0x600d6ac6` |  226 | USB / HID | **`bsearch_16entry_12byte_hid_table`** — Binary search lookup across 16-entry 12-byte table for HID report descriptors with sub-table parsing via `0x600d6a54`. | 1 caller / 1 callee |
+| `0x600d6ba8` |   64 | USB / HID | **`usb_host_hid_lookup_report_descriptor`** — Forward context and report parameters to binary search parser `0x600d6ac6`. | 0 callers / 1 callee |
+| `0x600d6be8` |   22 | Memory / Sized Free | **`usb_host_context_free_2b8`** — Teardown context via `0x60065098` and free 696-byte context (`0x2b8`) via `0x6013d068`. | 0 callers / 2 callees |
+| `0x600d6bfe` |   20 | Memory / Sized Free | **`usb_host_context_free_60`** — Teardown context via `0x60065074` and free 96-byte context (`0x60`) via `0x6013d068`. | 0 callers / 2 callees |
+| `0x600d6c12` |    4 | Veneer / Tail Call | **`thunk_FUN_600d2edc__600d6c12`** — 4-byte veneer forwarding to `0x600d2edc`. | 0 callers / 1 callee |
+| `0x600d6c16` |   22 | Memory / Sized Free | **`usb_host_context_free_12c`** — Teardown context via `0x60065234` and free 300-byte context (`0x12c`) via `0x6013d068`. | 0 callers / 2 callees |
+| `0x600d6c2c` |   22 | Memory / Sized Free | **`usb_host_context_free_a00`** — Teardown context via `0x60065248` and free 2,560-byte context (`0xa00`) via `0x6013d068`. | 0 callers / 2 callees |
+| `0x600d6c42` |   38 | System / Queue | **`system_event_queue_callback_loop`** — Pop events from queue `+0xb0` via `0x6013d268` and invoke registered callbacks. | 0 callers / 1 callee |
+| `0x600d6c68` |   14 | C Runtime / Logic | **`int32_less_than_compare`** — Compare two 32-bit integers returning `*param_1 < *param_2`. | 1 caller / 0 callees |
+| `0x600d6c76` |   58 | Haptics / Driver | **`haptics_effect_check_and_trigger`** — Inspect haptics effect flag, configure profile via `0x600d4a7e`/`0x600d49ce`, and start duration timer via `0x600d4b78`. | 1 caller / 3 callees |
+| `0x600d6cb0` |   26 | Power / Barrier | **`system_power_flag_toggle_barrier`** — Toggle power/status flag at `+0xcc` with `DMB ISH` memory barriers and tail-call notify `0x600926a0`. | 0 callers / 1 callee |
+| `0x600d6cca` |   46 | Haptics / Sequence | **`haptics_pattern_effect_start`** — Acquire mutex `0x6013d3d8`, start effect via `0x600656a0`, and release mutex `0x6013cef0`. | 1 caller / 3 callees |
+| `0x600d6cf8` |   50 | Haptics / Sequence | **`haptics_pattern_effect_stop`** — Acquire mutex `0x6013d3d8`, stop effect via `0x6006573c`, and release mutex `0x6013cef0`. | 1 caller / 3 callees |
+| `0x600d6d2a` |   82 | Haptics / Sequence | **`haptics_pattern_sequence_dispatch`** — Acquire mutex `0x6013d3d8`, dispatch haptics sequence via `0x600658b4`, and release mutex `0x6013cef0`. | 0 callers / 3 callees |
+| `0x600d6d7c` |   18 | Haptics / Status | **`haptics_status_check_and_forward`** — Inspect status byte at `*r0`, conditionally forward via `0x60065988` or return error 9. | 1 caller / 1 callee |
+| `0x600d6d8e` |    8 | BLE / Info | **`ble_info_report_37`** — Tail call `ble_info__60065a74` with info code `0x37` (55). | 1 caller / 1 callee |
+| `0x600d6d96` |   34 | Keypad / Mapping | **`key_index_lookup_and_format_1`** — Calculate key offset via `0x60101b0c` and insert into keymap table via `0x60101ba2`. | 2 callers / 2 callees |
+| `0x600d6db8` |   34 | Keypad / Mapping | **`key_index_lookup_and_format_2`** — Calculate key offset via `0x60050c18` and insert into keymap table via `0x60101ba2`. | 2 callers / 2 callees |
+| `0x600d6dda` |   58 | Timer / Channels | **`timer_channel_query_and_format`** — Query timer configuration via `0x600653f8`/`0x600653f0` and locate active channel payload. | 4 callers / 2 callees |
+
+
 
 
 

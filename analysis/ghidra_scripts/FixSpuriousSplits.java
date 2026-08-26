@@ -2061,6 +2061,143 @@ public class FixSpuriousSplits extends GhidraScript {
             f00d693e.setBody(new AddressSet(a00d693e, toAddr(0x600d6945)));
         }
 
+        // 192. Fix 0x600d698c boundary (68 bytes: 0x600d698c..0x600d69cf)
+        Address a00d698c = toAddr(0x600d698c);
+        Function f00d698c = fm.getFunctionAt(a00d698c);
+        if (f00d698c != null) {
+            f00d698c.setBody(new AddressSet(a00d698c, toAddr(0x600d69cf)));
+        }
+
+        // 193. Create missing function 0x600d69d0 (6 bytes: 0x600d69d0..0x600d69d5)
+        Address a00d69d0 = toAddr(0x600d69d0);
+        Function f00d69d0 = fm.getFunctionAt(a00d69d0);
+        if (f00d69d0 == null) {
+            createFunction(a00d69d0, "FUN_600d69d0");
+            f00d69d0 = fm.getFunctionAt(a00d69d0);
+        }
+        if (f00d69d0 != null) {
+            f00d69d0.setBody(new AddressSet(a00d69d0, toAddr(0x600d69d5)));
+        }
+
+        // 194. Create missing function 0x600d69d6 (8 bytes: 0x600d69d6..0x600d69dd)
+        Address a00d69d6 = toAddr(0x600d69d6);
+        Function f00d69d6 = fm.getFunctionAt(a00d69d6);
+        if (f00d69d6 == null) {
+            createFunction(a00d69d6, "FUN_600d69d6");
+            f00d69d6 = fm.getFunctionAt(a00d69d6);
+        }
+        if (f00d69d6 != null) {
+            f00d69d6.setBody(new AddressSet(a00d69d6, toAddr(0x600d69dd)));
+        }
+
+        // 195. Fix 0x600d69de boundary (26 bytes: 0x600d69de..0x600d69f7)
+        Address a00d69de = toAddr(0x600d69de);
+        Function f00d69de = fm.getFunctionAt(a00d69de);
+        if (f00d69de != null) {
+            f00d69de.setBody(new AddressSet(a00d69de, toAddr(0x600d69f7)));
+        }
+
+        // 196. Fix 0x600d69f8 boundary (68 bytes: 0x600d69f8..0x600d6a3b)
+        Address a00d69f8 = toAddr(0x600d69f8);
+        Function f00d69f8 = fm.getFunctionAt(a00d69f8);
+        if (f00d69f8 != null) {
+            f00d69f8.setBody(new AddressSet(a00d69f8, toAddr(0x600d6a3b)));
+        }
+
+        // 197. Create missing function 0x600d6a3c (18 bytes: 0x600d6a3c..0x600d6a4d)
+        Address a00d6a3c = toAddr(0x600d6a3c);
+        Function f00d6a3c = fm.getFunctionAt(a00d6a3c);
+        if (f00d6a3c == null) {
+            createFunction(a00d6a3c, "FUN_600d6a3c");
+            f00d6a3c = fm.getFunctionAt(a00d6a3c);
+        }
+        if (f00d6a3c != null) {
+            f00d6a3c.setBody(new AddressSet(a00d6a3c, toAddr(0x600d6a4d)));
+        }
+
+        // 198. Create missing function 0x600d6a4e (6 bytes: 0x600d6a4e..0x600d6a53)
+        Address a00d6a4e = toAddr(0x600d6a4e);
+        Function f00d6a4e = fm.getFunctionAt(a00d6a4e);
+        if (f00d6a4e == null) {
+            createFunction(a00d6a4e, "FUN_600d6a4e");
+            f00d6a4e = fm.getFunctionAt(a00d6a4e);
+        }
+        if (f00d6a4e != null) {
+            f00d6a4e.setBody(new AddressSet(a00d6a4e, toAddr(0x600d6a53)));
+        }
+
+        // 199. Create missing function 0x600d6c12 (4 bytes: 0x600d6c12..0x600d6c15)
+        Address a00d6c12 = toAddr(0x600d6c12);
+        Function f00d6c12 = fm.getFunctionAt(a00d6c12);
+        if (f00d6c12 == null) {
+            createFunction(a00d6c12, "FUN_600d6c12");
+            f00d6c12 = fm.getFunctionAt(a00d6c12);
+        }
+        if (f00d6c12 != null) {
+            f00d6c12.setBody(new AddressSet(a00d6c12, toAddr(0x600d6c15)));
+        }
+
+        // 200. Create missing function 0x600d6cb0 (26 bytes: 0x600d6cb0..0x600d6cc9)
+        Address a00d6cb0 = toAddr(0x600d6cb0);
+        Function f00d6cb0 = fm.getFunctionAt(a00d6cb0);
+        if (f00d6cb0 == null) {
+            createFunction(a00d6cb0, "FUN_600d6cb0");
+            f00d6cb0 = fm.getFunctionAt(a00d6cb0);
+        }
+        if (f00d6cb0 != null) {
+            f00d6cb0.setBody(new AddressSet(a00d6cb0, toAddr(0x600d6cc9)));
+        }
+
+        // 201. Fix 0x600d6cca boundary (46 bytes: 0x600d6cca..0x600d6cf7)
+        Address a00d6cca = toAddr(0x600d6cca);
+        Function f00d6cca = fm.getFunctionAt(a00d6cca);
+        if (f00d6cca != null) {
+            f00d6cca.setBody(new AddressSet(a00d6cca, toAddr(0x600d6cf7)));
+        }
+
+        // 202. Fix 0x600d6cf8 boundary (50 bytes: 0x600d6cf8..0x600d6d29)
+        Address a00d6cf8 = toAddr(0x600d6cf8);
+        Function f00d6cf8 = fm.getFunctionAt(a00d6cf8);
+        if (f00d6cf8 != null) {
+            f00d6cf8.setBody(new AddressSet(a00d6cf8, toAddr(0x600d6d29)));
+        }
+
+        // 203. Fix 0x600d6d2a boundary (82 bytes: 0x600d6d2a..0x600d6d7b)
+        Address a00d6d2a = toAddr(0x600d6d2a);
+        Function f00d6d2a = fm.getFunctionAt(a00d6d2a);
+        if (f00d6d2a != null) {
+            f00d6d2a.setBody(new AddressSet(a00d6d2a, toAddr(0x600d6d7b)));
+        }
+
+        // 204. Create missing function 0x600d6d7c (18 bytes: 0x600d6d7c..0x600d6d8d)
+        Address a00d6d7c = toAddr(0x600d6d7c);
+        Function f00d6d7c = fm.getFunctionAt(a00d6d7c);
+        if (f00d6d7c == null) {
+            createFunction(a00d6d7c, "FUN_600d6d7c");
+            f00d6d7c = fm.getFunctionAt(a00d6d7c);
+        }
+        if (f00d6d7c != null) {
+            f00d6d7c.setBody(new AddressSet(a00d6d7c, toAddr(0x600d6d8d)));
+        }
+
+        // 205. Create missing function 0x600d6d8e (8 bytes: 0x600d6d8e..0x600d6d95)
+        Address a00d6d8e = toAddr(0x600d6d8e);
+        Function f00d6d8e = fm.getFunctionAt(a00d6d8e);
+        if (f00d6d8e == null) {
+            createFunction(a00d6d8e, "FUN_600d6d8e");
+            f00d6d8e = fm.getFunctionAt(a00d6d8e);
+        }
+        if (f00d6d8e != null) {
+            f00d6d8e.setBody(new AddressSet(a00d6d8e, toAddr(0x600d6d95)));
+        }
+
+        // 206. Fix 0x600d6a6e boundary (88 bytes: 0x600d6a6e..0x600d6ac5)
+        Address a00d6a6e = toAddr(0x600d6a6e);
+        Function f00d6a6e = fm.getFunctionAt(a00d6a6e);
+        if (f00d6a6e != null) {
+            f00d6a6e.setBody(new AddressSet(a00d6a6e, toAddr(0x600d6ac5)));
+        }
+
         println("FixSpuriousSplits completed successfully.");
     }
 }
