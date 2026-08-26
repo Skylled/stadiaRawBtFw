@@ -4601,6 +4601,14 @@ Decompiled and documented 13 functions (1,580 bytes across `0x600ff672`–`0x600
 | `0x600ffa34` |  166 | GATT / Core | **`attp_send_cl_cmd`** — Broadcom GATT/ATT client command transmitter and queue scheduler (`gatt_enqueue_cl_cmd` `0x600aff88`, `gatt_start_rsp_timer` `0x600f6a8a`, `gatt_send_data_packet` `0x600ff986`). | 1 caller / 3 callees |
 | `0x600ffada` |  452 | GATT / Core | **`attp_build_and_send_cmd`** — Broadcom GATT/ATT client command PDU builder and transmitter: formats ATT PDU based on opcode (2..0xD2) via `0x600c7878`–`0x600c7d64` and dispatches via `attp_send_cl_cmd` (`0x600ffa34`). | 8 callers / 9 callees |
 
+**⚠️ QA session 158 note:** Backbone: all 13 addresses/sizes match the census exactly, fully contiguous `0x600ff672`–`0x600ffc9e`. Independently re-derived `bruce-decompile-status.md`'s totals via a fresh header-parsed join (3,706 functions / 540,686 bytes, 0 mismatches, 0 duplicates, 0 non-census addresses) — matches the wave's claimed 1,580-byte/75.64% exactly.
+
+**Flagship-tier spec match**: `attp_build_and_send_cmd`'s "opcode (2..0xD2)" gloss undersells how precise its dispatch actually is — traced all 14 distinct opcode values it switches on directly against the real Bluetooth ATT protocol spec, and every one matches exactly: `2`=Exchange MTU Request, `4`=Find Information Request, `6`=Find By Type Value Request, `8`=Read By Type Request, `0xa`=Read Request, `0xc`=Read Blob Request, `0xe`=Read Multiple Request, `0x10`=Read By Group Type Request, `0x12`=Write Request, `0x16`=Prepare Write Request, `0x18`=Execute Write Request, `0x1e`=Handle Value Confirmation, `0x52`=Write Command, `0xd2`=Signed Write Command — the complete real ATT client-request opcode set, correctly grouped (opcodes `4`/`8` share a start/end-handle-range validation path, matching their real shared PDU shape). `bta_dm_ble_mws_hci_cback`'s dispatch also includes a literal `0x2014`, which decodes to the real HCI LE Set Host Channel Classification opcode (OGF `8` LE Controller, OCF `0x14`) exactly matching this same wave's own `bta_dm_ble_set_host_channel_class` (its sibling send-side function) thematically, even though the specific completion-handler pairing wasn't traced further.
+
+**Other citations spot-checked and confirmed clean**: `gatt_send_data_packet`'s fixed-channel call passes literal CID `4`, matching the established `0x600b5264` entry's own "validates fixed-CID parameter in range 4–6" description exactly; `attp_send_cl_cmd`/`attp_send_msg_to_l2cap`'s composition of `gatt_enqueue_cl_cmd`/`gatt_start_rsp_timer`/`gatt_send_data_packet` all match established identities.
+
+Reliability read: an outstanding wave for spec-level precision — the ATT opcode dispatch match is about as exhaustive and exact as this pipeline's confirmations get, on par with sessions 137/139/140's L2CAP wire-format flagship confirmations.
+
 
 
 
