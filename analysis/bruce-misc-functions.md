@@ -4945,6 +4945,39 @@ Decompiled and documented 26 functions (862 bytes across `0x600d45a4`–`0x600d4
 
 Reliability read: this wave's own new work is solid — every function decompiled this session checks out against direct disassembly, and the "avoiding corrupted section 3b DSP span" note in the commit message shows session 166's finding was read and acted on. The value this session came from the routine full-repository overlap scan surfacing a genuinely old, unrelated defect that this wave's work happened to collide with — a good reminder to keep running that scan on the whole repository, not just each wave's own addresses.
 
+## Session 168 (Wave 138) — Haptics Motor PWM Controller, USB Audio Status & SAI Clock (25 functions, 1,110 bytes)
+
+Decompiled and documented 25 functions (1,110 bytes across `0x600d459e`–`0x600d4d98`) and resolved Session 167 QA findings (`led_calibration__600d4596` boundary shrink to 8B, added stubs `0x600d459e` and `0x600d45a2`, and fixed tail-call bleed on `thunk_FUN_6005e6e8` and `led_calibration__600d4596`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d459e` |    4 | Infrastructure / Stubs | **`device_stub_return_one`** — Tiny stub returning 1 (`movs r0, #1; bx lr`). | 0 callers / 0 callees |
+| `0x600d45a2` |    2 | Infrastructure / Stubs | **`device_stub_noop`** — Tiny stub returning void (`bx lr`). | 0 callers / 0 callees |
+| `0x600d4946` |   68 | Audio / USB Audio | **`usb_audio_status_map`** — USB audio / endpoint error status code translator using `tbb` jump table (maps 19 input conditions to standard codes 0, 0xd, 0xe, 3, 4, 8, 2). | 6 callers / 0 callees |
+| `0x600d498c` |   12 | Infrastructure / Events | **`endpoint_state_save_event`** — Store state word to `+0x154` and tail call event dispatcher `0x600cc1c0`. | 0 callers / 1 callee |
+| `0x600d4998` |    4 | Infrastructure / Veneer | **`thunk_EXT_FUN_00007ddc`** — 4-byte veneer forwarding to `0x6013d098`. | 0 callers / 1 callee |
+| `0x600d499c` |   10 | Haptics / PWM | **`pwm_channel_1_set_duty_max`** — Set PWM channel 1 duty cycle to max (0xffff) via `0x6005fdc0`. | 0 callers / 1 callee |
+| `0x600d49a6` |   10 | Haptics / PWM | **`pwm_channel_2_set_duty_max`** — Set PWM channel 2 duty cycle to max (0xffff) via `0x6005fdc0`. | 0 callers / 1 callee |
+| `0x600d49b0` |   10 | Haptics / PWM | **`pwm_channel_3_set_duty_max`** — Set PWM channel 3 duty cycle to max (0xffff) via `0x6005fdc0`. | 0 callers / 1 callee |
+| `0x600d49ba` |   10 | Haptics / PWM | **`pwm_channel_4_set_duty_max`** — Set PWM channel 4 duty cycle to max (0xffff) via `0x6005fdc0`. | 0 callers / 1 callee |
+| `0x600d49c4` |   10 | Haptics / PWM | **`pwm_channel_5_set_duty_max`** — Set PWM channel 5 duty cycle to max (0xffff) via `0x6005fdc0`. | 0 callers / 1 callee |
+| `0x600d49ce` |   10 | Hardware / IO Pin | **`io_pin_set_active_high`** — Write 1 to active flag at `+0x25` and tail call `io_pin__6005fe04`. | 3 callers / 1 callee |
+| `0x600d49d8` |   10 | Hardware / IO Pin | **`io_pin_set_active_low`** — Write 0 to active flag at `+0x25` and tail call `io_pin__6005fe04`. | 2 callers / 1 callee |
+| `0x600d49e2` |    2 | Hardware / IO Pin | **`io_pin_stub_noop`** — Noop stub returning void (`bx lr`). | 1 caller / 0 callees |
+| `0x600d49e4` |   24 | Haptics / PWM | **`pwm_frequency_validate`** — Validate PWM frequency parameter in range 0x50..0x59 or <= 0xf. | 3 callers / 0 callees |
+| `0x600d49fc` |  130 | Hardware / XBARA | **`xbara_route_haptics_pwm`** — Configure XBARA routing table cross-connections to haptics PWM channels (`xbara__60060170`). | 1 caller / 1 callee |
+| `0x600d4a7e` |   92 | Haptics / Driver | **`haptics_driver_init_channels`** — Initialize haptics PWM / IO pins, configure channel registers (`0x6006012c`, `0x600600c4`), and trigger enable (`0x60053d08`). | 1 caller / 5 callees |
+| `0x600d4ada` |   78 | Haptics / Driver | **`haptics_channel_enable`** — Lock mutex (`0x6013d3d8`), update PWM channel enable bitmask at `+0x188`, and unlock (`0x6013cef0`). | 1 caller / 4 callees |
+| `0x600d4b28` |   80 | Haptics / Driver | **`haptics_channel_disable`** — Lock mutex, clear PWM channel enable bitmask at `+0x188`, and unlock. | 1 caller / 4 callees |
+| `0x600d4b78` |  194 | Haptics / Driver | **`haptics_waveform_generate`** — Calculate PWM frequency/duty waveform parameters based on battery voltage scale (`0x60052aa8`, `0x600600c4`, `0x6006012c`) and update channel registers. | 1 caller / 5 callees |
+| `0x600d4c3a` |  116 | Haptics / Driver | **`haptics_vibration_pulse_set`** — Validate parameters, acquire lock, program PWM duty period register (`0x600cf548`, `0x6006012c`), update state, and release lock. | 1 caller / 5 callees |
+| `0x600d4cae` |  128 | Haptics / Driver | **`haptics_vibration_intensity_set`** — Bounds check intensity percentage (<= 100), acquire lock, program duty scale (`0x600cf548`), update state, and release lock. | 1 caller / 5 callees |
+| `0x600d4d2e` |    6 | Audio / SAI | **`sai_audio_clock_sync`** — Trigger SAI audio synchronous clock enable via `0x60060368`. | 4 callers / 1 callee |
+| `0x600d4d34` |   34 | C Runtime / String | **`str_format_integer_field`** — Format 64-bit integer into buffer (`0x60101b0c`, `0x60101ba2`). | 0 callers / 2 callees |
+| `0x600d4d56` |   12 | Audio / SAI | **`sai_sample_rate_get_scaled`** — Query audio subsystem clock config via `0x60052aa8` and return scaled clock divisor (`>> 6`). | 3 callers / 1 callee |
+| `0x600d4d62` |   54 | Hardware / XBARA | **`xbara_deinit_io_pins`** — Deinitialize IO pins across 3 channel groups (`io_pin__6005fe04`). | 1 caller / 1 callee |
+
+
 
 
 

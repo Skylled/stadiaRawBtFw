@@ -1,4 +1,4 @@
-// 600d499c  FUN_600d499c  size=32 bytes
+// 600d499c  FUN_600d499c  size=10 bytes
 // --- callers ---
 // --- callees ---
 
