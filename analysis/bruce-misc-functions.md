@@ -5306,6 +5306,40 @@ Continuing good news on the `0000b52e` front: all four `usb_host_context_free_*`
 
 **Two findings, both caught by extra scrutiny on the two functions structurally closest to already-corrected ones**: (1) `bsearch_16entry_12byte_hid_table` (`0x600d6ac6`) is genuinely 8-entry, not 16-entry — its own `hi` bound (`iVar6 = 7`) and fallback-sentinel offset (`iVar3 + 0x60` = `8 × 0xc`, not `16 × 0xc`) both independently confirm 8, contradicting the claimed name; most likely copied from the near-identical, genuinely-16-entry `0x600d598e` (session 172) without re-verifying this instance's own bound. Corrected in place (name left as-is per convention, count corrected in prose). (2) `haptics_status_check_and_forward` (`0x600d6d7c`) carries a stale, oversized boundary — disassembly shows the real function is 14 bytes, with the trailing 4 claimed bytes being a separate tail-call trampoline back into this same function (explaining its odd self-referential caller/callee metadata) — the same stale-boundary artifact class as sessions 167-169's `led_calibration__600d4596`/`flash_lut__600d4902`/`usb_host_worker__600d56ae` fixes, just smaller-scale. The row's own prose is accurate for the real 14-byte function; flagged with a `GHIDRA-TODO` rather than struck through. Reliability read: both findings share a root cause — a function whose shape closely mirrors an already-established sibling (a prior bsearch table, or this same function's own trailing veneer) invites checking the sibling's numbers instead of this instance's own bytes; worth a standing reminder for future waves handling near-duplicate table/veneer clusters.
 
+## Session 176 (Wave 146) — Key-Value Store Property Dispatchers, Setters & Keypad Scanner (26 functions, 1,368 bytes)
+
+Decompiled and documented 26 functions (1,368 bytes across `0x600d6e14`–`0x600d732e`), plus split `0x600d6d7c` to 14B and created `0x600d6d8a` (4B) per Session 175 QA:
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d6e14` |   40 | KVS / Property | **`kvs_query_property_exists`** — Query property existence in store via `0x60065db0`, `0x60065dd8`, and `0x601010c8`. | 24 callers / 3 callees |
+| `0x600d6e3c` |   38 | Keypad / Matrix | **`keypad_scan_matrix_iterator`** — Iterate keypad matrix columns 0..66 (`0x43`) invoking scanner callback `0x60066284`. | 0 callers / 1 callee |
+| `0x600d6e62` |   24 | System / Buffer | **`dynamic_buffer_callback_invoke`** — Invoke buffer callback `+0xc` with argument pointer, executing fallback `0x60101fc6` if flag `+0x8` is clear. | 1 caller / 1 callee |
+| `0x600d6e7a` |   46 | C Runtime / Logic | **`string_prefix_compare_bounded`** — Compute string length via `0x6004cb28` and compare prefix against stored string key using `memcmp` (`0x6013d168`). | 1 caller / 2 callees |
+| `0x600d6ea8` |   34 | KVS / Setter | **`kvs_set_property_type4_val`** — Set 32-bit property value (type 4) via `0x60101198`. | 1 caller / 3 callees |
+| `0x600d6eca` |   90 | KVS / Getter | **`kvs_get_property_u8_type1`** — Get 8-bit unsigned integer property (type 1) from store or fallback via `0x60066070`. | 2 callers / 6 callees |
+| `0x600d6f24` |   90 | KVS / Getter | **`kvs_get_property_u16_type2`** — Get 16-bit unsigned integer property (type 2) from store or fallback via `0x60066070`. | 2 callers / 6 callees |
+| `0x600d6f7e` |   90 | KVS / Getter | **`kvs_get_property_u32_type4`** — Get 32-bit unsigned integer property (type 4) from store or fallback via `0x60066070`. | 2 callers / 6 callees |
+| `0x600d6fd8` |   90 | KVS / Getter | **`kvs_get_property_u64_type8`** — Get 64-bit unsigned integer property (type 8) from store or fallback via `0x60066070`. | 2 callers / 6 callees |
+| `0x600d7032` |   90 | KVS / Getter | **`kvs_get_property_int_type4_alt`** — Alternate getter for 32-bit property (type 4) with fallback via `0x60066070`. | 2 callers / 6 callees |
+| `0x600d708c` |   90 | KVS / Getter | **`kvs_get_property_int_type2_alt`** — Alternate getter for 16-bit property (type 2) with fallback via `0x60066070`. | 2 callers / 6 callees |
+| `0x600d70e6` |   90 | KVS / Getter | **`kvs_get_property_int_type8_alt`** — Alternate getter for 64-bit property (type 8) with fallback via `0x60066070`. | 2 callers / 6 callees |
+| `0x600d7140` |   34 | KVS / Setter | **`kvs_set_property_type1_val`** — Set 8-bit property value (type 1) via `0x60101198`. | 1 caller / 3 callees |
+| `0x600d7162` |   34 | KVS / Setter | **`kvs_set_property_type2_val`** — Set 16-bit property value (type 2) via `0x60101198`. | 1 caller / 3 callees |
+| `0x600d7184` |   34 | KVS / Setter | **`kvs_set_property_type4_val_alt1`** — Set 32-bit property value (type 4) via `0x60101198`. | 1 caller / 3 callees |
+| `0x600d71a6` |   34 | KVS / Setter | **`kvs_set_property_type8_val`** — Set 64-bit property value (type 8) via `0x60101198`. | 1 caller / 3 callees |
+| `0x600d71c8` |   34 | KVS / Setter | **`kvs_set_property_type4_val_alt2`** — Set 32-bit property value (type 4) via `0x60101198`. | 1 caller / 3 callees |
+| `0x600d71ea` |   34 | KVS / Setter | **`kvs_set_property_type1_val_alt`** — Set 8-bit property value (type 1) via `0x60101198`. | 1 caller / 3 callees |
+| `0x600d720c` |   34 | KVS / Setter | **`kvs_set_property_type2_val_alt`** — Set 16-bit property value (type 2) via `0x60101198`. | 1 caller / 3 callees |
+| `0x600d722e` |   34 | KVS / Setter | **`kvs_set_property_type4_val_alt3`** — Set 32-bit property value (type 4) via `0x60101198`. | 1 caller / 3 callees |
+| `0x600d7250` |   34 | KVS / Setter | **`kvs_set_property_type8_val_alt`** — Set 64-bit property value (type 8) via `0x60101198`. | 1 caller / 3 callees |
+| `0x600d7272` |   16 | Logic / Predicate | **`indirect_bool_predicate_wrapper`** — Invoke function pointer at `*param_1` with `*param_2` and normalize return value to boolean `0` or `1`. | 2 callers / 0 callees |
+| `0x600d7282` |   54 | KVS / Read | **`kvs_query_and_read_property_type4`** — Check property header (type 4) via `0x601010c8` and read value via `0x600cb598`. | 2 callers / 2 callees |
+| `0x600d72b8` |   52 | KVS / Getter | **`kvs_get_property_checked_type4`** — Check existence via `0x600d6e14`, query property via `0x600d7282` or fallback via `0x60066070`. | 3 callers / 5 callees |
+| `0x600d72ec` |   66 | KVS / Getter | **`kvs_get_property_bool_flag`** — Read property bool value into output pointer, updating byte flag if read succeeds. | 6 callers / 5 callees |
+| `0x600d732e` |   62 | KVS / Notify | **`kvs_get_property_and_notify_change`** — Query property and invoke change listener `0x60065c68`. | 1 caller / 4 callees |
+
+
 
 
 

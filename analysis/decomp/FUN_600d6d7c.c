@@ -1,8 +1,7 @@
-// 600d6d7c  FUN_600d6d7c  size=18 bytes
+// 600d6d7c  FUN_600d6d7c  size=14 bytes
 // --- callers ---
-//   600d6d7c FUN_600d6d7c
+//   600d6d8a thunk_FUN_600d6d7c
 // --- callees ---
-//   600d6d7c FUN_600d6d7c
 
 
 undefined4 FUN_600d6d7c(char *param_1)
