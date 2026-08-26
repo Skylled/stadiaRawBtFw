@@ -4706,6 +4706,33 @@ Decompiled and documented 24 functions (1,590 bytes across `0x6010095a`–`0x601
 
 Reliability read: a wave with a real, well-evidenced finding sitting right next to its own correct identification of the same underlying primitive family (`0x600cc29c` vs. `0x60050c18`) — a good example of how checking every specifically-named callee against the standing appendix, not just the ones that feel uncertain, keeps paying off in this pipeline.
 
+## Session 162 (Wave 132) — Broadcom Key-Value Store Public APIs, RPC Messaging & Packet Buffer Engine (19 functions, 1,694 bytes)
+
+Decompiled and documented 19 functions (1,694 bytes across `0x60100f90`–`0x6010162e`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x60100f90` |  108 | Flash / KVS | **`kvs_garbage_collect_all_sectors`** — Key-Value Store full sweep garbage collection and sector compaction (`0x60100ed8`, `0x60100bb0`, `0x60100d98`). | 2 callers / 4 callees |
+| `0x60100ffc` |  204 | Flash / KVS | **`kvs_update_record`** — Key-Value Store update existing key record with new value (`0x60100c48`, `0x60100e08`). | 2 callers / 6 callees |
+| `0x601010c8` |  100 | Flash / KVS | **`kvs_get_value_size`** — Key-Value Store query stored value size for a key name (thread-safe public API, 19 callers). | 19 callers / 4 callees |
+| `0x6010112c` |  108 | Flash / KVS | **`kvs_delete_key`** — Key-Value Store delete key by marking entry deleted (thread-safe public API). | 2 callers / 5 callees |
+| `0x60101198` |  252 | Flash / KVS | **`kvs_set_value`** — Key-Value Store write / set key value (thread-safe public API, 16 callers). | 16 callers / 10 callees |
+| `0x60101294` |  110 | Flash / KVS | **`kvs_compact_step`** — Key-Value Store perform incremental single-sector compaction step (thread-safe public API). | 1 caller / 4 callees |
+| `0x60101302` |   88 | RPC / Core | **`rpc_service_broadcast_msg`** — Broadcom RPC / IPC service broadcast message to registered transport endpoints. | 2 callers / 0 callees |
+| `0x6010135a` |   50 | RPC / Core | **`rpc_context_init`** — Broadcom RPC context struct initialization (7 words). | 5 callers / 0 callees |
+| `0x6010138c` |   68 | RPC / Core | **`rpc_service_send_event`** — Broadcom RPC broadcast notification event across endpoints (thread-safe, 22 callers). | 22 callers / 4 callees |
+| `0x601013d0` |  204 | RPC / Core | **`rpc_server_dispatch_and_reply`** — Broadcom RPC server dispatch method and broadcast reply (fixed spurious split). | 1 caller / 9 callees |
+| `0x6010149c` |   46 | RPC / Core | **`rpc_server_task_worker`** — Broadcom RPC server worker thread message loop (`FUN_600caab0`, `0x601013d0`). | 0 callers / 2 callees |
+| `0x601014ca` |   10 | Utility / String | **`str_find_null_terminator`** — 10-byte string null terminator scan helper. | 1 caller / 0 callees |
+| `0x601014d4` |   86 | Utility / String | **`str_match_space_delimited_token`** — Search for matching token in space-delimited string (`memcmp`). | 1 caller / 3 callees |
+| `0x6010152a` |   12 | RPC / Core | **`rpc_clear_transaction_state`** — Broadcom RPC reset active transaction state flags. | 1 caller / 0 callees |
+| `0x60101536` |   38 | Buffer / Dynamic | **`msg_buffer_next_chunk`** — Dynamic buffer advance to next chunk offset with bounds checking (`buffer.c`). | 2 callers / 0 callees |
+| `0x6010155c` |   14 | Buffer / Dynamic | **`msg_buffer_advance_chunk`** — Dynamic buffer advance active chunk index (`buffer.c`). | 2 callers / 1 callee |
+| `0x6010156a` |   80 | Buffer / Dynamic | **`msg_buffer_find_free_slot`** — Dynamic buffer find free contiguous space of requested length (`buffer.c`). | 1 caller / 2 callees |
+| `0x601015ba` |   44 | Buffer / Dynamic | **`msg_buffer_write_chunk`** — Dynamic buffer write message chunk descriptor and payload (`buffer.c`). | 1 caller / 1 callee |
+| `0x601015e6` |   72 | Buffer / Dynamic | **`msg_buffer_enqueue`** — Dynamic message buffer append chunk with slot allocation and wrap-around (`buffer.c`). | 1 caller / 3 callees |
+
+
 
 
 
