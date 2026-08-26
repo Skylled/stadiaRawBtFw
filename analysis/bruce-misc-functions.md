@@ -4738,6 +4738,51 @@ Decompiled and documented 19 functions (1,694 bytes across `0x60100f90`–`0x601
 
 Reliability read: a clean, well-corroborated wave — the spurious-split fix checked out under disassembly, and the RPC/KVS subsystem identifications are anchored by several sessions' worth of already-established primitives.
 
+## Session 163 (Wave 133) — Diagnostic String Formatter, RTOS Primitives, KVS Payloads & RPC Serializers (37 functions, 1,524 bytes)
+
+Decompiled and documented 37 functions (1,524 bytes across `0x6010162e`–`0x60101c22`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x6010162e` |   46 | Logging / Formatter | **`log_formatter_append_chunk`** — Format string/buffer into diagnostic stream with lock/unlock (`0x6013cf40`). | 1 caller / 4 callees |
+| `0x6010165c` |   70 | Logging / Formatter | **`log_formatter_append_va_list`** — Variadic string formatter appending to diagnostic buffer (`0x60101bfc`). | 1 caller / 1 callee |
+| `0x601016a2` |   78 | Logging / Formatter | **`log_formatter_append_formatted_msg`** — Formatted message append with va_list handling (`0x60101bfc`). | 1 caller / 1 callee |
+| `0x601016f0` |   80 | Logging / Formatter | **`log_formatter_init_context`** — Initialize diagnostic string buffer context struct (capacity, buffer pointer, write offset). | 2 callers / 3 callees |
+| `0x60101740` |   32 | Logging / Formatter | **`log_formatter_init_and_register`** — Initialize buffer context and register into system logger (`0x600cc124`, 45 callers). | 45 callers / 2 callees |
+| `0x60101760` |   26 | RTOS / Task | **`rtos_thread_worker_loop`** — RTOS thread entry worker function executing task handler and looping `vTaskDelay(0)` (`0x600ca5cc`). | 0 callers / 2 callees |
+| `0x6010177a` |   32 | RTOS / Sync | **`rtos_event_send_critical`** — Send event in critical section with `taskENTER_CRITICAL` / `taskEXIT_CRITICAL` (`0x6013d2d0`, `0x6013d0e0`, 11 callers). | 11 callers / 3 callees |
+| `0x6010179a` |   26 | RTOS / Task | **`rtos_task_delete_self`** — Delete task handle stored at `+0x58` in critical section (`0x600ca27c`). | 1 caller / 3 callees |
+| `0x601017b4` |   52 | RTOS / Sync | **`rtos_task_signal_and_cleanup`** — Signal task event and delete task handle if not current task. | 3 callers / 3 callees |
+| `0x601017e8` |   20 | RTOS / Queue | **`rtos_queue_init_lazy`** — Lazy initialize 1-element queue at `+0x50` via `rtos_queue_create` (`0x601007bc`, 25 callers). | 25 callers / 1 callee |
+| `0x601017fc` |   28 | RTOS / Queue | **`rtos_queue_create_custom`** — Create queue at `+0x50` with custom queue type (`0x600c9de4`, 29 callers). | 29 callers / 1 callee |
+| `0x60101818` |   10 | RTOS / Queue | **`rtos_queue_send_timeout_inf`** — Enqueue item to queue at `+0x50` with `portMAX_DELAY` timeout. | 4 callers / 1 callee |
+| `0x60101822` |   16 | RTOS / Queue | **`rtos_queue_send_nowait`** — Enqueue item to queue at `+0x50` without blocking (`timeout = 0`). | 5 callers / 1 callee |
+| `0x60101832` |   22 | RTOS / Sync | **`rtos_event_wait`** — Wait on RTOS event group at `+0x50` (`thunk_EXT_FUN_00006a74`, 9 callers). | 9 callers / 1 callee |
+| `0x60101848` |  150 | Flash / KVS | **`kvs_write_sector_header`** — Write sector header with sequence number and magic bytes (`0x6013cf90`, `0x6013d3a0`). | 4 callers / 2 callees |
+| `0x601018de` |  144 | Flash / KVS | **`kvs_read_record_payload`** — Read key record binary payload from flash into destination buffer (`0x6013d3a0`, 5 callers). | 5 callers / 1 callee |
+| `0x6010196e` |   22 | RPC / Core | **`rpc_arg_get_type_len`** — Read RPC parameter length / type field. | 3 callers / 0 callees |
+| `0x60101984` |   34 | RPC / Core | **`rpc_arg_validate_header`** — Validate RPC argument descriptor header. | 2 callers / 0 callees |
+| `0x601019a6` |   12 | RPC / Core | **`rpc_arg_is_valid`** — Check if RPC argument descriptor is non-null and valid. | 1 caller / 0 callees |
+| `0x601019b2` |   40 | RPC / Core | **`rpc_arg_lookup_by_id`** — Look up RPC argument by ID in argument array (`0x60101984`). | 1 caller / 1 callee |
+| `0x601019da` |   56 | RPC / Core | **`rpc_arg_serialize_uint32`** — Serialize 32-bit integer into RPC argument payload (13 callers). | 13 callers / 0 callees |
+| `0x60101a12` |   66 | RPC / Core | **`rpc_arg_copy_bytes`** — Copy binary bytes into RPC argument buffer (`0x6013d3a0`). | 1 caller / 1 callee |
+| `0x60101a54` |   16 | RPC / Core | **`rpc_arg_init_header`** — Initialize RPC argument header descriptor (`0x60101984`, 5 callers). | 5 callers / 1 callee |
+| `0x60101a64` |   28 | RPC / Core | **`rpc_arg_get_payload_ptr`** — Return pointer to RPC argument payload data (12 callers). | 12 callers / 0 callees |
+| `0x60101a80` |    8 | RPC / Core | **`rpc_arg_get_uint32`** — Read 32-bit integer from RPC argument payload (13 callers). | 13 callers / 0 callees |
+| `0x60101a88` |   28 | RPC / Core | **`rpc_arg_get_uint16`** — Read 16-bit integer from RPC argument payload. | 1 caller / 0 callees |
+| `0x60101aa4` |   36 | RPC / Core | **`rpc_arg_serialize_bytes`** — Serialize byte array into RPC argument payload (`0x600cc3cc`, `0x60101a12`, 8 callers). | 8 callers / 3 callees |
+| `0x60101ac8` |   68 | RPC / Core | **`rpc_arg_serialize_string`** — Serialize null-terminated string into RPC argument payload (4 callers). | 4 callers / 0 callees |
+| `0x60101b0c` |   64 | RPC / Core | **`rpc_arg_deserialize_string`** — Deserialize string parameter from RPC request payload (13 callers). | 13 callers / 0 callees |
+| `0x60101b4c` |   14 | Logging / Formatter | **`log_formatter_get_available_space`** — Compute remaining writable buffer space. | 3 callers / 0 callees |
+| `0x60101b5a` |   28 | Logging / Formatter | **`log_formatter_truncate_buffer`** — Set new buffer write length / truncate. | 2 callers / 0 callees |
+| `0x60101b76` |   30 | Logging / Formatter | **`log_formatter_append_raw_string`** — Append null-terminated string to buffer (`0x6013d258`, 82 callers). | 82 callers / 1 callee |
+| `0x60101b94` |   14 | Logging / Formatter | **`log_formatter_copy_status`** — Copy status flags and write position from another context. | 1 caller / 0 callees |
+| `0x60101ba2` |   42 | Logging / Formatter | **`log_formatter_advance_offset`** — Advance write offset with overflow and status update (56 callers). | 56 callers / 0 callees |
+| `0x60101bcc` |   48 | Logging / Formatter | **`log_formatter_vsnprintf_append`** — Append formatted string via `vsnprintf` (`0x600cdd6c`) and advance offset. | 2 callers / 2 callees |
+| `0x60101bfc` |   34 | Logging / Formatter | **`log_formatter_snprintf_append`** — Append formatted string via `snprintf` (`0x600cdd6c`) and advance offset. | 2 callers / 2 callees |
+| `0x60101c1e` |    4 | Infrastructure / Veneer | **`thunk_EXT_FUN_00008844`** — 4-byte veneer forwarding to `0x6013cff0`. | 2 callers / 0 callees |
+
+
 
 
 

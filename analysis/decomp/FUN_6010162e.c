@@ -1,10 +1,10 @@
 // 6010162e  FUN_6010162e  size=46 bytes
 // --- callers ---
-//   60058754 buffer__60058754
 //   600cbebc logger__600cbebc
+//   60058754 buffer__60058754
 // --- callees ---
-//   6013cf40 thunk_EXT_FUN_00007d10
 //   6013d3d8 thunk_EXT_FUN_0000b4c2
+//   6013cf40 thunk_EXT_FUN_00007d10
 
 
 void FUN_6010162e(int param_1,undefined4 param_2)
