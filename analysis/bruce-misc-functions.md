@@ -4636,6 +4636,32 @@ Decompiled and documented 12 functions (1,670 bytes across `0x600ffc9e`–`0x601
 
 Reliability read: unlike several earlier crypto-cluster waves in this same address neighborhood, this one's headline claims are directly anchored to primitives independently confirmed as far back as sessions 7 and 10 — the AES final-round-function match in particular is about as strong a confirmation as a single citation can provide, since it reuses a byte-for-byte spec-verified function in exactly the position real AES puts it.
 
+## Session 160 (Wave 130) — Broadcom ECC Modular Field Arithmetic & RTOS Task/Queue Primitives (18 functions, 1,586 bytes)
+
+Decompiled and documented 18 functions (1,586 bytes across `0x60100324`–`0x6010095a`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x60100324` |   62 | Crypto / ECC | **`ec_bignum_is_zero`** — Broadcom ECC test if bignum / field element is zero (returns 1 if all `param_2` words are zero). | 3 callers / 0 callees |
+| `0x60100362` |   56 | Crypto / ECC | **`ec_word_bit_length`** — Broadcom ECC compute effective bit length of 32-bit word (1..32). | 1 caller / 0 callees |
+| `0x6010039a` |   64 | Crypto / ECC | **`ec_bignum_word_length`** — Broadcom ECC find effective word length of bignum (index of highest non-zero limb + 1). | 1 caller / 0 callees |
+| `0x601003da` |   74 | Crypto / ECC | **`ec_bignum_bit_length`** — Broadcom ECC compute total bit length of bignum (`(word_len - 1) * 32 + top_limb_bits`). | 1 caller / 2 callees |
+| `0x60100424` |  142 | Crypto / ECC | **`ec_bignum_add`** — Broadcom ECC multi-limb bignum addition with carry (`param_1 = param_2 + param_3`, returns carry). | 4 callers / 0 callees |
+| `0x601004b2` |  146 | Crypto / ECC | **`ec_bignum_sub`** — Broadcom ECC multi-limb bignum subtraction with borrow (`param_1 = param_2 - param_3`, returns borrow). | 7 callers / 0 callees |
+| `0x60100544` |  104 | Crypto / ECC | **`ec_bignum_rshift1`** — Broadcom ECC multi-limb bignum logical right shift by 1 bit (`param_1 = param_2 >> 1`). | 2 callers / 0 callees |
+| `0x601005ac` |   74 | Crypto / ECC | **`ec_field_mul`** — Broadcom ECC modular field multiplication with Solinas reduction (`param_1 = param_2 * param_3 mod p` for NIST P-256 / P-192). | 4 callers / 3 callees |
+| `0x601005f6` |   32 | Crypto / ECC | **`ec_field_sqr`** — Broadcom ECC modular field squaring (`param_1 = param_2^2 mod p` via `ec_field_mul`). | 3 callers / 1 callee |
+| `0x60100616` |  106 | Crypto / ECC | **`ec_bignum_lshift1`** — Broadcom ECC multi-limb bignum logical left shift by 1 bit (`param_1 = param_2 << 1`, returns overflow bit). | 1 caller / 0 callees |
+| `0x60100680` |  306 | Crypto / ECC | **`ec_bignum_mul`** — Broadcom ECC $N \times N$-word multi-precision schoolbook bignum multiplication (`param_1 = param_2 * param_3`). | 1 caller / 1 callee |
+| `0x601007b6` |    6 | RTOS / Timer | **`rtos_timer_clear_active`** — Broadcom RTOS clear active timer flag / handler at offset `+0x10`. | 2 callers / 0 callees |
+| `0x601007bc` |   42 | RTOS / Queue | **`rtos_queue_create`** — Broadcom RTOS message queue creation and initialization (`queue__600c9de4`, `0x6013d0e8`). | 3 callers / 2 callees |
+| `0x601007e6` |   36 | RTOS / Event | **`rtos_event_group_create`** — Broadcom RTOS event group / synchronization object creation and initialization (`thunk_EXT_FUN_00006a20`, `thunk_EXT_FUN_00006a74`). | 4 callers / 2 callees |
+| `0x6010080a` |   64 | RTOS / Util | **`rtos_check_callback_table_4`** — Broadcom RTOS execute check callback across 4-entry table. | 2 callers / 0 callees |
+| `0x6010084a` |   66 | RTOS / Util | **`rtos_validate_struct_members`** — Broadcom RTOS validate struct pointers and sub-tables using callback. | 1 caller / 1 callee |
+| `0x6010088c` |  116 | RTOS / Util | **`rtos_validate_circular_list`** — Broadcom RTOS validate circular task / queue linked list integrity. | 1 caller / 2 callees |
+| `0x60100900` |   90 | RTOS / Task | **`rtos_task_create`** — Broadcom RTOS dynamically allocate task stack and control block (0xCC bytes) and spawn thread (`FUN_600ca0fc`, `FUN_600c9fd8`). | 1 caller / 4 callees |
+
+
 
 
 
