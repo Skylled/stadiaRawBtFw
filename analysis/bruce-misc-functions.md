@@ -4609,6 +4609,26 @@ Decompiled and documented 13 functions (1,580 bytes across `0x600ff672`–`0x600
 
 Reliability read: an outstanding wave for spec-level precision — the ATT opcode dispatch match is about as exhaustive and exact as this pipeline's confirmations get, on par with sessions 137/139/140's L2CAP wire-format flagship confirmations.
 
+## Session 159 (Wave 129) — Broadcom AES-128 Block Cipher & ECC P-256 Point Arithmetic Primitives (12 functions, 1,670 bytes)
+
+Decompiled and documented 12 functions (1,670 bytes across `0x600ffc9e`–`0x60100324`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600ffc9e` |   96 | GATT / Crypto | **`gatt_xor_128`** — Broadcom GATT AES-CMAC 128-bit block XOR helper (`param_1 ^= param_2`, 16 bytes). | 1 caller / 0 callees |
+| `0x600ffcfe` |   98 | GATT / Crypto | **`gatt_xor_128_3op`** — Broadcom GATT AES-CMAC 128-bit 3-operand block XOR helper (`param_1 = param_2 ^ param_3`). | 1 caller / 0 callees |
+| `0x600ffd60` |   26 | GATT / Crypto | **`gatt_xor_128_veneer`** — Broadcom GATT veneer forwarding to `gatt_xor_128` (`0x600ffc9e`). | 1 caller / 1 callee |
+| `0x600ffd7a` |  146 | Crypto / AES | **`aes_encrypt_block`** — Broadcom AES-128 10-round block cipher encryption core (`SubBytes`, `ShiftRows`, `MixColumns`, `AddRoundKey`). | 1 caller / 4 callees |
+| `0x600ffe0c` |   26 | Crypto / ECC | **`ec_point_init`** — Broadcom ECC P-256 initialize Jacobian projective point (zeroes 96-byte `(X,Y,Z)` coordinate struct via memset). | 1 caller / 1 callee |
+| `0x600ffe26` |   28 | Crypto / ECC | **`ec_point_copy`** — Broadcom ECC P-256 copy Jacobian projective point (copies 96-byte `(X,Y,Z)` coordinate struct via memcpy). | 2 callers / 1 callee |
+| `0x600ffe42` |  378 | Crypto / ECC | **`ec_point_double`** — Broadcom ECC Jacobian projective elliptic curve point doubling (`P3 = 2*P` over NIST P-256). | 2 callers / 7 callees |
+| `0x600fffbc` |  426 | Crypto / ECC | **`ec_point_add`** — Broadcom ECC Jacobian projective elliptic curve point addition (`P3 = P1 + P2` over NIST P-256). | 1 caller / 8 callees |
+| `0x60100166` |  224 | Crypto / ECC | **`ec_scalar_compute_naf`** — Broadcom ECC compute Non-Adjacent Form (NAF) digit representation of 256-bit scalar for windowed scalar multiplication. | 1 caller / 2 callees |
+| `0x60100246` |   54 | Crypto / ECC | **`ec_bignum_zero`** — Broadcom ECC zero bignum / field element array (`param_2` words). | 5 callers / 0 callees |
+| `0x6010027c` |   64 | Crypto / ECC | **`ec_bignum_copy`** — Broadcom ECC copy bignum / field element array (`param_3` words). | 2 callers / 0 callees |
+| `0x601002bc` |  104 | Crypto / ECC | **`ec_bignum_cmp`** — Broadcom ECC compare bignums / field elements (`param_1` vs `param_2`, returns 1, -1, or 0). | 5 callers / 0 callees |
+
+
 
 
 
