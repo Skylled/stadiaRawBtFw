@@ -4866,6 +4866,23 @@ Decompiled and documented 14 functions (1,460 bytes across `0x60102192`–`0x601
 
 Reliability read: a strong wave for cross-session validation — two independent, well-evidenced GHIDRA-TODO resolutions confirmed clean, plus a long-standing (~116-session) mislabel caught by convergent evidence from two unrelated, freshly-decompiled call sites rather than fresh disassembly. The plain C-string-library functions (`strchr`/`strcpy`/`strncmp`/`strncpy`/`strstr`) and the `qsort`/vsnprintf-engine functions were all read directly and match standard C library semantics with no other findings.
 
+## Session 166 (Wave 136) — DSP Audio Pipeline, Baseband Coprocessor Queue & Packet Slot Timing (9 functions, 1,780 bytes)
+
+Decompiled and documented 9 functions (1,780 bytes across `0x60131a30`–`0x60134146`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x60131a30` |  110 | Audio / DSP | **`dsp_driver_init_channel`** — DSP audio pipeline channel initialization and hardware register/coprocessor configuration (`0x600b72f0`). | 0 callers / 1 callee |
+| `0x60131e14` |  340 | Audio / DSP | **`dsp_audio_sample_decode_loop`** — DSP audio stream sample block decoding and filtering transform loop. | 0 callers / 0 callees |
+| `0x601323f6` |  152 | Audio / DSP | **`dsp_audio_filter_coeffs_update`** — DSP audio filter coefficient computation and filter state update (`0x600f4ff4`, `0x600bc9e4`, `0x600b4e8a`, `0x6010d090`). | 0 callers / 4 callees |
+| `0x60132bb4` |  548 | Audio / DSP | **`dsp_audio_frame_synth`** — DSP audio codec subband synthesis and frame reconstruction (`0x600b4ec2`, `0x600b4ed0`, `0x6006d076`, `0x600ed66e`). | 0 callers / 4 callees |
+| `0x60132de4` |  120 | Audio / DSP | **`dsp_stream_param_negotiate`** — DSP audio stream sample rate / bit depth parameter negotiation and buffer capacity check. | 0 callers / 0 callees |
+| `0x60132e5c` |  272 | Audio / DSP | **`dsp_audio_output_pack_dma`** — DSP audio output sample packing and DMA transfer trigger. | 0 callers / 0 callees |
+| `0x60134018` |   48 | Baseband / Timing | **`bte_calc_packet_slots`** — Bluetooth baseband packet slot count and transmission timing calculator (`0x271` = 625 µs BT slot duration, `0x369` = 873 offset). | 0 callers / 1 callee |
+| `0x60134088` |  158 | Baseband / Coproc | **`bb_coproc_packet_dispatch`** — Baseband modem coprocessor packet descriptor configuration and acceleration trigger via `mcrr2 p2` (`0x60134126`). | 0 callers / 1 callee |
+| `0x60134126` |   32 | Baseband / Coproc | **`bb_coproc_queue_slot`** — Baseband modem coprocessor queue slot linking and status return. | 1 caller / 0 callees |
+
+
 
 
 
