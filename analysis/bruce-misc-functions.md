@@ -5091,6 +5091,48 @@ Content verification: `usb_audio_atomic_buffer_send`'s flagship claim was disass
 
 Reliability read: the flagship atomic-dispatch/spinlock content is precisely verified down to the instruction level, and the bulk of the wave's caller/callee bookkeeping is either exactly correct or consistent with a defensible "decompiled-callers-only" convention — but two rows are real hand-count errors under any reading, a reminder to spot-check caller counts against the file's own header even in an otherwise clean, well-verified wave.
 
+## Session 171 (Wave 141) — USB Host Worker Dispatch, Audio Volume Scaling & Binary Search Lookups (34 functions, 898 bytes)
+
+Decompiled and documented 34 functions (898 bytes across `0x600d54f2`–`0x600d5830`) and resolved `usb_host_worker__600d56ae` stale boundary by shrinking it from 64B to its real 10-byte tail-call forwarding extent (`0x600d56ae`–`0x600d56b7`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600d54f2` |   32 | Audio / USB Topology | **`usb_topology_event_384c_dispatch`** — Verify topology state via `0x600d54dc` and dispatch `0x6006384c`. | 0 callers / 2 callees |
+| `0x600d5512` |   22 | Audio / USB Topology | **`usb_topology_state_route_aca`** — Check state == 3 and flag at `+0x104`, tail call `0x600d5aca`. | 2 callers / 0 callees |
+| `0x600d5528` |   32 | Audio / USB Topology | **`usb_topology_event_385c_dispatch`** — Verify topology state via `0x600d5512` and dispatch `0x6006385c`. | 0 callers / 2 callees |
+| `0x600d5548` |   22 | Audio / USB Topology | **`usb_topology_state_route_adc`** — Check state == 3 and flag at `+0x104`, tail call `0x600d5adc`. | 0 callers / 0 callees |
+| `0x600d555e` |   26 | Audio / USB Topology | **`usb_topology_read_flag_104`** — Return flag at `+0x104` if state == 3, else return `+0x105`. | 0 callers / 0 callees |
+| `0x600d5578` |   26 | Audio / USB Topology | **`usb_topology_route_38c8`** — Check state == 3 and flag at `+0x104`, tail call `0x600638c8`. | 0 callers / 0 callees |
+| `0x600d5592` |   38 | Audio / Volume | **`audio_volume_db_scale_calc`** — Signed 16-bit dB volume calculation with linear scaling step divisor `0x64` (100). | 2 callers / 0 callees |
+| `0x600d55b8` |   38 | Audio / Volume | **`audio_volume_db_scale_set`** — Compute volume percentage scale (`0x64` / 100) and update volume field via `0x600d5592`. | 1 caller / 1 callee |
+| `0x600d55de` |    4 | Audio / Stubs | **`audio_stub_return_zero_55de`** — Stub returning 0. | 0 callers / 0 callees |
+| `0x600d55e2` |   24 | Audio / USB Host | **`usb_host_audio_stream_rate_set`** — Compute sample rate divisor (`/ 1000`) and store scaled stream rate to `+0x14`. | 3 callers / 0 callees |
+| `0x600d55fa` |   60 | Audio / USB Host | **`usb_host_audio_select_endpoint`** — Select active audio endpoint descriptor block from context structure (`0x34`, `0x98`, `0xfc`). | 1 caller / 0 callees |
+| `0x600d5636` |    6 | Audio / Stubs | **`audio_stub_return_zero_5636`** — Stub returning 0. | 0 callers / 0 callees |
+| `0x600d563c` |    2 | Audio / Stubs | **`audio_stub_noop_563c`** — Noop stub returning void (`bx lr`). | 0 callers / 0 callees |
+| `0x600d563e` |    6 | Audio / Descriptors | **`audio_descriptor_clear_flag`** — Clear flag byte at `+4`. | 0 callers / 0 callees |
+| `0x600d5644` |    4 | Audio / Stubs | **`audio_stub_return_zero_5644`** — Stub returning 0. | 0 callers / 0 callees |
+| `0x600d5648` |    4 | Audio / Stubs | **`audio_stub_return_zero_5648`** — Stub returning 0. | 0 callers / 0 callees |
+| `0x600d564c` |   10 | Audio / Descriptors | **`audio_descriptor_zero_9b`** — Zero 9 bytes at `param_1` (`strd r2, r2; strb r2`). | 0 callers / 0 callees |
+| `0x600d5656` |    4 | Audio / Stubs | **`audio_stub_return_zero_5656`** — Stub returning 0. | 0 callers / 0 callees |
+| `0x600d565a` |    8 | Audio / USB Host | **`usb_host_audio_indirect_call_14`** — Load indirect method table from `param_1 + 0x5c` and call method at `+0x14`. | 0 callers / 0 callees |
+| `0x600d5662` |   10 | Audio / USB Host | **`usb_host_audio_indirect_call_18`** — Load indirect method table from `param_1 + 0x5c` and call method at `+0x18`. | 0 callers / 0 callees |
+| `0x600d566c` |   66 | Audio / USB Host | **`usb_host_audio_endpoint_desc_parse`** — Invoke endpoint method at `+0x1c`, parse descriptor flags and copy into output structure. | 0 callers / 0 callees |
+| `0x600d56ae` |   10 | Audio / USB Host | **`usb_host_worker__600d56ae`** — Tail call `0x60065290` forwarding context fields `+0xe4` and `+0xe8`. | 8 callers / 0 callees |
+| `0x600d56b8` |   54 | Audio / USB Host | **`usb_host_worker_retry_state_machine`** — Increment retry counter at `+0x78`, check retry limit `<= 2`, dispatch event 7/8/1/2 via `0x600d56ae`. | 3 callers / 1 callee |
+| `0x600d56ee` |    8 | Audio / USB Host | **`usb_host_worker_trigger_event_1`** — Set event parameter 1 and tail call `0x600d56b8`. | 0 callers / 1 callee |
+| `0x600d56f6` |   30 | Audio / USB Host | **`usb_host_worker_handle_status`** — Update status flag at `+0x1c` and tail call `0x600d56b8`. | 0 callers / 1 callee |
+| `0x600d5714` |    8 | Audio / USB Host | **`usb_host_worker_trigger_event_0`** — Set event parameter 0 and tail call `0x600d56b8`. | 0 callers / 1 callee |
+| `0x600d571c` |   14 | Audio / USB Host | **`usb_host_worker_clear_flag_and_run`** — Clear active flag at `+1` and tail call `0x600d56ae`. | 2 callers / 1 callee |
+| `0x600d572a` |   68 | Audio / USB Host | **`usb_host_worker_process_rx_queue`** — Check queue head/tail pointers at `+0xf8`, pop entry, process via `0x600d62f8`, and trigger event 1 or 7 via `0x600d56ae`. | 0 callers / 2 callees |
+| `0x600d576e` |   68 | C Runtime / Algorithm | **`bsearch_16entry_8byte_table`** — Binary search lookup across 16-entry 8-byte sorted element array. | 0 callers / 0 callees |
+| `0x600d57b2` |    8 | System / State Machine | **`state_machine_init_event`** — Forward state machine pointer `param_1 + 8` to `0x600849a4`. | 0 callers / 1 callee |
+| `0x600d57ba` |   26 | Hardware / Concurrency | **`atomic_fetch_and_add_barrier`** — Atomic fetch-and-add integer increment using `LDREX`/`STREX` with `DMB ISH` data memory barriers. | 1 caller / 0 callees |
+| `0x600d57d4` |   84 | Audio / USB Host | **`usb_host_worker_queue_dispatch`** — Check queue pointers at `+0x420`/`+0x424`, trigger worker event 1/7/8 via `0x600d56ae`. | 0 callers / 1 callee |
+| `0x600d5828` |    8 | Memory / Heap | **`memory_free_checked`** — Check if non-null and forward to `0x6013d310`. | 2 callers / 1 callee |
+| `0x600d5830` |   68 | C Runtime / Algorithm | **`bsearch_10entry_8byte_table`** — Binary search lookup across 10-entry 8-byte sorted element array. | 0 callers / 0 callees |
+
+
 
 
 
