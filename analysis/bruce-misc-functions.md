@@ -4500,6 +4500,25 @@ Decompiled and documented 10 functions (1,686 bytes across `0x600fdc46`–`0x600
 
 Reliability read: a clean wave on every front checked — the structural fix verified by disassembly, the totals verified independently, and last session's correction to `0x60094d24` now confirmed from five additional, independent angles in the same wave.
 
+## Session 155 (Wave 125) — Broadcom BTA GATTC Write, Notification & Completion Handlers (11 functions, 1,634 bytes)
+
+Decompiled and documented 11 functions (1,634 bytes across `0x600fe2fe`–`0x600fe960`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x600fe2fe` |  308 | BTA / GATTC | **`bta_gattc_write_char_value`** — Broadcom BTA GATTC resolve characteristic handle by UUID (`0x600eedee`) and initiate GATT write via `GATTC_Write` (`0x600ab778`). | 0 callers / 6 callees |
+| `0x600fe432` |  100 | BTA / GATTC | **`bta_gattc_execute_write`** — Broadcom BTA GATTC execute or cancel queued reliable write via `GATTC_ExecuteWrite` (`0x600f3ade`) and dispatch event 0x1D10 on failure. | 0 callers / 4 callees |
+| `0x600fe496` |  106 | BTA / GATTC | **`bta_gattc_register_notification`** — Broadcom BTA GATTC resolve characteristic handle (`0x600eedee`) and register for GATT notifications via `0x600f3b78`. | 0 callers / 4 callees |
+| `0x600fe500` |  362 | BTA / GATTC | **`bta_gattc_read_cmpl_handler`** — Broadcom BTA GATTC parse GATT read characteristic/descriptor response and invoke callback (event 3 or 8). | 1 caller / 5 callees |
+| `0x600fe66a` |  316 | BTA / GATTC | **`bta_gattc_write_cmpl_handler`** — Broadcom BTA GATTC handle GATT write completion, resolve service/descriptor records, and invoke callback (event 4, 9, or 0x0B). | 1 caller / 4 callees |
+| `0x600fe7a6` |   88 | BTA / GATTC | **`bta_gattc_exec_cmpl_handler`** — Broadcom BTA GATTC handle execute write completion and invoke callback with event 0x0C (`BTA_GATTC_EXEC_EVT`). | 1 caller / 1 callee |
+| `0x600fe7fe` |  142 | BTA / GATTC | **`bta_gattc_cfg_mtu_cmpl_handler`** — Broadcom BTA GATTC handle configure MTU response, update negotiated MTU (offset +0x34), and invoke callback with event 0x11. | 1 caller / 1 callee |
+| `0x600fe88c` |   22 | BTA / GATTC | **`bta_gattc_action_nop`** — Broadcom BTA GATTC no-op action handler in state machine table (Fix #84). | 0 callers / 0 callees |
+| `0x600fe8a2` |  116 | BTA / GATTC | **`bta_gattc_search_cmpl_handler`** — Broadcom BTA GATTC handle service search completion, broadcast service changed (`0x600eeffa`), and invoke callback (Fix #85). | 0 callers / 1 callee |
+| `0x600fe916` |   26 | BTA / GATTC | **`bta_gattc_q_cmd`** — Broadcom BTA GATTC enqueue command buffer into client control block via `0x600ef476`. | 0 callers / 1 callee |
+| `0x600fe930` |   48 | BTA / GATTC | **`bta_gattc_send_disc_cback`** — Broadcom BTA GATTC reset application state (`0x600c6380`) and post BTA_GATTC_DISC_COMP_EVT (0x1D13) via `bta_sys_sendmsg` (`0x600d9198`). | 0 callers / 2 callees |
+
+
 
 
 
