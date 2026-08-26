@@ -4669,6 +4669,38 @@ Decompiled and documented 18 functions (1,586 bytes across `0x60100324`–`0x601
 
 Reliability read: another strong wave for this crypto cluster — the `ec_field_mul` word-count branch is a rare case where a claim can be checked against exact numbers rather than just plausible shape, and it landed precisely.
 
+## Session 161 (Wave 131) — Broadcom Ring Buffer Primitives & Flash Key-Value Store / NVRAM Management (24 functions, 1,590 bytes)
+
+Decompiled and documented 24 functions (1,590 bytes across `0x6010095a`–`0x60100f90`):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x6010095a` |   88 | RTOS / Task | **`rtos_get_task_list_info`** — Broadcom RTOS collect task status snapshot into 0x24-byte struct array (`0x600ca6b0`). | 1 caller / 1 callee |
+| `0x601009b2` |   88 | RTOS / Task | **`rtos_get_task_list_stats`** — Broadcom RTOS collect task runtime stats snapshot into 0x24-byte struct array (`0x600ca7d0`). | 1 caller / 1 callee |
+| `0x60100a0a` |   28 | Ring Buffer | **`ring_buffer_get_free_space`** — Broadcom circular byte buffer compute remaining writable capacity. | 1 caller / 0 callees |
+| `0x60100a26` |   58 | Ring Buffer | **`ring_buffer_write`** — Broadcom circular byte buffer write bytes with wrap-around. | 1 caller / 1 callee |
+| `0x60100a60` |   82 | Ring Buffer | **`ring_buffer_read`** — Broadcom circular byte buffer read/drain bytes with wrap-around. | 0 callers / 1 callee |
+| `0x60100ab2` |   26 | UART / Core | **`uart_tx_enqueue_critical`** — Broadcom UART/transport thread critical section write enqueue wrapper. | 1 caller / 1 callee |
+| `0x60100acc` |    4 | UART / Core | **`uart_init_thunk`** — 4-byte thunk branching to UART/DMA init `0x600cae68`. | 1 caller / 0 callees |
+| `0x60100ad0` |   58 | DMA / Core | **`dma_check_buffer_alignment`** — Broadcom DMA / hardware buffer alignment and power-of-two validation. | 1 caller / 0 callees |
+| `0x60100b0a` |   26 | Memory / Cache | **`cache_in_aligned_block_32`** — Broadcom cache line / 32-byte block containment check. | 1 caller / 0 callees |
+| `0x60100b24` |   20 | Flash / KVS | **`kvs_align_up`** — Key-Value Store / NVRAM align offset up to next flash sector/block boundary. | 7 callers / 0 callees |
+| `0x60100b38` |   16 | Flash / KVS | **`kvs_flash_get_sector_header_len`** — Key-Value Store query flash sector header length from driver vtable (clamped to max 20). | 7 callers / 0 callees |
+| `0x60100b48` |   34 | Flash / KVS | **`kvs_calc_and_store_crc`** — Key-Value Store calculate and store sector checksum / CRC. | 1 caller / 2 callees |
+| `0x60100b6a` |   44 | Flash / KVS | **`kvs_calc_entry_size`** — Key-Value Store calculate aligned total record size (header + key + value). | 5 callers / 1 callee |
+| `0x60100b96` |   26 | Flash / KVS | **`kvs_calc_usable_sector_capacity`** — Key-Value Store compute usable data capacity in flash sector. | 4 callers / 1 callee |
+| `0x60100bb0` |   50 | Flash / KVS | **`kvs_find_spare_empty_sector`** — Key-Value Store check if an empty spare sector is available. | 3 callers / 2 callees |
+| `0x60100be2` |   50 | Flash / KVS | **`kvs_is_sector_empty_and_spare_needed`** — Key-Value Store verify sector emptiness and spare availability. | 1 caller / 2 callees |
+| `0x60100c14` |   52 | Flash / KVS | **`kvs_hash_key_value`** — Key-Value Store compute combined checksum / hash over key and value buffers. | 3 callers / 1 callee |
+| `0x60100c48` |  232 | Flash / KVS | **`kvs_write_record`** — Key-Value Store write new key-value entry (magic `0x55AA`, key, value) to flash sector. | 2 callers / 5 callees |
+| `0x60100d30` |  104 | Flash / KVS | **`kvs_copy_flash_range`** — Key-Value Store copy chunked data between flash sectors. | 1 caller / 1 callee |
+| `0x60100d98` |  112 | Flash / KVS | **`kvs_assign_sector_sequence_num`** — Key-Value Store assign sequence number to sector header. | 2 callers / 2 callees |
+| `0x60100e08` |  112 | Flash / KVS | **`kvs_find_write_offset`** — Key-Value Store find flash write offset with sufficient free capacity. | 3 callers / 2 callees |
+| `0x60100e78` |   50 | Flash / KVS | **`kvs_lookup_cache_index`** — Key-Value Store linear search in-memory key index cache (100 entries, stride 0x18). | 5 callers / 1 callee |
+| `0x60100eaa` |   46 | Flash / KVS | **`kvs_remove_cache_entry`** — Key-Value Store remove key record from cache via fast swap-with-last. | 1 caller / 0 callees |
+| `0x60100ed8` |  184 | Flash / KVS | **`kvs_compact_sector`** — Key-Value Store garbage collect and compact sector entries, copying live records and erasing old sector. | 2 callers / 6 callees |
+
+
 
 
 
