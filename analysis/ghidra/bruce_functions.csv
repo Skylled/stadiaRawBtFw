@@ -2971,7 +2971,8 @@ address,name,size
 600cae18,timers__600cae18,22
 600cae38,timers__600cae38,38
 600cae68,FUN_600cae68,70
-600caec8,FUN_600caec8,180
+600caec8,FUN_600caec8,98
+600caf30,FUN_600caf30,52
 600caf64,FUN_600caf64,98
 600cafcc,FUN_600cafcc,28
 600cafec,FUN_600cafec,64
