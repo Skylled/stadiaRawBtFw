@@ -5678,5 +5678,21 @@ Decompiled and documented 14 functions (1,688 bytes across `0x6004b37c`–`0x600
 
 Reliability read: this is one of the more significant single-wave findings in this pipeline's history — an entire 5-function cluster's algorithmic identity was wrong in a way that obscured a genuinely interesting discovery (AES-GCM/GHASH support in this firmware). The tell was structural and checkable without deep crypto expertise: a claimed *permutation* (a unary operation on one input) was actually combining *two* inputs via multiply-like arithmetic, and the specific mask constants cited in the claim didn't appear anywhere in the code — a reminder that a claim should be checked against what the code actually computes, not just accepted because the domain (bit tricks, magic constants) sounds plausible for "permutation."
 
+## Session 185 (Wave 155) — FreeRTOS Kernel Core (Tasks, Queue Registry, Timers, Heap_5) & Fast Math Trigonometry (11 functions, 1,156 bytes)
 
+Decompiled and documented 11 functions (1,156 bytes across `0x6004780c`–`0x6004898c`, completing the entire FreeRTOS kernel module from `0x60047548` to `0x60048a3c` and crossing the 80% decompilation milestone):
+
+| Address | Bytes | Subsystem | Functional Role & Evidence | Call graph |
+|---|---:|---|---|---|
+| `0x6004780c` |   34 | FreeRTOS / Queue Registry | **`rtos_queue_registry_remove`** — FreeRTOS `vQueueUnregisterQueue`: scan queue registry array at `DAT_60047830` (entries of size 8: name, handle) and clear matched queue handle. | 1 caller / 0 callees |
+| `0x60047e90` |   14 | FreeRTOS / Task Status | **`rtos_task_get_current_tcb_ptr`** — Read pointer to current task control block and store priority/state into `*param_1` and `*(param_1 + 4)`. | 4 callers / 0 callees |
+| `0x60047f1c` |   18 | FreeRTOS / TLS | **`rtos_task_set_thread_local_storage_pointer`** — FreeRTOS `vTaskSetThreadLocalStoragePointer`: validate index `< 2`, resolve TCB pointer, and store TLS pointer at `[param_1, param_2, lsl #2]`. | 1 caller / 0 callees |
+| `0x60047f34` |   22 | FreeRTOS / TLS | **`rtos_task_get_thread_local_storage_pointer`** — FreeRTOS `pvTaskGetThreadLocalStoragePointer`: validate index `< 2`, resolve TCB pointer, and return TLS pointer at `[param_1, param_2, lsl #2]`. | 1 caller / 0 callees |
+| `0x60047f70` |  152 | FreeRTOS / Queue Wait | **`rtos_queue_check_waiting_tasks`** — Scan priority list of tasks blocked on queue, compare event list items and task priorities, and invoke unblock helpers `0x6004bb1a` / `0x6004bb60`. | 1 caller / 2 callees |
+| `0x600480b4` |   18 | FreeRTOS / Task Timeout | **`rtos_task_record_queue_wait_timeout`** — Record queue wait timeout tick count from current TCB `+0x50` into `+0x54`. | 1 caller / 0 callees |
+| `0x6004820c` |   50 | FreeRTOS / Timers | **`rtos_timer_insert_sorted`** — FreeRTOS `prvInsertTimerInActiveList`: compute delta ticks, configure timer list item fields, and insert sorted into timer list via `0x6004bb32`. | 1 caller / 1 callee |
+| `0x600482a8` |  432 | FreeRTOS / Timers | **`rtos_timer_service_task_loop`** — FreeRTOS software timer service task loop (`prvTimerTask`): read timer command queue, process expiry list, dispatch timer callback functions, and sleep on command queue. | 0 callers / 11 callees |
+| `0x60048684` |  224 | FreeRTOS / Heap_5 | **`rtos_heap_insert_free_block`** — FreeRTOS `heap_5` free block coalescing (`prvInsertBlockIntoFreeList`): traverse free list, find insertion point ordered by address, merge with preceding/succeeding contiguous free blocks. | 2 callers / 0 callees |
+| `0x600488d8` |   22 | FreeRTOS / Heap_5 | **`rtos_heap_reset_free_list_head`** — FreeRTOS `heap_5` free list head and tail sentinel structure initialization. | 1 caller / 0 callees |
+| `0x6004898c` |  170 | Math / Trigonometry | **`math_fast_sin_cos_lut`** — Fast floating-point sine/cosine approximation using LUT scaling and polynomial interpolation (`vsub.f32`, `vmul.f32`, `vdiv.f32`). | 2 callers / 2 callees |
 
