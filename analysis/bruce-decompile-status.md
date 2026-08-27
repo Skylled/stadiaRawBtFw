@@ -2,7 +2,7 @@
 
 Data-driven status doc for the "decompile all of `bruce` to source-reconstruction quality" effort. Regenerate the numbers here whenever `bruce_functions.csv`, `bruce_srcmap.csv`, or `analysis/decomp/` change materially — don't hand-edit stale tables into new prose, just re-run the join described in [Methodology](#methodology) below.
 
-**Snapshot: 2026-08-18 (full regeneration, session 190 / Wave 160).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 190 (4423 decomp files, 4423 in-census). Decompiled in-census functions grew to **4423** (579,298 bytes, 80.83% of code), with **139 of 139** attributed source files fully decompiled.
+**Snapshot: 2026-08-18 (full regeneration, session 191 / Wave 161).** This is a **full regeneration**, not a hand-patch — every table below comes from a fresh address-based join against `bruce_functions.csv`, `bruce_srcmap.csv`, and a directory listing of `analysis/decomp/` taken at the conclusion of session 191 (4428 decomp files, 4428 in-census). Decompiled in-census functions grew to **4428** (580,094 bytes, 80.94% of code), with **139 of 139** attributed source files fully decompiled.
 
 ## 1. Top-line stats
 
@@ -10,9 +10,9 @@ Data-driven status doc for the "decompile all of `bruce` to source-reconstructio
 |---|---:|---:|---:|---:|
 | **Total functions (census)** | 5,757 | 100% | 716,655 | 100% |
 | **Attributed** (leaked `__FILE__` → 139 src files) | 448 | 7.78% | 95,682 | 13.35% |
-| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 4,423 | 76.83% | 579,298 | 80.83% |
-| **Attributed ∪ Decompiled** (understood in *some* way) | 4,423 | 76.83% | 579,298 | **80.83%** |
-| **Totally unknown** (no attribution, no decompile) | 1,334 | 23.17% | 137,357 | **19.17%** |
+| **Decompiled** (`analysis/decomp/*.c`, matched to census) | 4,428 | 76.92% | 580,094 | 80.94% |
+| **Attributed ∪ Decompiled** (understood in *some* way) | 4,428 | 76.92% | 580,094 | **80.94%** |
+| **Totally unknown** (no attribution, no decompile) | 1,329 | 23.08% | 136,561 | **19.06%** |
 
 ### 1a. Module-identified-but-not-formally-attributed (informational — not folded into "Attributed" above)
 
@@ -28,9 +28,9 @@ Netting this out against §1's "Totally unknown" row gives the true unidentified
 
 | | Functions | % of 5,757 | Bytes | % of 716,655 |
 |---|---:|---:|---:|---:|
-| Totally unknown (§1, includes BTA-identified-but-undecompiled) | 1,334 | 23.17% | 137,357 | 19.17% |
+| Totally unknown (§1, includes BTA-identified-but-undecompiled) | 1,329 | 23.08% | 136,561 | 19.06% |
 | — of which: BTA-identified, module known, just not decompiled | 0 | 0.00% | 0 | 0.00% |
-| **— truly unidentified (no attribution, no decompile, no module ID)** | **1,334** | **23.17%** | **137,357** | **19.17%** |
+| **— truly unidentified (no attribution, no decompile, no module ID)** | **1,329** | **23.08%** | **136,561** | **19.06%** |
 
 ## 2. Per-source-file table (all 139 attributed files, sorted by total byte size descending)
 
@@ -212,11 +212,11 @@ Of **5,757 total functions** (the current census):
 | | Functions | Bytes |
 |---|---:|---:|
 | Attributed to a source file | 448 | 95,682 |
-| Decompiled (in census) | 4,423 | 579,298 |
+| Decompiled (in census) | 4,428 | 580,094 |
 | — of which both attributed AND decompiled | 448 | 95,682 |
 | — of which in the identified-but-not-formally-attributed BTA/BTE stack (§1a) | 1,116 | 213,911 |
-| **Understood in some way (union)** | **4,423 (76.8%)** | **579,298 (80.8%)** |
-| **Completely unknown — no attribution, no decompile, no module ID** | 1,334 (23.2%), or **1,334 (23.2%) excluding BTA-identified** | 137,357 (19.2%), or **137,357 (19.2%) excluding BTA-identified** |
+| **Understood in some way (union)** | **4,428 (76.9%)** | **580,094 (80.9%)** |
+| **Completely unknown — no attribution, no decompile, no module ID** | 1,329 (23.1%), or **1,329 (23.1%) excluding BTA-identified** | 136,561 (19.1%), or **136,561 (19.1%) excluding BTA-identified** |
 
 ## Methodology (for regenerating this doc)
 
